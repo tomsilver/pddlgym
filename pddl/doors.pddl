@@ -1,0 +1,40 @@
+(define (domain doors)
+  (:requirements :strips :typing)
+  (:types location room key)
+  (:predicates
+     (At ?loc - location)
+     (Unlocked ?room - room)
+     (LocInRoom ?loc - location ?room - room)
+     (KeyAt ?key - key ?loc - location)
+     (KeyForRoom ?key - key ?room - room)
+     (MoveTo ?loc - location)
+     (Pick ?key - key)
+  )
+
+  ; (:actions MoveTo Pick)
+
+  (:action MoveTo
+    :parameters (?sloc - location ?eloc - location ?eroom - room)
+    :precondition (and (MoveTo ?eloc)
+                       (At ?sloc)
+                       (Unlocked ?eroom)
+                       (LocInRoom ?eloc ?eroom)
+                  )
+    :effect (and (not (At ?sloc))
+                 (At ?eloc)
+            )
+  )
+
+  (:action Pick
+    :parameters (?loc - location ?key - key ?room - room)
+    :precondition (and (Pick ?key)
+                       (At ?loc)
+                       (KeyAt ?key ?loc)
+                       (KeyForRoom ?key ?room)
+                  )
+    :effect (and (not (KeyAt ?key ?loc))
+                 (Unlocked ?room)
+            )
+  )
+
+)

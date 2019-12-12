@@ -1,0 +1,7 @@
+__pycache__
+*.pyc
+.DS_Store
+*.egg-info
+*.pkl
+
+_procedural_generation
