@@ -26,7 +26,6 @@ def run_all(render=True, verbose=True):
     demo_random("minecraft", render=render, verbose=verbose)
     demo_ff_planning("rearrangement", 1, render=render, verbose=verbose)
     demo_ff_planning("sokoban", 5, render=render, verbose=verbose)
-    demo_ff_planning("debug", 1, render=render, verbose=verbose)
     demo_ff_planning("minecraft", 5, render=render, verbose=verbose)
     demo_ff_planning("minecraft", 5, render=render, test=True, verbose=verbose)
     demo_ff_planning("depot", 4, render=render, verbose=verbose)
