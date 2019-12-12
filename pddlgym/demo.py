@@ -23,9 +23,8 @@ def demo_ff_planning(env_name, num_problems, render=True, test=False, verbose=Tr
 def run_all(render=True, verbose=True):
     demo_random("sokoban", render=render, verbose=verbose)
     demo_random("rearrangement", render=render, problem_index=6, verbose=verbose)
-    demo_random("debug", render=render, verbose=verbose)
     demo_random("minecraft", render=render, verbose=verbose)
-    demo_ff_planning("rearrangement", 0, render=render, verbose=verbose)
+    demo_ff_planning("rearrangement", 1, render=render, verbose=verbose)
     demo_ff_planning("sokoban", 5, render=render, verbose=verbose)
     demo_ff_planning("debug", 1, render=render, verbose=verbose)
     demo_ff_planning("minecraft", 5, render=render, verbose=verbose)

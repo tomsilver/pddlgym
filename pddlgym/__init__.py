@@ -25,8 +25,6 @@ def register_pddl_env(name, render=None, is_test_env=False):
 
 register_pddl_env("rearrangement", rearrangement_render)
 register_pddl_env("rearrangement", rearrangement_render, is_test_env=True)
-register_pddl_env("debug", rearrangement_render)
-register_pddl_env("debug", rearrangement_render, is_test_env=True)
 register_pddl_env("sokoban", sokoban_render)
 register_pddl_env("sokoban", sokoban_render, is_test_env=True)
 register_pddl_env("minecraft", minecraft_render)
