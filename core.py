@@ -62,7 +62,7 @@ class PDDLEnv(gym.Env):
         self._problem_index_fixed = False
 
         # Parse the PDDL files
-        self.domain, self._problems = self.load_pddl(domain_file, problem_dir)
+        self.domain, self.problems = self.load_pddl(domain_file, problem_dir)
 
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
@@ -141,8 +141,8 @@ class PDDLEnv(gym.Env):
             See self._get_debug_info()
         """
         if not self._problem_index_fixed:
-            self._problem_idx = self.rng.choice(len(self._problems))
-        self._problem = self._problems[self._problem_idx]
+            self._problem_idx = self.rng.choice(len(self.problems))
+        self._problem = self.problems[self._problem_idx]
         self._state = self._problem.initial_state
         self._goal = self._problem.goal
         # The action and observation spaces depend on the objects
