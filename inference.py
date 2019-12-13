@@ -74,7 +74,7 @@ class ProofSearchTree(object):
                 if len(all_assignments) >= max_assignment_count:
                     if commit_if_true:
                         self.commit_goal(goal_lit)
-                    return len(all_assignments), all_assignments
+                    return all_assignments
 
             for child in self.get_children(node, variables, goal_literals, verbose=verbose):
                 if verbose:
