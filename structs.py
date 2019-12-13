@@ -65,7 +65,7 @@ class Predicate(object):
         Whether this Predicate is anti (as in a 
         negative effect).
     """
-    def __init__(self, name, arity, var_types, is_negative=False, is_anti=False):
+    def __init__(self, name, arity, var_types=None, is_negative=False, is_anti=False):
         self.name = name
         self.arity = arity
         self.var_types = var_types
