@@ -86,7 +86,7 @@ class ProofSearchTree(object):
 
     def commit_goal(self, goal_literal):
         if self.allow_commit_exception:
-            if not self.prove(goal_literal, verbose=False)[0]:
+            if not self.prove(goal_literal, verbose=False):
                 raise CommitGoalError("Tried to commit a goal literal that cannot be proven!")
 
         self.goal_literals.append(goal_literal)
