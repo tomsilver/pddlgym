@@ -7,6 +7,7 @@ groundings, may change with each new PDDL problem.
 from gym.spaces import Space
 from collections import defaultdict
 
+import itertools
 
 class LiteralSpace(Space):
 
