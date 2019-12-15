@@ -27,7 +27,7 @@ class LiteralSpace(Space):
 
         self.objects = objs
 
-    def sample(self):
+    def sample_literal(self):
         # Sample a random predicate
         idx = self.np_random.choice(self.num_predicates)
         predicate = self.predicates[idx]
@@ -39,6 +39,9 @@ class LiteralSpace(Space):
             choice = choices[self.np_random.choice(len(choices))]
             grounding.append(choice)
         return predicate(*grounding)
+
+    def sample(self):
+        return self.sample_literal()
 
     def all_ground_literals(self):
         all_ground_literals = set()
