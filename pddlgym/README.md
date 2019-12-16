@@ -81,3 +81,17 @@ The rationale for distinguishing actions from operators is related to the bounda
 
 ### Step 3: Register Gym environment
 * Update `__init__.py` to register your new environment. For example, `register_pddl_env("rearrangement", rearrangement_render)`.
+
+## Citation
+
+Please use this bibtex if you want to cite this repository in your publications:
+```
+@misc{pddlgym,
+  author = {Silver, Tom and Chitnis, Rohan},
+  title = {PDDLGym: OpenAI Gym Environments from PDDL Domains},
+  year = {2019},
+  publisher = {GitHub},
+  journal = {GitHub repository},
+  howpublished = {\url{https://github.com/tomsilver/pddlgym}},
+}
+```
