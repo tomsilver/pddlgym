@@ -38,31 +38,9 @@ class Operator:
         precond_strs = []
         for term in preconds.literals:
             params = set(map(str, term.variables))
-            if term.negated_as_failure:
-                # Negative term. The variables to universally
-                # quantify over are those which we have not
-                # encountered yet in this clause.
-                universally_quantified_vars = list(sorted(
-                    params-all_params))
-                precond = ""
-                for var in universally_quantified_vars:
-                    precond += "(forall ({}) ".format(
-                        var.replace(":", " - "))
-                precond += "(or "
-                for var in universally_quantified_vars:
-                    var_cleaned = "?"+var[:var.find(":")]
-                    for param in list(sorted(all_params)):
-                        param_cleaned = "?"+param[:param.find(":")]
-                        precond += "(not (Different {} {})) ".format(
-                            param_cleaned, var_cleaned)
-                precond += "(not {}))".format(term.positive.pddl_str())
-                for var in universally_quantified_vars:
-                    precond += ")"
-                precond_strs.append(precond)
-            else:
-                # Positive term.
-                all_params.update(params)
-                precond_strs.append(term.pddl_str())
+            # Positive term.
+            all_params.update(params)
+            precond_strs.append(term.pddl_str())
 
         return "\n\t\t\t".join(precond_strs)
 
