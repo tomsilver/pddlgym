@@ -406,3 +406,9 @@ def parse_plan_step(plan_step, operators, action_predicates):
 
     import ipdb; ipdb.set_trace()
     raise Exception("Unrecognized plan step: `{}`".format(str(plan_step)))
+
+
+if __name__ == "__main__":
+    domain = PDDLDomainParser("pddl/hanoi.pddl")
+    problem = PDDLProblemParser("pddl/hanoi/problem1.pddl", "hanoi", domain.types, domain.predicates)
+
