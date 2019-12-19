@@ -5,10 +5,11 @@ import tempfile
 class PrologInterface:
     """
     """
-    def __init__(self, kb, conds, max_assignment_count=2):
+    def __init__(self, kb, conds, max_assignment_count=2, allow_redundant_variables=True):
         self._kb = kb
         self._conds = conds
         self._max_assignment_count = max_assignment_count
+        self._allow_redundant_variables = allow_redundant_variables
         self._check_format()
         self._varnames_to_var = self._create_varname_to_var(self._conds, lower=True)
         self._atomname_to_atom = self._create_varname_to_var(self._kb)
@@ -56,7 +57,7 @@ class PrologInterface:
         preamble = self._prolog_preamble(self._conds)
         type_str = self._prolog_type_str(self._kb)
         kb_str = self._prolog_kb_str(self._kb)
-        goal_str, variables = self._prolog_goal(self._conds)
+        goal_str, variables = self._prolog_goal(self._conds, self._allow_redundant_variables)
         end = self._prolog_end(variables, self._max_assignment_count)
         return '\n'.join([preamble, kb_str, type_str, goal_str, end])
 
@@ -82,7 +83,7 @@ class PrologInterface:
         return type_str
 
     @staticmethod
-    def _prolog_goal(conds):
+    def _prolog_goal(conds, allow_redundant_variables):
         """
         """
         all_vars = sorted({ v for lit in conds for v in lit.variables })
@@ -96,7 +97,11 @@ class PrologInterface:
         type_cond_str = ""
         for v in sorted(all_vars, key=lambda v:v.var_type):
             type_cond_str += "\n\tistype{}({}),".format(v.var_type, v.name)
-        all_different_str = "\n\tall_different([{}]).".format(",".join(all_vars))
+        if not allow_redundant_variables:
+            all_different_str = "\n\tall_different([{}]).".format(",".join(all_vars))
+        else:
+            type_cond_str = type_cond_str[:-1]
+            all_different_str = "."
         head_str = "\ngoal({}) :-".format(",".join(all_vars))
         final_str = head_str + main_cond_str + type_cond_str + all_different_str
         return final_str, all_vars

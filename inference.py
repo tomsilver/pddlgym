@@ -6,8 +6,10 @@ from collections import defaultdict
 from copy import deepcopy
 
 
-def find_satisfying_assignments(kb, conds, verbose=False, max_assignment_count=2):
-    prolog_interface = PrologInterface(kb, conds, max_assignment_count=max_assignment_count)
+def find_satisfying_assignments(kb, conds, verbose=False, max_assignment_count=2,
+                                allow_redundant_variables=True):
+    prolog_interface = PrologInterface(kb, conds, max_assignment_count=max_assignment_count,
+        allow_redundant_variables=allow_redundant_variables)
     return prolog_interface.run()
 
 
@@ -42,7 +44,8 @@ def test1():
     kb = [Holding(pawn), At(robot, loc2), At(pawn, loc3),
           At(bear, loc4), IsRobot(robot)]
     conds = [Holding(var1), At(var1, var3), At(var2, var4), IsRobot(var2)]
-    print(find_satisfying_assignments(kb, conds))
+    print(find_satisfying_assignments(kb, conds,
+        allow_redundant_variables=False))
 
 def test2():
     # Temporary test included for development
@@ -68,7 +71,8 @@ def test2():
     kb = [Holding(pawn), At(robot, loc2), At(pawn, loc3),
           At(bear, loc4), IsRobot(robot)]
     conds = [Holding(var1), At(var1, var3), At(var2, var3), IsRobot(var2)]
-    print(find_satisfying_assignments(kb, conds))
+    print(find_satisfying_assignments(kb, conds,
+        allow_redundant_variables=False))
 
 def test3():
     # Temporary test included for development
@@ -94,7 +98,8 @@ def test3():
     kb = [Holding(pawn), At(robot, loc2), At(pawn, loc3),
           At(bear, loc4), IsRobot(robot)]
     conds = [At(var1, var3), At(var2, var4), IsRobot(var2)]
-    print(find_satisfying_assignments(kb, conds))
+    print(find_satisfying_assignments(kb, conds,
+        allow_redundant_variables=False))
 
 if __name__ == "__main__":
     test1()

@@ -66,7 +66,7 @@ class Predicate(object):
         negative effect).
     """
     def __init__(self, name, arity, var_types=None, is_negative=False, is_anti=False):
-        self.name = name
+        self.name = name.lower()
         self.arity = arity
         self.var_types = var_types
         self.is_negative = is_negative
