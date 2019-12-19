@@ -1,3 +1,7 @@
+import subprocess
+import tempfile
+
+
 class PrologInterface:
     """
     """
@@ -6,9 +10,9 @@ class PrologInterface:
         self._conds = conds
         self._max_assignment_count = max_assignment_count
         self._check_format()
+        self._varnames_to_var = self._create_varname_to_var(self._conds, lower=True)
+        self._atomname_to_atom = self._create_varname_to_var(self._kb)
         self._prolog_str = self._create_prolog_str()
-        print(self._prolog_str)
-        import ipdb; ipdb.set_trace()
 
     def _check_format(self):
         """
@@ -29,6 +33,22 @@ class PrologInterface:
             for variable in lit.variables:
                 if variable.islower():
                     raise Exception("Variables must be capitalized for Prolog; {} is not.".format(variable))
+
+    @staticmethod
+    def _create_varname_to_var(lits, lower=False):
+        """
+        """
+        vname_to_v = {}
+        for lit in lits:
+            for v in lit.variables:
+                vname = v.name
+                if lower:
+                    vname = vname.lower()
+                if vname in vname_to_v:
+                    assert vname_to_v[vname] == v
+                else:
+                    vname_to_v[vname] = v
+        return vname_to_v
 
     def _create_prolog_str(self):
         """
@@ -108,7 +128,33 @@ print_solutions([H|T]) :- write(H), nl, print_solutions(T).
     halt).
 """.format(lowercase_vars, max_assignment_count, uppercase_vars, uppercase_vars)
 
+    def _parse_output_line(self, output_line):
+        """
+        """
+        return output_line[1:-1].split(',')
+
     def run(self):
         """
         """
-        raise NotImplementedError()
+        file = tempfile.NamedTemporaryFile(suffix=".pl")
+        tmp_name = file.name
+        with open(tmp_name, 'w') as f:
+            f.write(self._prolog_str)
+        cmd_str = "swipl {}".format(tmp_name)
+        output = subprocess.getoutput(cmd_str)
+        lines = output.split('\n')
+        varnames = self._parse_output_line(lines.pop(0))
+        vs = [self._varnames_to_var[v] for v in varnames]
+        bindings = lines
+        if len(bindings) == 0:
+            return []
+        assignments = []
+        for binding in bindings:
+            atomnames = self._parse_output_line(binding)
+            # Recover original (typed) atoms
+            atoms = [self._atomname_to_atom[v] for v in atomnames]
+            assignment = dict(zip(vs, atoms))
+            assignments.append(assignment)
+        return assignments
+
+

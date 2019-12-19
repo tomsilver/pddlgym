@@ -17,7 +17,34 @@ class CommitGoalError(Exception):
 
 
 from pddlgym.structs import *
-def test():
+def test1():
+    # Temporary test included for development
+
+    MoveableType = Type('moveable')
+    StaticType = Type('static')
+    At = Predicate('at', 2, var_types=[MoveableType, StaticType])
+    Holding = Predicate('holding', 1, var_types=[MoveableType])
+    IsRobot = Predicate('isrobot', 1, var_types=[MoveableType])
+
+    robot = MoveableType("robot")
+    pawn = MoveableType("pawn")
+    bear = MoveableType("bear")
+    loc2 = StaticType("loc2")
+    loc3 = StaticType("loc3")
+    loc4 = StaticType("loc4")
+
+    var1 = MoveableType("Var1")
+    var2 = MoveableType("Var2")
+    var3 = StaticType("Var3")
+    var4 = StaticType("Var4")
+
+    # I would expect this to return unsat because robot and pawn are at different locs...
+    kb = [Holding(pawn), At(robot, loc2), At(pawn, loc3),
+          At(bear, loc4), IsRobot(robot)]
+    conds = [Holding(var1), At(var1, var3), At(var2, var4), IsRobot(var2)]
+    print(find_satisfying_assignments(kb, conds))
+
+def test2():
     # Temporary test included for development
 
     MoveableType = Type('moveable')
@@ -43,5 +70,34 @@ def test():
     conds = [Holding(var1), At(var1, var3), At(var2, var3), IsRobot(var2)]
     print(find_satisfying_assignments(kb, conds))
 
+def test3():
+    # Temporary test included for development
+
+    MoveableType = Type('moveable')
+    StaticType = Type('static')
+    At = Predicate('at', 2, var_types=[MoveableType, StaticType])
+    Holding = Predicate('holding', 1, var_types=[MoveableType])
+    IsRobot = Predicate('isrobot', 1, var_types=[MoveableType])
+
+    robot = MoveableType("robot")
+    pawn = MoveableType("pawn")
+    bear = MoveableType("bear")
+    loc2 = StaticType("loc2")
+    loc3 = StaticType("loc3")
+    loc4 = StaticType("loc4")
+
+    var1 = MoveableType("Var1")
+    var2 = MoveableType("Var2")
+    var3 = StaticType("Var3")
+    var4 = StaticType("Var4")
+
+    kb = [Holding(pawn), At(robot, loc2), At(pawn, loc3),
+          At(bear, loc4), IsRobot(robot)]
+    conds = [At(var1, var3), At(var2, var4), IsRobot(var2)]
+    print(find_satisfying_assignments(kb, conds))
+
 if __name__ == "__main__":
-    test()
+    test1()
+    test2()
+    test3()
+
