@@ -14,9 +14,11 @@ class PrologInterface:
         self._allow_redundant_variables = allow_redundant_variables
         self._timeout = timeout
         self._varnames_to_var = self._create_varname_to_var(self._conds, 
-            lambda x : self._clean_variable_name(x.lower()))
+            lambda x : self._clean_variable_name(x).lower())
         self._atomname_to_atom = self._create_varname_to_var(self._kb, self._clean_atom_name)
         self._prolog_str = self._create_prolog_str()
+        # print(self._prolog_str)
+        # import ipdb; ipdb.set_trace()
 
     @classmethod
     def _clean_atom_name(cls, atom_name):
@@ -24,7 +26,7 @@ class PrologInterface:
 
     @classmethod
     def _clean_variable_name(cls, var_name):
-        return var_name.replace("-", "_").replace("?", "")
+        return var_name.replace("-", "_").replace("?", "").capitalize()
 
     @classmethod
     def _clean_predicate_name(cls, predicate_name):
@@ -85,10 +87,12 @@ class PrologInterface:
         main_cond_str = ""
         for lit in sorted(conds):
             pred_name = cls._clean_predicate_name(lit.predicate.name)
-            if lit.is_negative:
-                pred_name = "\\+"+pred_name
             variables = ",".join([cls._clean_variable_name(a.name) for a in lit.variables])
-            main_cond_str += "\n\t{}({}),".format(pred_name, variables)
+            if lit.is_negative:
+                pred_str = "\n\tdif(true, {}({})),".format(pred_name, variables)
+            else:
+                pred_str = "\n\t{}({}),".format(pred_name, variables)
+            main_cond_str += pred_str
         type_cond_str = ""
         for v in sorted(all_vars, key=lambda v:v.var_type):
             type_cond_str += "\n\tistype{}({}),".format(v.var_type, cls._clean_variable_name(v.name))
@@ -117,8 +121,8 @@ print_solutions([H|T]) :- write(H), nl, print_solutions(T).
     
     @classmethod
     def _prolog_end(cls, variables, max_assignment_count):
-        lowercase_vars = ",".join([cls._clean_variable_name(v.lower()) for v in variables])
-        uppercase_vars = ",".join([cls._clean_variable_name(v.capitalize()) for v in variables])
+        lowercase_vars = ",".join([cls._clean_variable_name(v).lower() for v in variables])
+        uppercase_vars = ",".join([cls._clean_variable_name(v).capitalize() for v in variables])
         return """
 :- use_module(library(bounds)).
 :- initialization (
