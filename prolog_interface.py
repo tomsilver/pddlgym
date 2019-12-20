@@ -30,7 +30,7 @@ class PrologInterface:
 
     @classmethod
     def _clean_predicate_name(cls, predicate_name):
-        return predicate_name.lower().replace("-", "_")
+        return "pred"+predicate_name.lower().replace("-", "_")
 
     @staticmethod
     def _create_varname_to_var(lits, transformer):
@@ -148,7 +148,7 @@ print_solutions([H|T]) :- write(H), nl, print_solutions(T).
         timeout_str = "gtimeout" if sys.platform == 'darwin' else "timeout"
         cmd_str = "{} {} swipl {}".format(timeout_str, self._timeout, tmp_name)
         output = subprocess.getoutput(cmd_str)
-        if "ERROR" in output:
+        if "ERROR" in output or "Warning" in output:
             import ipdb; ipdb.set_trace()
             raise Exception("Prolog terminated with an error: \n{}".format(output))
         lines = output.split('\n')
