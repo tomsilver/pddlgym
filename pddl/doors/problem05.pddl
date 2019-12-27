@@ -4,6 +4,13 @@
     (:objects
     key-0 - key
 	key-1 - key
+	key-2 - key
+	key-3 - key
+	key-4 - key
+	key-5 - key
+	key-6 - key
+	key-7 - key
+	key-8 - key
 	loc-0-0 - location
 	loc-0-1 - location
 	loc-0-2 - location
@@ -87,6 +94,7 @@
 	room-0 - room
 	room-1 - room
 	room-2 - room
+	room-3 - room
     )
 
     (:init
@@ -94,11 +102,11 @@
 	(Unlocked room-0)
 	(LocInRoom loc-0-0 room-0)
 	(MoveTo loc-0-0)
-	(LocInRoom loc-0-1 room-0)
+	(LocInRoom loc-0-1 room-1)
 	(MoveTo loc-0-1)
-	(LocInRoom loc-0-2 room-0)
+	(LocInRoom loc-0-2 room-2)
 	(MoveTo loc-0-2)
-	(LocInRoom loc-0-3 room-0)
+	(LocInRoom loc-0-3 room-3)
 	(MoveTo loc-0-3)
 	(LocInRoom loc-0-4 room-0)
 	(MoveTo loc-0-4)
@@ -108,9 +116,9 @@
 	(MoveTo loc-0-6)
 	(LocInRoom loc-0-7 room-0)
 	(MoveTo loc-0-7)
-	(LocInRoom loc-0-8 room-1)
+	(LocInRoom loc-0-8 room-0)
 	(MoveTo loc-0-8)
-	(LocInRoom loc-0-9 room-2)
+	(LocInRoom loc-0-9 room-0)
 	(MoveTo loc-0-9)
 	(LocInRoom loc-1-0 room-0)
 	(MoveTo loc-1-0)
@@ -128,9 +136,9 @@
 	(MoveTo loc-1-6)
 	(LocInRoom loc-1-7 room-0)
 	(MoveTo loc-1-7)
-	(LocInRoom loc-1-8 room-1)
+	(LocInRoom loc-1-8 room-0)
 	(MoveTo loc-1-8)
-	(LocInRoom loc-1-9 room-2)
+	(LocInRoom loc-1-9 room-0)
 	(MoveTo loc-1-9)
 	(LocInRoom loc-2-0 room-0)
 	(MoveTo loc-2-0)
@@ -253,14 +261,35 @@
 	(LocInRoom loc-7-9 room-0)
 	(MoveTo loc-7-9)
 	(KeyForRoom key-0 room-1)
-	(KeyAt key-0 loc-0-9)
+	(KeyAt key-0 loc-0-2)
 	(Pick key-0)
-	(KeyForRoom key-1 room-1)
-	(KeyAt key-1 loc-0-9)
+	(KeyForRoom key-1 room-2)
+	(KeyAt key-1 loc-0-1)
 	(Pick key-1)
+	(KeyForRoom key-2 room-3)
+	(KeyAt key-2 loc-5-5)
+	(Pick key-2)
+	(KeyForRoom key-3 room-1)
+	(KeyAt key-3 loc-1-2)
+	(Pick key-3)
+	(KeyForRoom key-4 room-2)
+	(KeyAt key-4 loc-1-1)
+	(Pick key-4)
+	(KeyForRoom key-5 room-3)
+	(KeyAt key-5 loc-6-5)
+	(Pick key-5)
+	(KeyForRoom key-6 room-1)
+	(KeyAt key-6 loc-2-2)
+	(Pick key-6)
+	(KeyForRoom key-7 room-2)
+	(KeyAt key-7 loc-2-1)
+	(Pick key-7)
+	(KeyForRoom key-8 room-3)
+	(KeyAt key-8 loc-7-5)
+	(Pick key-8)
 
     )
 
-    (:goal (and (At loc-7-9)))
+    (:goal (and (At loc-0-3)))
 )
     

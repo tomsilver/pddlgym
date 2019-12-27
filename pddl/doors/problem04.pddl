@@ -86,6 +86,7 @@
 	room-0 - room
 	room-1 - room
 	room-2 - room
+	room-3 - room
     )
 
     (:init
@@ -93,9 +94,9 @@
 	(Unlocked room-0)
 	(LocInRoom loc-0-0 room-0)
 	(MoveTo loc-0-0)
-	(LocInRoom loc-0-1 room-0)
+	(LocInRoom loc-0-1 room-1)
 	(MoveTo loc-0-1)
-	(LocInRoom loc-0-2 room-0)
+	(LocInRoom loc-0-2 room-2)
 	(MoveTo loc-0-2)
 	(LocInRoom loc-0-3 room-0)
 	(MoveTo loc-0-3)
@@ -107,9 +108,9 @@
 	(MoveTo loc-0-6)
 	(LocInRoom loc-0-7 room-0)
 	(MoveTo loc-0-7)
-	(LocInRoom loc-0-8 room-1)
+	(LocInRoom loc-0-8 room-0)
 	(MoveTo loc-0-8)
-	(LocInRoom loc-0-9 room-2)
+	(LocInRoom loc-0-9 room-0)
 	(MoveTo loc-0-9)
 	(LocInRoom loc-1-0 room-0)
 	(MoveTo loc-1-0)
@@ -127,9 +128,9 @@
 	(MoveTo loc-1-6)
 	(LocInRoom loc-1-7 room-0)
 	(MoveTo loc-1-7)
-	(LocInRoom loc-1-8 room-1)
+	(LocInRoom loc-1-8 room-0)
 	(MoveTo loc-1-8)
-	(LocInRoom loc-1-9 room-2)
+	(LocInRoom loc-1-9 room-0)
 	(MoveTo loc-1-9)
 	(LocInRoom loc-2-0 room-0)
 	(MoveTo loc-2-0)
@@ -251,8 +252,8 @@
 	(MoveTo loc-7-8)
 	(LocInRoom loc-7-9 room-0)
 	(MoveTo loc-7-9)
-	(KeyForRoom key-0 room-2)
-	(KeyAt key-0 loc-3-3)
+	(KeyForRoom key-0 room-3)
+	(KeyAt key-0 loc-3-9)
 	(Pick key-0)
 
     )
