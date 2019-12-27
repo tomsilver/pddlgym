@@ -326,6 +326,30 @@ class ForAll:
     def __eq__(self, other):
         return str(self) == str(other)
 
+class Exists:
+    """
+    """
+    def __init__(self, variables, literal):
+        self.variables = variables
+        self.body = literal
+
+    def __str__(self):
+        return "EXISTS ({}) : {}".format(self.variables, str(self.body))
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def pddl_str(self):
+        body_str = self.body.pddl_str()
+        var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
+        return "(exists ({}) {})".format(var_str, body_str)
+
 
 ### Helpers ###
 def Not(x):  # pylint:disable=invalid-name

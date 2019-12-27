@@ -1,7 +1,7 @@
 """PDDL parsing.
 """
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
-                     Not, Anti, ForAll, TypedEntity, ground_literal)
+                     Not, Anti, ForAll, Exists, TypedEntity, ground_literal)
 
 import re
 
@@ -96,6 +96,17 @@ class PDDLParser:
                             TypedEntity(new_name, params[new_name]))
             del params[new_name]
             return result
+        if string.startswith("(exists") and string[7] in (" ", "\n", "("):
+            new_binding, clause = self._find_all_balanced_expressions(
+                string[7:-1].strip())
+            variables = self.parse_objects(new_binding[1:-1])
+            for v in variables:
+                params[v.name] = v.var_type
+            body = self._parse_into_literal(clause, params, is_effect=is_effect)
+            result = Exists(variables, body)
+            for v in variables:
+                del params[v.name]
+            return result
         if string.startswith("(not") and string[4] in (" ", "\n", "("):
             clause = string[4:-1].strip()
             if is_effect:
@@ -112,6 +123,26 @@ class PDDLParser:
                 import ipdb; ipdb.set_trace()
             assert arg in params, "Argument {} is not in the params".format(arg)
         return self.predicates[pred](*args)
+
+    def parse_objects(self, obj_str):
+        obj_str = obj_str.strip().split("\n")
+        objects = set()
+        for obj in obj_str:
+            if self.uses_typing:
+                obj_name, obj_type_name = obj.strip().split(" - ")
+                obj_name = obj_name.strip()
+                obj_type_name = obj_type_name.strip()
+            else:
+                obj_name = obj.strip()
+                obj_type_name = "default"
+            if obj_type_name not in self.types:
+                print("Warning: type not declared for object {}, type {}".format(
+                    obj_name, obj_type_name))
+                obj_type = Type(obj_type_name)
+            else:
+                obj_type = self.types[obj_type_name]
+            objects.add(TypedEntity(obj_name, obj_type))
+        return sorted(objects)
 
     def _purge_comments(self, pddl_str):
         # Purge comments from the given string.
