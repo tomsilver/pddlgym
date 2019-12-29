@@ -6,8 +6,6 @@
 	key-1 - key
 	key-2 - key
 	key-3 - key
-	key-4 - key
-	key-5 - key
 	loc-0-0 - location
 	loc-0-1 - location
 	loc-0-2 - location
@@ -266,18 +264,12 @@
 	(KeyForRoom key-1 room-5)
 	(KeyAt key-1 loc-1-1)
 	(Pick key-1)
-	(KeyForRoom key-2 room-2)
-	(KeyAt key-2 loc-0-1)
+	(KeyForRoom key-2 room-6)
+	(KeyAt key-2 loc-2-1)
 	(Pick key-2)
-	(KeyForRoom key-3 room-6)
-	(KeyAt key-3 loc-2-1)
+	(KeyForRoom key-3 room-4)
+	(KeyAt key-3 loc-0-3)
 	(Pick key-3)
-	(KeyForRoom key-4 room-3)
-	(KeyAt key-4 loc-0-2)
-	(Pick key-4)
-	(KeyForRoom key-5 room-4)
-	(KeyAt key-5 loc-0-3)
-	(Pick key-5)
 
     )
 
