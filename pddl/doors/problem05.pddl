@@ -8,9 +8,6 @@
 	key-3 - key
 	key-4 - key
 	key-5 - key
-	key-6 - key
-	key-7 - key
-	key-8 - key
 	loc-0-0 - location
 	loc-0-1 - location
 	loc-0-2 - location
@@ -95,6 +92,9 @@
 	room-1 - room
 	room-2 - room
 	room-3 - room
+	room-4 - room
+	room-5 - room
+	room-6 - room
     )
 
     (:init
@@ -269,24 +269,15 @@
 	(KeyForRoom key-2 room-3)
 	(KeyAt key-2 loc-5-5)
 	(Pick key-2)
-	(KeyForRoom key-3 room-1)
+	(KeyForRoom key-3 room-4)
 	(KeyAt key-3 loc-1-2)
 	(Pick key-3)
-	(KeyForRoom key-4 room-2)
+	(KeyForRoom key-4 room-5)
 	(KeyAt key-4 loc-1-1)
 	(Pick key-4)
-	(KeyForRoom key-5 room-3)
+	(KeyForRoom key-5 room-6)
 	(KeyAt key-5 loc-6-5)
 	(Pick key-5)
-	(KeyForRoom key-6 room-1)
-	(KeyAt key-6 loc-2-2)
-	(Pick key-6)
-	(KeyForRoom key-7 room-2)
-	(KeyAt key-7 loc-2-1)
-	(Pick key-7)
-	(KeyForRoom key-8 room-3)
-	(KeyAt key-8 loc-7-5)
-	(Pick key-8)
 
     )
 

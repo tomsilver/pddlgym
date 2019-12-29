@@ -93,6 +93,8 @@
 	room-2 - room
 	room-3 - room
 	room-4 - room
+	room-5 - room
+	room-6 - room
     )
 
     (:init
@@ -261,13 +263,13 @@
 	(KeyForRoom key-0 room-1)
 	(KeyAt key-0 loc-3-3)
 	(Pick key-0)
-	(KeyForRoom key-1 room-1)
+	(KeyForRoom key-1 room-5)
 	(KeyAt key-1 loc-1-1)
 	(Pick key-1)
 	(KeyForRoom key-2 room-2)
 	(KeyAt key-2 loc-0-1)
 	(Pick key-2)
-	(KeyForRoom key-3 room-2)
+	(KeyForRoom key-3 room-6)
 	(KeyAt key-3 loc-2-1)
 	(Pick key-3)
 	(KeyForRoom key-4 room-3)
