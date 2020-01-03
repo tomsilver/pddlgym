@@ -15,6 +15,8 @@ Several PDDL environments are included, including
 - Sokoban
 - Depot
 - Blocks
+- Keys and Doors
+- Towers of Hanoi
 - "Minecraft"
 - "Rearrangement"
 - "Travel"
@@ -69,7 +71,7 @@ Create a domain PDDL file and one or more problem PDDL files. (See important not
 
 **Note 2:** PDDLGym requires that certain predicates are special "predicate actions". For example, in Sokoban, we add a `(Move ?dir - direction)` predicate. Action predicates must be incorporated in four places:
 1. Alongside the typical predicate declarations in the domain file.
-2. In a space-separated list of format `; (:actions <action predicate name 1> <action predicate name 2>)` in the domain file. (Note the semicolon at the beginning!)
+2. In a space-separated list of format `; (:actions <action predicate name 1> <action predicate name 2> ...)` in the domain file. (Note the semicolon at the beginning!)
 3. One variable-grounded action predicate should appear in the preconditions of every operator in the domain file.
 4. In each problem file, all possible ground actions should be listed alongside the other :init declarations.
 See `pddl/sokoban.pddl` and `pddl/sokoban/problem1.pddl` for an example to follow.
