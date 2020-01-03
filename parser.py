@@ -125,7 +125,12 @@ class PDDLParser:
         return self.predicates[pred](*args)
 
     def parse_objects(self, obj_str):
-        obj_str = obj_str.strip().split("\n")
+        objects = objects[9:-1].strip()
+        if objects.find("\n") == -1:
+            assert not self.uses_typing
+            objects = objects.split()
+        else:
+            objects = objects.split("\n")
         objects = set()
         for obj in obj_str:
             if self.uses_typing:
@@ -376,7 +381,12 @@ class PDDLProblemParser(PDDLParser):
     def _parse_problem_objects(self):
         start_ind = re.search(r"\(:objects", self.problem).start()
         objects = self._find_balanced_expression(self.problem, start_ind)
-        objects = objects[9:-1].strip().split("\n")
+        objects = objects[9:-1].strip()
+        if objects.find("\n") == -1:
+            assert not self.uses_typing
+            objects = objects.split()
+        else:
+            objects = objects.split("\n")
         self.objects = set()
         for obj in objects:
             if self.uses_typing:
