@@ -1,5 +1,5 @@
 (define (problem gotocasino2) 
-    (:domain gotocasino)
+    (:domain startprizecasino)
 
     (:objects
     prize-1-1 - prize1

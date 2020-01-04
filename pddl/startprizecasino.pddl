@@ -1,4 +1,4 @@
-(define (domain gotocasino)
+(define (domain startprizecasino)
   (:requirements :strips :typing)
   (:types location prize1 prize2 prize3 prize4 prize5)
   (:predicates
