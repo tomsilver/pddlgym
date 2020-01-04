@@ -18,10 +18,7 @@ def demo_ff_planning(env_name, num_problems, render=True, test=False, verbose=Tr
     env.raise_error_on_invalid_action = True
     for problem_index in range(num_problems):
         env.fix_problem_index(problem_index)
-        try:
-            run_planning_demo(env, 'ff', verbose=verbose)
-        except:
-            import ipdb; ipdb.set_trace()
+        run_planning_demo(env, 'ff', verbose=verbose)
 
 def run_all(render=True, verbose=True):
     # demo_random("sokoban", render=render, verbose=verbose)
@@ -41,12 +38,12 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("travel", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("doors", 5, render=render, verbose=verbose)
     # demo_ff_planning("doors", 10, render=render, test=True, verbose=verbose)
-    # demo_ff_planning("casino", 1, render=render, verbose=verbose)
-    # demo_ff_planning("casino", 4, render=render, test=True, verbose=verbose)
     # demo_ff_planning("hanoi", 4, render=render, verbose=verbose)
     # demo_ff_planning("hanoi", 6, render=render, test=True, verbose=verbose)
-    demo_ff_planning("tsp", 2, render=render, verbose=verbose)
-    demo_ff_planning("tsp", 6, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("tsp", 2, render=render, verbose=verbose)
+    # demo_ff_planning("tsp", 6, render=render, test=True, verbose=verbose)
+    demo_ff_planning("atcasino", 1, render=render, verbose=verbose)
+    demo_ff_planning("atcasino", 10, render=render, test=True, verbose=verbose)
 
 if __name__ == '__main__':
     run_all()
