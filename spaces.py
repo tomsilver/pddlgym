@@ -29,6 +29,19 @@ class LiteralSpace(Space):
 
         self._all_ground_literals = sorted(self._compute_all_ground_literals())
 
+    def sample_hierarchically(self):
+        # Sample a random predicate
+        idx = self.np_random.choice(self.num_predicates)
+        predicate = self.predicates[idx]
+
+        # Sample grounding
+        grounding = []
+        for var_type in predicate.var_types:
+            choices = self.type_to_objs[var_type]
+            choice = choices[self.np_random.choice(len(choices))]
+            grounding.append(choice)
+        return predicate(*grounding)
+
     def sample(self):
         num_lits = len(self._all_ground_literals)
         idx = self.np_random.choice(num_lits)
