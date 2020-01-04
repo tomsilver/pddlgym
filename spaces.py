@@ -42,10 +42,13 @@ class LiteralSpace(Space):
             grounding.append(choice)
         return predicate(*grounding)
 
-    def sample(self):
+    def sample_literal(self):
         num_lits = len(self._all_ground_literals)
         idx = self.np_random.choice(num_lits)
         return self._all_ground_literals[idx]
+
+    def sample(self):
+        return self.sample_literal()
 
     def all_ground_literals(self):
         return set(self._all_ground_literals)
