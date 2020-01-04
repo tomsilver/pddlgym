@@ -44,8 +44,10 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("tsp", 6, render=render, test=True, verbose=verbose)
     # demo_ff_planning("atcasino", 1, render=render, verbose=verbose)
     # demo_ff_planning("atcasino", 10, render=render, test=True, verbose=verbose)
-    demo_ff_planning("gotocasino", 1, render=render, verbose=verbose)
-    demo_ff_planning("gotocasino", 10, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("gotocasino", 1, render=render, verbose=verbose)
+    # demo_ff_planning("gotocasino", 10, render=render, test=True, verbose=verbose)
+    demo_ff_planning("startprizecasino", 1, render=render, verbose=verbose)
+    demo_ff_planning("startprizecasino", 10, render=render, test=True, verbose=verbose)
 
 if __name__ == '__main__':
     run_all()
