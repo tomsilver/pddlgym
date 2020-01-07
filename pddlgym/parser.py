@@ -96,6 +96,17 @@ class PDDLParser:
                             TypedEntity(new_name, params[new_name]))
             del params[new_name]
             return result
+        if string.startswith("(exists") and string[7] in (" ", "\n", "("):
+            new_binding, clause = self._find_all_balanced_expressions(
+                string[7:-1].strip())
+            variables = self._parse_objects(new_binding[1:-1])
+            for v in variables:
+                params[v.name] = v.var_type
+            body = self._parse_into_literal(clause, params, is_effect=is_effect)
+            result = Exists(variables, body)
+            for v in variables:
+                del params[v.name]
+            return result
         if string.startswith("(not") and string[4] in (" ", "\n", "("):
             clause = string[4:-1].strip()
             if is_effect:
@@ -112,6 +123,35 @@ class PDDLParser:
                 import ipdb; ipdb.set_trace()
             assert arg in params, "Argument {} is not in the params".format(arg)
         return self.predicates[pred](*args)
+
+    def _parse_objects(self, objects):
+        objects = objects[9:-1].strip()
+        if objects.find("\n") == -1:
+            assert not self.uses_typing
+            objects = objects.split()
+        else:
+            objects = objects.split("\n")
+        to_return = set()
+        for obj in objects:
+            if self.uses_typing:
+                obj_name, obj_type_name = obj.strip().split(" - ")
+                obj_name = obj_name.strip()
+                obj_type_name = obj_type_name.strip()
+            else:
+                obj_name = obj.strip()
+                if " - " in obj_name:
+                    obj_name, temp = obj_name.split(" - ")
+                    obj_name = obj_name.strip()
+                    assert temp == "default"
+                obj_type_name = "default"
+            if obj_type_name not in self.types:
+                print("Warning: type not declared for object {}, type {}".format(
+                    obj_name, obj_type_name))
+                obj_type = Type(obj_type_name)
+            else:
+                obj_type = self.types[obj_type_name]
+            to_return.add(TypedEntity(obj_name, obj_type))
+        return sorted(to_return)
 
     def _purge_comments(self, pddl_str):
         # Purge comments from the given string.
@@ -345,32 +385,7 @@ class PDDLProblemParser(PDDLParser):
     def _parse_problem_objects(self):
         start_ind = re.search(r"\(:objects", self.problem).start()
         objects = self._find_balanced_expression(self.problem, start_ind)
-        objects = objects[9:-1].strip()
-        if objects.find("\n") == -1:
-            assert not self.uses_typing
-            objects = objects.split()
-        else:
-            objects = objects.split("\n")
-        self.objects = set()
-        for obj in objects:
-            if self.uses_typing:
-                obj_name, obj_type_name = obj.strip().split(" - ")
-                obj_name = obj_name.strip()
-                obj_type_name = obj_type_name.strip()
-            else:
-                obj_name = obj.strip()
-                if " - " in obj_name:
-                    obj_name, temp = obj_name.split(" - ")
-                    obj_name = obj_name.strip()
-                    assert temp == "default"
-                obj_type_name = "default"
-            if obj_type_name not in self.types:
-                print("Warning: type not declared for object {}, type {}".format(
-                    obj_name, obj_type_name))
-                obj_type = Type(obj_type_name)
-            else:
-                obj_type = self.types[obj_type_name]
-            self.objects.add(TypedEntity(obj_name, obj_type))
+        self.objects = self._parse_objects(objects)
 
     def _parse_problem_initial_state(self):
         start_ind = re.search(r"\(:init", self.problem).start()
