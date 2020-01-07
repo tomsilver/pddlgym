@@ -359,6 +359,10 @@ class PDDLProblemParser(PDDLParser):
                 obj_type_name = obj_type_name.strip()
             else:
                 obj_name = obj.strip()
+                if " - " in obj_name:
+                    obj_name, temp = obj_name.split(" - ")
+                    obj_name = obj_name.strip()
+                    assert temp == "default"
                 obj_type_name = "default"
             if obj_type_name not in self.types:
                 print("Warning: type not declared for object {}, type {}".format(
