@@ -224,6 +224,11 @@ class Literal:
             raise NotImplementedError
         return "({} {})".format(self.predicate, " ".join(self.pddl_variables()))
 
+    def holds(self, state):
+        assert not self.is_anti
+        return ((self in state and not self.is_negative) or
+                (self not in state and self.is_negative))
+
 
 class LiteralConjunction:
     """A logical conjunction (AND) of Literals.
