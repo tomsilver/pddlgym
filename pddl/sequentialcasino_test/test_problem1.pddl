@@ -12,6 +12,16 @@
     square4 - location
     myprize5 - prize5
     square5 - location
+    myprize6 - prize6
+    square6 - location
+    myprize7 - prize7
+    square7 - location
+    myprize8 - prize8
+    square8 - location
+    myprize9 - prize9
+    square9 - location
+    myprize10 - prize10
+    square10 - location
     right - direction
     left - direction
     start - location
@@ -41,7 +51,27 @@
     (GetPrize5 myprize5)
     (DirHolds square4 square5 right)
     (DirHolds square5 square4 left)
+    (LocPrize6 myprize6 square6)
+    (GetPrize6 myprize6)
+    (DirHolds square5 square6 right)
+    (DirHolds square6 square5 left)
+    (LocPrize7 myprize7 square7)
+    (GetPrize7 myprize7)
+    (DirHolds square6 square7 right)
+    (DirHolds square7 square6 left)
+    (LocPrize8 myprize8 square8)
+    (GetPrize8 myprize8)
+    (DirHolds square7 square8 right)
+    (DirHolds square8 square7 left)
+    (LocPrize9 myprize9 square9)
+    (GetPrize9 myprize9)
+    (DirHolds square8 square9 right)
+    (DirHolds square9 square8 left)
+    (LocPrize10 myprize10 square10)
+    (GetPrize10 myprize10)
+    (DirHolds square9 square10 right)
+    (DirHolds square10 square9 left)
   )
 
-  (:goal (HoldingPrize5 myprize5))
+  (:goal (HoldingPrize10 myprize10))
 )

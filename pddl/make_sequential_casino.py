@@ -1,6 +1,6 @@
 import os
 
-NUM_SQUARES = 5
+NUM_SQUARES = 10
 
 dom_str = ""
 dom_str += "(define (domain sequentialcasino)\n"
