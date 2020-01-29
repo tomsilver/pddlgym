@@ -49,4 +49,6 @@ register_pddl_env("slidetile", slidetile_render)
 register_pddl_env("slidetile", slidetile_render, is_test_env=True)
 register_pddl_env("elevator")
 register_pddl_env("elevator", is_test_env=True)
+register_pddl_env("ferry")
+register_pddl_env("ferry", is_test_env=True)
 
