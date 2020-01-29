@@ -45,8 +45,9 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("tsp", 2, render=render, verbose=verbose)
     # demo_ff_planning("tsp", 6, render=render, test=True, verbose=verbose)
     # demo_ff_planning("slidetile", 1, render=render, verbose=verbose)
-    demo_ff_planning("slidetile", 1, render=render, test=True, verbose=verbose)
-
+    # demo_ff_planning("slidetile", 1, render=render, test=True, verbose=verbose)
+    demo_ff_planning("elevator", 5, render=render, verbose=verbose)
+    demo_ff_planning("elevator", 5, render=render, verbose=verbose)
 
 if __name__ == '__main__':
     run_all()
