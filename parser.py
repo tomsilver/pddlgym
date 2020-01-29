@@ -38,7 +38,7 @@ class Operator:
         precond_strs = []
         for term in preconds.literals:
             params = set(map(str, term.variables))
-            if term.negated_as_failure:
+            if hasattr(term, 'negated_as_failure') and term.negated_as_failure:
                 # Negative term. The variables to universally
                 # quantify over are those which we have not
                 # encountered yet in this clause.
