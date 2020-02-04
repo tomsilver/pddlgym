@@ -14,7 +14,7 @@ def get_asset_path(asset_name):
     return os.path.join(asset_dir_path, asset_name)
 
 def fig2data(fig):
-    fig.set_dpi(150)
+    fig.set_dpi(500)
     fig.canvas.draw()
     data = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8, sep='')
     data = data.reshape(fig.canvas.get_width_height()[::-1] + (4,))

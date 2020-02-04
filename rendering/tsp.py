@@ -41,5 +41,5 @@ def render(obs, mode='human', close=False):
 
     fig = plt.figure()
     pos = nx.spring_layout(G, iterations=100, seed=0)
-    nx.draw(G, pos, node_color=color_map)
+    nx.draw(G, pos, node_color=color_map, node_size=600)
     return fig2data(fig)

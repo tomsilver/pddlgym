@@ -3,8 +3,8 @@ from .utils import get_asset_path, render_from_layout
 import matplotlib.pyplot as plt
 import numpy as np
 
-NUM_OBJECTS = 6
-AGENT, LOG, PLANK, GRASS, FRAME, BACKGROUND = range(NUM_OBJECTS)
+NUM_OBJECTS = 7
+AGENT, LOG, PLANK, GRASS, FRAME, BACKGROUND, INVENTORY_BACKGROUND = range(NUM_OBJECTS)
 
 TOKEN_IMAGES = {
     AGENT : plt.imread(get_asset_path('minecraft_agent.png')),
@@ -13,6 +13,7 @@ TOKEN_IMAGES = {
     GRASS : plt.imread(get_asset_path('minecraft_grass.jpg')),
     FRAME : plt.imread(get_asset_path('minecraft_frame.png')),
     BACKGROUND : plt.imread(get_asset_path('minecraft_background.png')),
+    INVENTORY_BACKGROUND : plt.imread(get_asset_path('minecraft_inventory_background.png')),
 }
 
 def loc_str_to_loc(loc_str):
@@ -59,6 +60,7 @@ def build_layout(obs):
             layout[r, c, thing_type] = 1
 
     inventory_layout = np.zeros((layout.shape[0], 1, NUM_OBJECTS))
+    inventory_layout[..., INVENTORY_BACKGROUND] = 1
     next_inventory_r = 0
 
     for lit in obs:
@@ -86,11 +88,15 @@ def build_layout(obs):
     final_layout[1:-1, 1:-3] = layout
     final_layout[1:-1, -2:-1] = inventory_layout
 
+    final_layout = np.swapaxes(final_layout, 0, 1)
+
     return final_layout
 
 def get_token_images(obs_cell):
     if obs_cell[BACKGROUND]:
         yield TOKEN_IMAGES[BACKGROUND]
+    if obs_cell[INVENTORY_BACKGROUND]:
+        yield TOKEN_IMAGES[INVENTORY_BACKGROUND]
     if obs_cell[FRAME]:
         yield TOKEN_IMAGES[FRAME]
     if obs_cell[GRASS]:
