@@ -4,6 +4,10 @@
 
 **This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/).**
 
+## Paper
+
+Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design decisions and implementation details behind PDDLGym.
+
 ## Status
 
 **The following PDDL features are not yet supported:**
@@ -88,12 +92,12 @@ The rationale for distinguishing actions from operators is related to the bounda
 
 Please use this bibtex if you want to cite this repository in your publications:
 ```
-@misc{pddlgym,
-  author = {Silver, Tom and Chitnis, Rohan},
-  title = {PDDLGym: OpenAI Gym Environments from PDDL Domains},
-  year = {2019},
-  publisher = {GitHub},
-  journal = {GitHub repository},
-  howpublished = {\url{https://github.com/tomsilver/pddlgym}},
+@misc{silver2020pddlgym,
+    title={PDDLGym: Gym Environments from PDDL Problems},
+    author={Tom Silver and Rohan Chitnis},
+    year={2020},
+    eprint={2002.06432},
+    archivePrefix={arXiv},
+    primaryClass={cs.AI}
 }
 ```
