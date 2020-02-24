@@ -6,11 +6,11 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
-sns.set(style="darkgrid")
+# import seaborn as sns
+# sns.set(style="darkgrid")
 
 def smooth_curve(x, y):
-    halfwidth = int(np.ceil(len(x) / 50))  # Halfwidth of our smoothing convolution
+    halfwidth = int(np.ceil(len(x) / 100))  # Halfwidth of our smoothing convolution
     k = halfwidth
     xsmoo = x
     ysmoo = np.convolve(y, np.ones(2 * k + 1), mode='same') / np.convolve(np.ones_like(y), np.ones(2 * k + 1),
@@ -30,6 +30,8 @@ def load_results(domain_names):
     return all_results
 
 def plot_results(env_name_to_results, env_name_to_label, outfile="learning_plot.png"):
+    plt.figure()
+
     for env_name, results in env_name_to_results.items():
         print(env_name)
         arr = np.array(results)[..., 1]
@@ -39,6 +41,9 @@ def plot_results(env_name_to_results, env_name_to_label, outfile="learning_plot.
         label = env_name_to_label[env_name]
         plt.plot(x, y, label=label)
 
+    plt.title("Variation in Transition Model Learning Difficulty")
+    plt.xlabel("Simulator Steps")
+    plt.ylabel("Test Suite Success Rate")
     plt.legend(loc='lower right')
     plt.tight_layout()
     plt.savefig(outfile, dpi=500)
