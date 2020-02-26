@@ -51,7 +51,7 @@ def run_random_agent_demo(env, outdir='/tmp', max_num_steps=10, fps=3,
 
     env.close()
 
-def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, seed=None, check_reward=True):
+def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, seed=None):
     if outdir is None:
         outdir = "/tmp/{}".format(env_cls.__name__)
         if not os.path.exists(outdir):
@@ -63,7 +63,7 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
             video_path = os.path.join(outdir, 'planning_{}_{}_{}_demo.gif'.format(
                 planner_name, env.spec.id, problem_idx))
         else:
-            video_path = os.path.join(outdir, 'planning_{}_{}_demo.gif'.format(
+            video_path = os.path.join(outdir, 'planning_{}_{}_{}_demo.gif'.format(
                 planner_name, env.spec.id))
         env = VideoWrapper(env, video_path, fps=fps)
 
@@ -95,8 +95,7 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
         print("Final obs:", obs)
 
     env.close()
-    if check_reward:
-        assert tot_reward > 0
+    assert tot_reward > 0
     return tot_reward
 
 
