@@ -176,6 +176,27 @@ class PDDLEnv(gym.Env):
                 'domain_file' : self.domain.domain_fname,
                 'objects' : self._problem.objects}
 
+    def _select_operator(self, action):
+        """
+        Helper function for step.
+        """
+        # Knowledge base: literals in the state + action taken
+        kb = self._get_observation() | { action }
+
+        selected_operator = None
+        assignment = None
+        for operator in self.domain.operators.values():
+            conds = operator.preconds.literals
+            assignments = find_satisfying_assignments(kb, conds)
+            num_assignments = len(assignments)
+            if num_assignments > 0:
+                assert num_assignments == 1, "Nondeterministic envs not supported"
+                selected_operator = operator
+                assignment = assignments[0]
+                break
+
+        return selected_operator, assignment
+
     def step(self, action):
         """
         Execute an action and update the state.
@@ -203,20 +224,7 @@ class PDDLEnv(gym.Env):
         debug_info : dict
             See self._get_debug_info.
         """
-        # Knowledge base: literals in the state + action taken
-        kb = self._get_observation() | { action }
-
-        selected_operator = None
-        assignment = None
-        for operator in self.domain.operators.values():
-            conds = operator.preconds.literals
-            assignments = find_satisfying_assignments(kb, conds)
-            num_assignments = len(assignments)
-            if num_assignments > 0:
-                assert num_assignments == 1, "Nondeterministic envs not supported"
-                selected_operator = operator
-                assignment = assignments[0]
-                break
+        selected_operator, assignment = self._select_operator(action)
 
         # A ground operator was found; execute the ground effects
         if assignment is not None:
@@ -227,6 +235,10 @@ class PDDLEnv(gym.Env):
             # import ipdb; ipdb.set_trace()
             raise InvalidAction()
 
+        return self._finish_step()
+
+    def _finish_step(self):
+        """Helper for step."""
         obs = self._get_observation()
         goal_reached = self._is_goal_reached()
         debug_info = self._get_debug_info()

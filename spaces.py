@@ -9,7 +9,6 @@ from collections import defaultdict
 
 import itertools
 
-
 class LiteralSpace(Space):
 
     def __init__(self, predicates):
@@ -27,9 +26,7 @@ class LiteralSpace(Space):
 
         self.objects = objs
 
-        self._all_ground_literals = sorted(self._compute_all_ground_literals())
-
-    def sample_hierarchically(self):
+    def sample(self):
         # Sample a random predicate
         idx = self.np_random.choice(self.num_predicates)
         predicate = self.predicates[idx]
@@ -42,18 +39,7 @@ class LiteralSpace(Space):
             grounding.append(choice)
         return predicate(*grounding)
 
-    def sample_literal(self):
-        num_lits = len(self._all_ground_literals)
-        idx = self.np_random.choice(num_lits)
-        return self._all_ground_literals[idx]
-
-    def sample(self):
-        return self.sample_literal()
-
     def all_ground_literals(self):
-        return set(self._all_ground_literals)
-
-    def _compute_all_ground_literals(self):
         all_ground_literals = set()
         for predicate in self.predicates:
             choices = [self.type_to_objs[vt] for vt in predicate.var_types]
@@ -68,3 +54,7 @@ class LiteralSetSpace(LiteralSpace):
 
     def sample(self):
         raise NotImplementedError()
+
+    def sample_literal(self):
+        return super().sample()
+
