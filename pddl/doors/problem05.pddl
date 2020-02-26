@@ -6,6 +6,8 @@
 	key-1 - key
 	key-2 - key
 	key-3 - key
+	key-4 - key
+	key-5 - key
 	loc-0-0 - location
 	loc-0-1 - location
 	loc-0-2 - location
@@ -120,11 +122,11 @@
 	(MoveTo loc-0-9)
 	(LocInRoom loc-1-0 room-0)
 	(MoveTo loc-1-0)
-	(LocInRoom loc-1-1 room-1)
+	(LocInRoom loc-1-1 room-0)
 	(MoveTo loc-1-1)
-	(LocInRoom loc-1-2 room-2)
+	(LocInRoom loc-1-2 room-0)
 	(MoveTo loc-1-2)
-	(LocInRoom loc-1-3 room-3)
+	(LocInRoom loc-1-3 room-0)
 	(MoveTo loc-1-3)
 	(LocInRoom loc-1-4 room-0)
 	(MoveTo loc-1-4)
@@ -259,20 +261,26 @@
 	(LocInRoom loc-7-9 room-0)
 	(MoveTo loc-7-9)
 	(KeyForRoom key-0 room-1)
-	(KeyAt key-0 loc-3-3)
+	(KeyAt key-0 loc-0-2)
 	(Pick key-0)
-	(KeyForRoom key-1 room-5)
-	(KeyAt key-1 loc-1-1)
+	(KeyForRoom key-1 room-2)
+	(KeyAt key-1 loc-0-1)
 	(Pick key-1)
-	(KeyForRoom key-2 room-6)
-	(KeyAt key-2 loc-2-1)
+	(KeyForRoom key-2 room-3)
+	(KeyAt key-2 loc-5-5)
 	(Pick key-2)
 	(KeyForRoom key-3 room-4)
-	(KeyAt key-3 loc-0-3)
+	(KeyAt key-3 loc-1-2)
 	(Pick key-3)
+	(KeyForRoom key-4 room-5)
+	(KeyAt key-4 loc-1-1)
+	(Pick key-4)
+	(KeyForRoom key-5 room-6)
+	(KeyAt key-5 loc-6-5)
+	(Pick key-5)
 
     )
 
-    (:goal (and (At loc-1-3)))
+    (:goal (and (At loc-0-3)))
 )
     
