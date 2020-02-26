@@ -54,3 +54,7 @@ class LiteralSetSpace(LiteralSpace):
 
     def sample(self):
         raise NotImplementedError()
+
+    def sample_literal(self):
+        return super().sample()
+
