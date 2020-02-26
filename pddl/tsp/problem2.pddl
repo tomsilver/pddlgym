@@ -98,5 +98,5 @@
     (moveto c20)
 
   )
-  (:goal (and (visited c1) (visited c2) (visited c3) (complete p)))
+  (:goal (and (visited c1) (visited c2) (visited c3) (visited c4) (complete p)))
 )

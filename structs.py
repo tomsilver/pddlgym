@@ -65,18 +65,22 @@ class Predicate(object):
         Whether this Predicate is anti (as in a 
         negative effect).
     """
-    def __init__(self, name, arity, var_types=None, is_negative=False, is_anti=False):
+    def __init__(self, name, arity, var_types=None, is_negative=False, is_anti=False,
+                 negated_as_failure=False):
         self.name = name
         self.arity = arity
         self.var_types = var_types
         self.is_negative = is_negative
+        self.negated_as_failure = negated_as_failure
         self.is_anti = is_anti
 
     def __call__(self, *variables):
         return Literal(self, list(variables))
 
     def __str__(self):
-        if self.is_negative:
+        if self.negated_as_failure:
+            neg_prefix = '~'
+        elif self.is_negative:
             neg_prefix = "Not"
         elif self.is_anti:
             neg_prefix = "Anti"
@@ -101,18 +105,23 @@ class Predicate(object):
 
     @property
     def positive(self):
-        return Predicate(self.name, self.arity, self.var_types,
+        return self.__class__(self.name, self.arity, self.var_types,
             is_anti=self.is_anti)
 
     @property
     def negative(self):
-        return Predicate(self.name, self.arity, self.var_types, is_negative=True,
+        return self.__class__(self.name, self.arity, self.var_types, is_negative=True,
             is_anti=self.is_anti)
 
     @property
     def inverted_anti(self):
         assert not self.is_negative
-        return Predicate(self.name, self.arity, self.var_types, is_anti=(not self.is_anti))
+        return self.__class__(self.name, self.arity, self.var_types, is_anti=(not self.is_anti))
+
+    def negate_as_failure(self):
+        assert not self.negated_as_failure
+        return Predicate(self.name, self.arity, self.var_types, 
+            negated_as_failure=True, is_anti=self.is_anti)
 
     def pddl_variables(self):
         variables = []
@@ -128,6 +137,8 @@ class Predicate(object):
         if self.is_negative:
             return "(not ({} {}))".format(self.positive, " ".join(
                 self.pddl_variables()))
+        if self.negated_as_failure:
+            raise NotImplementedError
         return "({} {})".format(self, " ".join(self.pddl_variables()))
 
 ### Literals ###
@@ -147,6 +158,7 @@ class Literal:
         self.variables = variables
         self.is_negative = predicate.is_negative
         self.is_anti = predicate.is_anti
+        self.negated_as_failure = predicate.negated_as_failure
 
         # Verify types
         if self.predicate.var_types is not None:
@@ -177,15 +189,21 @@ class Literal:
 
     @property
     def positive(self):
-        return Literal(self.predicate.positive, [v for v in self.variables])
+        return self.__class__(self.predicate.positive, [v for v in self.variables])
 
     @property
     def negative(self):
-        return Literal(self.predicate.negative, [v for v in self.variables])
+        return self.__class__(self.predicate.negative, [v for v in self.variables])
 
     @property
     def inverted_anti(self):
-        return Literal(self.predicate.inverted_anti, [v for v in self.variables])
+        return self.__class__(self.predicate.inverted_anti, [v for v in self.variables])
+
+    def negate_as_failure(self):
+        if self.negated_as_failure:
+            return self.positive
+        naf_predicate = self.predicate.negate_as_failure()
+        return naf_predicate(*self.variables)
 
     def pddl_variables(self):
         return [v.replace("(", "").replace(")", "").replace(",", "")
@@ -202,12 +220,9 @@ class Literal:
         if self.is_negative:
             return "(not ({} {}))".format(self.predicate.positive, " ".join(
                 self.pddl_variables()))
+        if self.negated_as_failure:
+            raise NotImplementedError
         return "({} {})".format(self.predicate, " ".join(self.pddl_variables()))
-
-    def holds(self, state):
-        assert not self.is_anti
-        return ((self in state and not self.is_negative) or
-                (self not in state and self.is_negative))
 
 
 class LiteralConjunction:
@@ -292,12 +307,15 @@ class ForAll:
     """Represents a ForAll over the given variable in the given literal.
     variable is a structs.TypedEntity.
     """
-    def __init__(self, literal, variable):
+    def __init__(self, literal, variables):
+        if isinstance(variables, str): 
+            variables = [variables]
+
         self.literal = literal
-        self.variable = variable
+        self.variables = variables
 
     def __str__(self):
-        return "FORALL ({}) : {}".format(self.variable, self.literal)
+        return "FORALL ({}) : {}".format(self.variables, self.literal)
 
     def __repr__(self):
         return str(self)
@@ -307,6 +325,30 @@ class ForAll:
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+class Exists:
+    """
+    """
+    def __init__(self, variables, literal):
+        self.variables = variables
+        self.body = literal
+
+    def __str__(self):
+        return "EXISTS ({}) : {}".format(self.variables, str(self.body))
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def pddl_str(self):
+        body_str = self.body.pddl_str()
+        var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
+        return "(exists ({}) {})".format(var_str, body_str)
 
 
 ### Helpers ###
@@ -329,6 +371,25 @@ def Anti(x):  # pylint:disable=invalid-name
     assert isinstance(x, Literal)
     new_predicate = Anti(x.predicate)
     return new_predicate(*x.variables)
+
+def Effect(x):  # pylint:disable=invalid-name
+    """An effect predicate or literal.
+    """
+    assert not x.negated_as_failure
+    if isinstance(x, Predicate):
+        return Predicate("Effect"+x.name, x.arity, var_types=x.var_types,
+            is_negative=x.is_negative, is_anti=x.is_anti)
+    assert isinstance(x, Literal)
+    new_predicate = Effect(x.predicate)
+    return new_predicate(*x.variables)
+
+def effect_to_literal(literal):
+    assert isinstance(literal, Literal)
+    assert literal.predicate.name.startswith("Effect")
+    non_effect_pred = Predicate(literal.predicate.name[len("Effect"):], literal.predicate.arity,
+        literal.predicate.var_types, negated_as_failure=literal.predicate.negated_as_failure,
+        is_negative=literal.predicate.is_negative, is_anti=literal.predicate.is_anti)
+    return non_effect_pred(*literal.variables)
 
 
 def ground_literal(lifted_lit, assignments):
