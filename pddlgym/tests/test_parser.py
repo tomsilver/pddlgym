@@ -51,7 +51,7 @@ def integration_test():
     ## Check problem
 
     # Objects
-    assert set(problem.objects) == {type1('a1'), type1('a2'), type1('b1'),
+    assert problem.objects == {type1('a1'), type1('a2'), type1('b1'),
         type1('b2'), type1('b3'), type2('c1'), type2('c2'), type2('d1'), 
         type2('d2'), type2('d3')}
 

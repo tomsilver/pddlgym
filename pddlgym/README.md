@@ -4,10 +4,6 @@
 
 **This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/).**
 
-## Paper
-
-Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design decisions and implementation details behind PDDLGym.
-
 ## Status
 
 **The following PDDL features are not yet supported:**
@@ -19,8 +15,6 @@ Several PDDL environments are included, including
 - Sokoban
 - Depot
 - Blocks
-- Keys and Doors
-- Towers of Hanoi
 - "Minecraft"
 - "Rearrangement"
 - "Travel"
@@ -75,7 +69,7 @@ Create a domain PDDL file and one or more problem PDDL files. (See important not
 
 **Note 2:** PDDLGym requires that certain predicates are special "predicate actions". For example, in Sokoban, we add a `(Move ?dir - direction)` predicate. Action predicates must be incorporated in four places:
 1. Alongside the typical predicate declarations in the domain file.
-2. In a space-separated list of format `; (:actions <action predicate name 1> <action predicate name 2> ...)` in the domain file. (Note the semicolon at the beginning!)
+2. In a space-separated list of format `; (:actions <action predicate name 1> <action predicate name 2>)` in the domain file. (Note the semicolon at the beginning!)
 3. One variable-grounded action predicate should appear in the preconditions of every operator in the domain file.
 4. In each problem file, all possible ground actions should be listed alongside the other :init declarations.
 See `pddl/sokoban.pddl` and `pddl/sokoban/problem1.pddl` for an example to follow.
@@ -87,17 +81,3 @@ The rationale for distinguishing actions from operators is related to the bounda
 
 ### Step 3: Register Gym environment
 * Update `__init__.py` to register your new environment. For example, `register_pddl_env("rearrangement", rearrangement_render)`.
-
-## Citation
-
-Please use this bibtex if you want to cite this repository in your publications:
-```
-@misc{silver2020pddlgym,
-    title={PDDLGym: Gym Environments from PDDL Problems},
-    author={Tom Silver and Rohan Chitnis},
-    year={2020},
-    eprint={2002.06432},
-    archivePrefix={arXiv},
-    primaryClass={cs.AI}
-}
-```
