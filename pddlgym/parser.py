@@ -1,7 +1,7 @@
 """PDDL parsing.
 """
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
-                     Not, Anti, ForAll, TypedEntity, ground_literal)
+                     Not, Anti, ForAll, Exists, TypedEntity, ground_literal)
 
 import re
 
@@ -38,7 +38,7 @@ class Operator:
         precond_strs = []
         for term in preconds.literals:
             params = set(map(str, term.variables))
-            if hasattr(term, 'negated_as_failure') and term.negated_as_failure:
+            if term.negated_as_failure:
                 # Negative term. The variables to universally
                 # quantify over are those which we have not
                 # encountered yet in this clause.
@@ -125,12 +125,15 @@ class PDDLParser:
         return self.predicates[pred](*args)
 
     def _parse_objects(self, objects):
-        objects = objects[9:-1].strip()
-        if objects.find("\n") == -1:
-            assert not self.uses_typing
-            objects = objects.split()
-        else:
+        if objects.find("\n") != -1:
             objects = objects.split("\n")
+        elif self.uses_typing:
+            # Must be one object then; assumes that typed objects are new-line separated
+            assert objects.count(" - ") == 1
+            objects = [objects]
+        else:
+            # Space-separated
+            objects = objects.split()
         to_return = set()
         for obj in objects:
             if self.uses_typing:
@@ -385,6 +388,7 @@ class PDDLProblemParser(PDDLParser):
     def _parse_problem_objects(self):
         start_ind = re.search(r"\(:objects", self.problem).start()
         objects = self._find_balanced_expression(self.problem, start_ind)
+        objects = objects[9:-1].strip()
         self.objects = self._parse_objects(objects)
 
     def _parse_problem_initial_state(self):

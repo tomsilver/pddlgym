@@ -39,7 +39,7 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("doors", 2, render=render, verbose=verbose)
     # demo_ff_planning("doors", 10, render=render, test=True, verbose=verbose)
     # demo_ff_planning("casino", 1, render=render, verbose=verbose)
-    # demo_ff_planning("casino", 4, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("casino", 1, render=render, test=True, verbose=verbose)
     # demo_ff_planning("hanoi", 4, render=render, verbose=verbose)
     # demo_ff_planning("hanoi", 4, render=render, test=True, verbose=verbose)
     # demo_ff_planning("tsp", 2, render=render, verbose=verbose)
