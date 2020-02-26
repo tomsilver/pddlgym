@@ -63,7 +63,6 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
             video_path = os.path.join(outdir, 'planning_{}_{}_{}_demo.gif'.format(
                 planner_name, env.spec.id, problem_idx))
         else:
-            import ipdb; ipdb.set_trace()
             video_path = os.path.join(outdir, 'planning_{}_{}_demo.gif'.format(
                 planner_name, env.spec.id))
         env = VideoWrapper(env, video_path, fps=fps)
