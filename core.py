@@ -174,7 +174,8 @@ class PDDLEnv(gym.Env):
         """
         return {'problem_file' : self._problem.problem_fname, 
                 'domain_file' : self.domain.domain_fname,
-                'objects' : self._problem.objects}
+                'objects' : self._problem.objects,
+                'image' : self.render()}
 
     def _select_operator(self, action):
         """
