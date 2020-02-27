@@ -1,5 +1,5 @@
-(define (problem blocks)
-    (:domain blocks)
+(define (problem easyblocks)
+    (:domain easyblocks)
     (:objects 
         A - block
         B - block
