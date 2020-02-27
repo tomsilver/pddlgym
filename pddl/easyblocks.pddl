@@ -2,7 +2,7 @@
 ;;; 4 Op-blocks world
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (domain BLOCKS)
+(define (domain easyblocks)
     (:requirements :strips :typing)
     (:types block robot)
     (:predicates 
