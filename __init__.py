@@ -54,4 +54,4 @@ register_pddl_env("ferry", is_test_env=True)
 register_pddl_env("meetpass")
 register_pddl_env("meetpass", is_test_env=True)
 register_pddl_env("easyblocks", blocks_render)
-
+register_pddl_env("easyblocks", blocks_render, is_test_env=True)
