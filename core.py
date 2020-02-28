@@ -22,6 +22,7 @@ from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 
 from collections import defaultdict
 
+import copy
 import glob
 import gym
 import os
@@ -52,15 +53,20 @@ class PDDLEnv(gym.Env):
     dynamic_action_space : bool
         Let self.action_space dynamically change on each iteration to
         include only valid actions (must match operator preconditions).
+    compute_approx_reachable_set : bool
+        On each step, compute the approximate reachable set of literals under
+        the delete-relaxed version of the domain. Add it to info dict.
     """
     def __init__(self, domain_file, problem_dir, render=None, seed=0,
                  raise_error_on_invalid_action=False,
-                 dynamic_action_space=False):
+                 dynamic_action_space=False,
+                 compute_approx_reachable_set=False):
         self._domain_file = domain_file
         self._problem_dir = problem_dir
         self._render = render
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
+        self._compute_approx_reachable_set = compute_approx_reachable_set
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
@@ -80,6 +86,9 @@ class PDDLEnv(gym.Env):
         # Initialize observation space with problem-independent components
         self._observation_space = LiteralSetSpace(
             set(self.domain.predicates.values()) - set(self.action_predicates))
+
+        if self._compute_approx_reachable_set:
+            self._delete_relaxed_ops = self._get_delete_relaxed_ops()
 
     @staticmethod
     def load_pddl(domain_file, problem_dir):
@@ -180,10 +189,45 @@ class PDDLEnv(gym.Env):
         Contains the problem file, domain file, and objects
         for interaction with a planner.
         """
-        return {'problem_file' : self._problem.problem_fname, 
+        info = {'problem_file' : self._problem.problem_fname,
                 'domain_file' : self.domain.domain_fname,
                 'objects' : self._problem.objects,
                 'image' : self.render()}
+        if self._compute_approx_reachable_set:
+            info['approx_reachable_set'] = self._get_approx_reachable_set()
+        return info
+
+    def _get_delete_relaxed_ops(self):
+        relaxed_ops = {}
+        for name, operator in self.domain.operators.items():
+            relaxed_op = copy.deepcopy(operator)
+            for precond in operator.preconds.literals:
+                if precond.is_negative:
+                    relaxed_op.preconds.literals.remove(precond)
+                assert not precond.is_anti, "Should be impossible"
+            for effect in operator.effects.literals:
+                assert not effect.is_negative, "Should be impossible"
+                if effect.is_anti:
+                    relaxed_op.effects.literals.remove(effect)
+            relaxed_ops[name] = relaxed_op
+        return relaxed_ops
+
+    def _get_approx_reachable_set(self):
+        obs = self._get_observation()
+        old_ops = self.domain.operators
+        self.domain.operators = self._delete_relaxed_ops
+        prev_len = 0
+        while prev_len != len(obs):  # do the fixed-point iteration
+            prev_len = len(obs)
+            for action in self.action_space.all_ground_literals():
+                selected_operator, assignment = self._select_operator(action)
+                if assignment is not None:
+                    for lifted_effect in selected_operator.effects.literals:
+                        effect = ground_literal(lifted_effect, assignment)
+                        assert not effect.is_anti  # should be relaxed
+                        obs.add(effect)
+        self.domain.operators = old_ops
+        return obs
 
     def _select_operator(self, action):
         """
