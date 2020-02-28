@@ -45,6 +45,7 @@ for env_name, render_fn in [
         "raise_error_on_invalid_action": False,
         "dynamic_action_space": False,
         "compute_approx_reachable_set": False,
+        "shape_reward": False,
     }
     for is_test in [False, True]:
         register_pddl_env(env_name, render_fn, is_test, other_args)

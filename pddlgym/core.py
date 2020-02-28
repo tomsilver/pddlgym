@@ -15,10 +15,11 @@ Usage example:
 >>> action = env.action_space.sample()
 >>> obs, reward, done, debug_info = env.step(action)
 """
-from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
+from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
 from pddlgym.structs import ground_literal
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
+from pddlgym.planning import get_fd_optimal_plan_cost
 
 from collections import defaultdict
 
@@ -56,17 +57,25 @@ class PDDLEnv(gym.Env):
     compute_approx_reachable_set : bool
         On each step, compute the approximate reachable set of literals under
         the delete-relaxed version of the domain. Add it to info dict.
+    shape_reward : bool
+        Whether to shape the reward by evaluating the state against the
+        cost given by an optimal planner. Shaped reward is: 1 for goal
+        state, 0 for initial state, and any other state gives reward
+        (-inf, 1) normalized based on the optimal distance between the
+        initial state and the goal.
     """
     def __init__(self, domain_file, problem_dir, render=None, seed=0,
                  raise_error_on_invalid_action=False,
                  dynamic_action_space=False,
-                 compute_approx_reachable_set=False):
+                 compute_approx_reachable_set=False,
+                 shape_reward=False):
         self._domain_file = domain_file
         self._problem_dir = problem_dir
         self._render = render
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
         self._compute_approx_reachable_set = compute_approx_reachable_set
+        self._shape_reward = shape_reward
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
@@ -165,7 +174,25 @@ class PDDLEnv(gym.Env):
         # The action and observation spaces depend on the objects
         self._action_space.update(self._problem.objects)
         self._observation_space.update(self._problem.objects)
-        return self._get_observation(), self._get_debug_info()
+        debug_info = self._get_debug_info()
+        if self._shape_reward:
+            # Update problem file by ordering objects, init, and goal properly.
+            with open(debug_info["problem_file"], "r") as f:
+                problem = f.read().lower()
+            obj_ind = problem.index("(:objects")
+            objects = PDDLParser._find_balanced_expression(problem, obj_ind)
+            init_ind = problem.index("(:init")
+            init = PDDLParser._find_balanced_expression(problem, init_ind)
+            goal_ind = problem.index("(:goal")
+            goal = PDDLParser._find_balanced_expression(problem, goal_ind)
+            start = problem[:min(obj_ind, init_ind, goal_ind)]
+            updated_problem = start+objects+"\n"+init+"\n"+goal+"\n)"
+            with open("updated_problem.pddl", "w") as f:
+                f.write(updated_problem)
+            self._initial_distance = get_fd_optimal_plan_cost(
+                debug_info["domain_file"], "updated_problem.pddl")
+            os.remove("updated_problem.pddl")
+        return self._get_observation(), debug_info
 
     def _get_observation(self):
         """
@@ -302,6 +329,31 @@ class PDDLEnv(gym.Env):
         else:
             reward = 0.
             done = False
+
+        if self._shape_reward:
+            # Update problem file to contain current state.
+            with open(debug_info["problem_file"], "r") as f:
+                problem = f.read().lower()
+            obj_ind = problem.index("(:objects")
+            objects = PDDLParser._find_balanced_expression(problem, obj_ind)
+            init_ind = problem.index("(:init")
+            init = "(:init\n"
+            for lit in obs:
+                init += lit.pddl_str()+"\n"
+            for lit in self._state:
+                if lit.predicate.name in self.domain.actions:
+                    init += lit.pddl_str()+"\n"
+            init += "\n)"
+            goal_ind = problem.index("(:goal")
+            goal = PDDLParser._find_balanced_expression(problem, goal_ind)
+            start = problem[:min(obj_ind, init_ind, goal_ind)]
+            updated_problem = start+objects+"\n"+init+"\n"+goal+"\n)"
+            with open("updated_problem.pddl", "w") as f:
+                f.write(updated_problem)
+            distance = get_fd_optimal_plan_cost(
+                debug_info["domain_file"], "updated_problem.pddl")
+            os.remove("updated_problem.pddl")
+            reward = 1.0-distance/self._initial_distance  # range: (-inf, 1]
 
         return obs, reward, done, debug_info
 

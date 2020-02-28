@@ -40,8 +40,10 @@ def run_random_agent_demo(env, outdir='/tmp', max_num_steps=10, fps=3,
         if verbose:
             print("Act:", action)
 
-        obs, _, done, _ = env.step(action)
+        obs, reward, done, _ = env.step(action)
         env.render()
+        if verbose:
+            print("Rew:", reward)
 
         if done:
             break
@@ -87,6 +89,8 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
         obs, reward, done, _ = env.step(action)
         env.render()
         tot_reward += reward
+        if verbose:
+            print("Rew:", reward)
 
         if done:
             break
