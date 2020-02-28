@@ -12,10 +12,12 @@ import itertools
 
 class LiteralSpace(Space):
 
-    def __init__(self, predicates):
+    def __init__(self, predicates,
+                 lit_valid_test=lambda lit: True):
         self.predicates = sorted(predicates)
         self.num_predicates = len(predicates)
         self.objects = set()
+        self.lit_valid_test = lit_valid_test
         super().__init__()
 
     def update(self, objs):
@@ -30,17 +32,21 @@ class LiteralSpace(Space):
         self._all_ground_literals = sorted(self._compute_all_ground_literals())
 
     def sample_hierarchically(self):
-        # Sample a random predicate
-        idx = self.np_random.choice(self.num_predicates)
-        predicate = self.predicates[idx]
+        while True:
+            # Sample a random predicate
+            idx = self.np_random.choice(self.num_predicates)
+            predicate = self.predicates[idx]
 
-        # Sample grounding
-        grounding = []
-        for var_type in predicate.var_types:
-            choices = self.type_to_objs[var_type]
-            choice = choices[self.np_random.choice(len(choices))]
-            grounding.append(choice)
-        return predicate(*grounding)
+            # Sample grounding
+            grounding = []
+            for var_type in predicate.var_types:
+                choices = self.type_to_objs[var_type]
+                choice = choices[self.np_random.choice(len(choices))]
+                grounding.append(choice)
+            lit = predicate(*grounding)
+            if self.lit_valid_test(lit):
+                break
+        return lit
 
     def sample_literal(self):
         num_lits = len(self._all_ground_literals)
@@ -61,8 +67,10 @@ class LiteralSpace(Space):
                 if len(set(choice)) != len(choice):
                     continue
                 lit = predicate(*choice)
-                all_ground_literals.add(lit)
+                if self.lit_valid_test(lit):
+                    all_ground_literals.add(lit)
         return all_ground_literals
+
 
 class LiteralSetSpace(LiteralSpace):
 
