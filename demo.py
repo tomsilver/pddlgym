@@ -15,7 +15,6 @@ def demo_ff_planning(env_name, num_problems, render=True, test=False, verbose=Tr
         gym_name += "Test"
     env = gym.make("PDDLEnv{}-v0".format(gym_name))
     if not render: env._render = None
-    env.raise_error_on_invalid_action = True
     for problem_index in range(num_problems):
         env.fix_problem_index(problem_index)
         run_planning_demo(env, 'ff', verbose=verbose)
