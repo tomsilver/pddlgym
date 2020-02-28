@@ -8,7 +8,10 @@ def test_pddlenv():
     domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
     problem_dir = os.path.join(dir_path, 'pddl', 'test_domain')
 
-    env = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True)
+    env = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True,
+                  dynamic_action_space=True)
+    env2 = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True,
+                   dynamic_action_space=False)
 
     type1 = Type('type1')
     type2 = Type('type2')
@@ -33,6 +36,10 @@ def test_pddlenv():
         assert False, "Action was supposed to be invalid"
     except InvalidAction:
         pass
+
+    assert action not in env.action_space.all_ground_literals(), "Dynamic action space not working"
+    env2.reset()
+    assert action in env2.action_space.all_ground_literals(), "Dynamic action space not working"
 
     # Valid args
     action = action_pred('b2')
