@@ -11,7 +11,6 @@ def demo_ff_planning(env_name, wrapper_args, num_problems, render=True, test=Fal
         gym_name += "Test"
     env = gym.make("PDDLEnv{}-v0".format(gym_name))
     if not render: env._render = None
-    env.raise_error_on_invalid_action = True
 
     env = ProbabilisticWrapper(env, *wrapper_args)
     for problem_index in range(num_problems):
