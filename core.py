@@ -49,9 +49,13 @@ class PDDLEnv(gym.Env):
         When an action is taken for which no operator's
         preconditions holds, raise InvalidAction() if True;
         otherwise silently make no changes to the state.
+    dynamic_action_space : bool
+        Let self.action_space dynamically change on each iteration to
+        include only valid actions (must match operator preconditions).
     """
     def __init__(self, domain_file, problem_dir, render=None, seed=0,
-                 raise_error_on_invalid_action=False):
+                 raise_error_on_invalid_action=False,
+                 dynamic_action_space=False):
         self._domain_file = domain_file
         self._problem_dir = problem_dir
         self._render = render
@@ -67,7 +71,11 @@ class PDDLEnv(gym.Env):
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
         self.action_predicates = [self.domain.predicates[a] for a in actions]
-        self._action_space = LiteralSpace(self.action_predicates)
+        if dynamic_action_space:
+            self._action_space = LiteralSpace(
+                self.action_predicates, lit_valid_test=self._action_valid_test)
+        else:
+            self._action_space = LiteralSpace(self.action_predicates)
 
         # Initialize observation space with problem-independent components
         self._observation_space = LiteralSetSpace(
@@ -258,6 +266,10 @@ class PDDLEnv(gym.Env):
         Used to calculate reward.
         """
         return self._goal.holds(self._state)
+
+    def _action_valid_test(self, action):
+        _, assignment = self._select_operator(action)
+        return assignment is not None
 
     def _execute_effects(self, lifted_effects, assignments):
         """
