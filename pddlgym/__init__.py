@@ -40,6 +40,8 @@ for env_name, render_fn in [
         ("ferry", None),
         ("meetpass", None),
         ("easyblocks", blocks_render),
+        ("conditionalblocks", blocks_render),
+        ("conditionalferry", None),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
