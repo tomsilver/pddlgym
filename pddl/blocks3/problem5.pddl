@@ -9,7 +9,7 @@
     (:init
         (clear A)
         (on A B)
-        (on B C)
+        (ontable B)
         (ontable C)
         (handempty robot)
 

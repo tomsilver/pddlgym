@@ -51,14 +51,14 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("startprizecasino", 10, render=render, test=True, verbose=verbose)
     # demo_ff_planning("blocks2", 3, render=render, verbose=verbose)
     # demo_ff_planning("blocks2", 3, render=render, test=True, verbose=verbose)
-    # demo_ff_planning("blocks3", 3, render=render, verbose=verbose)
-    # demo_ff_planning("blocks3", 3, render=render, test=True, verbose=verbose)
-    # demo_ff_planning("blocks4", 3, render=render, verbose=verbose)
-    # demo_ff_planning("blocks4", 3, render=render, test=True, verbose=verbose)
+    demo_ff_planning("blocks3", 3, render=render, verbose=verbose)
+    demo_ff_planning("blocks3", 3, render=render, test=True, verbose=verbose)
+    demo_ff_planning("blocks4", 3, render=render, verbose=verbose)
+    demo_ff_planning("blocks4", 3, render=render, test=True, verbose=verbose)
     # demo_ff_planning("blocks5", 3, render=render, verbose=verbose)
     # demo_ff_planning("blocks5", 3, render=render, test=True, verbose=verbose)
-    demo_ff_planning("blocks6", 3, render=render, verbose=verbose)
-    demo_ff_planning("blocks6", 3, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks6", 3, render=render, verbose=verbose)
+    # demo_ff_planning("blocks6", 3, render=render, test=True, verbose=verbose)
 
 
 if __name__ == '__main__':
