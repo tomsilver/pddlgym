@@ -11,8 +11,8 @@
         (clear C)
         (ontable B)
         (ontable C)
-        (holding A)
-        (handfull robot)
+        (ontable A)
+        (handempty robot)
 
         ; Action literals
         (PickUp A)
