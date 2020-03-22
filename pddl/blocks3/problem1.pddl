@@ -9,6 +9,7 @@
     (:init
         (clear B)
         (clear C)
+        (clear A)
         (ontable B)
         (ontable C)
         (ontable A)
