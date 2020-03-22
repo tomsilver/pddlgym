@@ -8,7 +8,8 @@
     )
     (:init
         (clear B)
-        (on B C)
+        (clear C)
+        (ontable B)
         (ontable C)
         (holding A)
         (handfull robot)

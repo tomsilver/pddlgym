@@ -8,13 +8,11 @@
         robot - robot
     )
     (:init
-        (clear B)
         (clear A)
-        (clear C)
+        (on A B)
+        (on B C)
         (on C D)
         (ontable D)
-        (ontable A)
-        (ontable B)
         (handempty robot)
 
         ; Action literals
@@ -43,5 +41,5 @@
         (Stack D C)
         (Stack D A)
     )
-    (:goal (and (on A B) (on C D)))
+    (:goal (and (on B A) (on D C)))
 )

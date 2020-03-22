@@ -380,7 +380,7 @@ class PDDLProblemParser(PDDLParser):
         self.problem_name = re.search(patt, self.problem).groups()[0].strip()
         patt = r"\(:domain(.*?)\)"
         domain_name = re.search(patt, self.problem).groups()[0].strip()
-        assert domain_name == self.domain_name, "Problem file doesn't match the domain file!"
+        # assert domain_name == self.domain_name, "Problem file doesn't match the domain file!"
         self._parse_problem_objects()
         self._parse_problem_initial_state()
         self._parse_problem_goal()

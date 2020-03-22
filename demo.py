@@ -17,6 +17,7 @@ def demo_ff_planning(env_name, num_problems, render=True, test=False, verbose=Tr
     if not render: env._render = None
     env.raise_error_on_invalid_action = True
     for problem_index in range(num_problems):
+        print("problem_index", problem_index)
         env.fix_problem_index(problem_index)
         run_planning_demo(env, 'ff', verbose=verbose)
 
@@ -46,8 +47,19 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("atcasino", 10, render=render, test=True, verbose=verbose)
     # demo_ff_planning("gotocasino", 1, render=render, verbose=verbose)
     # demo_ff_planning("gotocasino", 10, render=render, test=True, verbose=verbose)
-    demo_ff_planning("startprizecasino", 1, render=render, verbose=verbose)
-    demo_ff_planning("startprizecasino", 10, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("startprizecasino", 1, render=render, verbose=verbose)
+    # demo_ff_planning("startprizecasino", 10, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks2", 3, render=render, verbose=verbose)
+    # demo_ff_planning("blocks2", 3, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks3", 3, render=render, verbose=verbose)
+    # demo_ff_planning("blocks3", 3, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks4", 3, render=render, verbose=verbose)
+    # demo_ff_planning("blocks4", 3, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks5", 3, render=render, verbose=verbose)
+    # demo_ff_planning("blocks5", 3, render=render, test=True, verbose=verbose)
+    demo_ff_planning("blocks6", 3, render=render, verbose=verbose)
+    demo_ff_planning("blocks6", 3, render=render, test=True, verbose=verbose)
+
 
 if __name__ == '__main__':
-    run_all()
+    run_all(render=False)

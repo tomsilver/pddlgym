@@ -8,7 +8,10 @@ import os
 
 def register_pddl_env(name, render=None, is_test_env=False):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
-    domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
+    domain_name = name
+    if name.startswith("blocks"):
+        domain_name = "blocks"
+    domain_file = os.path.join(dir_path, "{}.pddl".format(domain_name.lower()))
     gym_name = name.capitalize()
     problem_dirname = name.lower()
     if is_test_env:
@@ -49,3 +52,13 @@ register_pddl_env("gotocasino")
 register_pddl_env("gotocasino", is_test_env=True)
 register_pddl_env("startprizecasino")
 register_pddl_env("startprizecasino", is_test_env=True)
+register_pddl_env("blocks2")
+register_pddl_env("blocks2", is_test_env=True)
+register_pddl_env("blocks3")
+register_pddl_env("blocks3", is_test_env=True)
+register_pddl_env("blocks4")
+register_pddl_env("blocks4", is_test_env=True)
+register_pddl_env("blocks5")
+register_pddl_env("blocks5", is_test_env=True)
+register_pddl_env("blocks6")
+register_pddl_env("blocks6", is_test_env=True)
