@@ -101,7 +101,7 @@ class ProofSearchTree(object):
                 next_variable = variable
                 break
         if next_variable is None:
-            raise StopIteration()
+            return
 
         for possible_assignment in self.get_possible_assignments(next_variable, 
             node['variable_assignments'], goal_literals, verbose=verbose):
