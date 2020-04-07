@@ -118,7 +118,7 @@ def get_token_images(obs_cell):
         yield TOKEN_IMAGES[PLAYER]
     if obs_cell[KEY]:
         yield TOKEN_IMAGES[KEY]
-    raise StopIteration()
+    return
 
 def render(obs, mode='human', close=False):
     layout = build_layout(obs)
