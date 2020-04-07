@@ -101,7 +101,7 @@ def get_token_images(obs_cell):
         yield TOKEN_IMAGES[PLANK]
     if obs_cell[AGENT]:
         yield TOKEN_IMAGES[AGENT]
-    raise StopIteration()
+    return
 
 def render(obs, mode='human', close=False):
     layout = build_layout(obs)

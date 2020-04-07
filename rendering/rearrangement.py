@@ -89,7 +89,7 @@ def get_token_images(obs_cell):
         yield TOKEN_IMAGES[ROBOT_HOLDING_BEAR]
     if obs_cell[ROBOT_HOLDING_MONKEY]:
         yield TOKEN_IMAGES[ROBOT_HOLDING_MONKEY]
-    raise StopIteration()
+    return
 
 def render(obs, mode='human', close=False):
     layout = build_layout(obs)
