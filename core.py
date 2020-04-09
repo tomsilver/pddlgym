@@ -387,7 +387,9 @@ class PDDLEnv(gym.Env):
                 literal = effect.inverted_anti
                 if literal in new_state:
                     new_state.remove(literal)
-            else:
+        for lifted_effect in lifted_effects:
+            effect = ground_literal(lifted_effect, assignments)
+            if not effect.is_anti:
                 new_state.add(effect)
 
         self._state = new_state

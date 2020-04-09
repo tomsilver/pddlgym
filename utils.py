@@ -50,6 +50,7 @@ def run_random_agent_demo(env, outdir='/tmp', max_num_steps=10, fps=3,
 
     if verbose:
         print("Final obs:", obs)
+        print()
 
     env.close()
 
@@ -97,6 +98,7 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
 
     if verbose:
         print("Final obs:", obs)
+        print()
 
     env.close()
     if check_reward:
