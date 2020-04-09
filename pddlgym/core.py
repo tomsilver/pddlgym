@@ -65,8 +65,9 @@ class PDDLEnv(gym.Env):
                      initial state.
         - any heuristic in pyperplan.HEURISTICS:
               https://github.com/aibasel/pyperplan/tree/master/src/heuristics
-              e.g., "blind", "hadd", "hff", "hmax", "hsa", "landmark", "lmcut"
+              e.g., "blind", "hadd", "hff", "hmax", "hsa", "lmcut"
               Note that "blind" is equivalent to None.
+              Note that "landmark" is path-dependent and so disallowed.
               Gives rewards in the range (-inf, 1), with 1 for the goal state
               and 0 for the initial state.
     """
