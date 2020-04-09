@@ -3,6 +3,7 @@ import os
 import numpy as np
 import re
 import subprocess
+import pyperplan
 
 class PlanningException(Exception):
     pass
@@ -49,3 +50,14 @@ def get_fd_optimal_plan_cost(domain_file, problem_file, timeout=10):
     os.remove("sas_plan")
     cost = float(re.search(r"Plan cost: (.+)", output).groups()[0])
     return cost
+
+
+def get_pyperplan_heuristic(mode, domain_file, problem_file):
+    assert mode in pyperplan.HEURISTICS, "Invalid shape_reward_mode: {}".format(mode)
+    parser = pyperplan.Parser(domain_file, problem_file)
+    domain = parser.parse_domain()
+    problem = parser.parse_problem(domain)
+    task = pyperplan.grounding.ground(problem)
+    heuristic = pyperplan.HEURISTICS[mode](task)
+    root = pyperplan.search.searchspace.make_root_node(task.initial_state)
+    return heuristic(root)
