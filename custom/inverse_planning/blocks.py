@@ -16,4 +16,3 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
                  dynamic_action_space=True,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None)
-        import ipdb; ipdb.set_trace()
