@@ -217,7 +217,7 @@ class PDDLParser:
 class PDDLDomainParser(PDDLParser):
     """PDDL domain parsing class.
     """
-    def __init__(self, domain_fname, expect_action_preds=True):
+    def __init__(self, domain_fname, expect_action_preds=True, operators_as_actions=False):
         self.domain_fname = domain_fname
 
         ## These are the things that we will construct.
@@ -236,9 +236,7 @@ class PDDLDomainParser(PDDLParser):
             self.domain = f.read().lower()
 
         # Get action predicate names (not part of standard PDDL)
-        if not expect_action_preds:
-            self.actions = set()
-        else:
+        if expect_action_preds:
             self.actions = self._parse_actions()
 
         # Remove comments.
@@ -248,11 +246,27 @@ class PDDLDomainParser(PDDLParser):
         # Run parsing.
         self._parse_domain()
 
+        if operators_as_actions:
+            assert not expect_action_preds
+            self.actions = self._create_actions_from_operators()
+        elif not expect_action_preds:
+            self.actions = set()
+
     def _parse_actions(self):
         start_ind = re.search(r"\(:actions", self.domain).start()
         actions = self._find_balanced_expression(self.domain, start_ind)
         actions = actions[9:-1].strip()
         return set(actions.split())
+
+    def _create_actions_from_operators(self):
+        actions = set()
+        for name, operator in self.operators.items():
+            types = [p.var_type for p in operator.params]
+            action = Predicate(name, len(types), types)
+            assert name not in self.predicates, "Cannot have predicate with same name as operator"
+            self.predicates[name] = action
+            actions.add(action)
+        return actions
 
     def _parse_domain(self):
         patt = r"\(domain(.*?)\)"
@@ -435,8 +449,13 @@ class PDDLProblemParser(PDDLParser):
             self.initial_state, self.problem_name, self.domain_name, self.goal)
 
 
-def parse_plan_step(plan_step, operators, action_predicates):
+def parse_plan_step(plan_step, operators, action_predicates, operators_as_actions=False):
     plan_step_split = plan_step.split()
+
+    if operators_as_actions:
+        action_predicate = [a for a in action_predicates \
+            if a.name.lower() == plan_step_split[0].lower()][0]
+        return action_predicate(*plan_step_split[1:])
 
     # Get the operator from its name
     operator = None
@@ -449,6 +468,7 @@ def parse_plan_step(plan_step, operators, action_predicates):
     assert len(plan_step_split) == len(operator.params) + 1
     args = plan_step_split[1:]
     assignments = dict(zip(operator.params, args))
+
     for cond in operator.preconds.literals:
         if cond.predicate in action_predicates:
             ground_action = ground_literal(cond, assignments)
