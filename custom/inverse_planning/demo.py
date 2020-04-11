@@ -19,8 +19,10 @@ def demo_ff_planning(gym_name, num_problems, render=True, test=False, verbose=Tr
 def run_all(render=True, verbose=True):
     # demo_ff_planning("InversePlanningBlocks-v0", 5, render=render, verbose=verbose)
     # demo_random("InversePlanningBlocks-v0", render=render, verbose=verbose)
-    demo_ff_planning("InversePlanningGrid-v0", 5, render=render, verbose=verbose)
+    # demo_ff_planning("InversePlanningGrid-v0", 5, render=render, verbose=verbose)
     # demo_random("InversePlanningGrid-v0", render=render, verbose=verbose)
+    demo_ff_planning("InversePlanningIntrusionDetection-v0", 75, render=render, verbose=verbose)
+    demo_random("InversePlanningIntrusionDetection-v0", render=render, verbose=verbose)
 
 if __name__ == '__main__':
     run_all(render=True)

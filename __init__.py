@@ -65,3 +65,8 @@ register(
     id='InversePlanningGrid-v0',
     entry_point='pddlgym.custom.inverse_planning.grid:InversePlanningGridPDDLEnv',
 )
+
+register(
+    id='InversePlanningIntrusionDetection-v0',
+    entry_point='pddlgym.custom.inverse_planning.intrusion_detection:InversePlanningIntrusionDetectionPDDLEnv',
+)
