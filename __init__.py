@@ -60,3 +60,8 @@ register(
     id='InversePlanningBlocks-v0',
     entry_point='pddlgym.custom.inverse_planning.blocks:InversePlanningBlocksPDDLEnv',
 )
+
+register(
+    id='InversePlanningGrid-v0',
+    entry_point='pddlgym.custom.inverse_planning.grid:InversePlanningGridPDDLEnv',
+)

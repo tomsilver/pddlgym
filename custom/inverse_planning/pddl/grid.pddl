@@ -1,10 +1,10 @@
 (define (domain grid)
 (:requirements :strips :typing)
 (:types place shape key)
-(:predicates (conn ?x ?y - place)
+(:predicates (conn ?x - place ?y - place)
              (key-shape ?k - key ?s - shape)
              (lock-shape ?x - place ?s - shape)
-             (at ?r - key ?x - place )
+             (at ?r - key ?x - place)
 	     (at-robot ?x - place)
              (locked ?x - place)
              (carrying ?k - key)
@@ -13,7 +13,7 @@
 
 
 (:action unlock
-:parameters (?curpos ?lockpos - place ?key - key ?shape - shape)
+:parameters (?curpos - place ?lockpos - place ?key - key ?shape - shape)
 :precondition (and (conn ?curpos ?lockpos) (key-shape ?key ?shape)
                    (lock-shape ?lockpos ?shape) (at-robot ?curpos) 
                    (locked ?lockpos) (carrying ?key))
@@ -21,7 +21,7 @@
 )
 
 (:action move
-:parameters (?curpos ?nextpos - place)
+:parameters (?curpos - place ?nextpos - place)
 :precondition (and (at-robot ?curpos) (conn ?curpos ?nextpos) (open ?nextpos))
 :effect (and (at-robot ?nextpos) (not (at-robot ?curpos)))
 )
