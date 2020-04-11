@@ -54,3 +54,9 @@ for env_name, kwargs in [
     kwargs.update(other_args)
     for is_test in [False, True]:
         register_pddl_env(env_name, is_test, kwargs)
+
+## Register domains with custom classes
+register(
+    id='InversePlanningBlocks-v0',
+    entry_point='pddlgym.custom.inverse_planning.blocks:InversePlanningBlocksPDDLEnv',
+)
