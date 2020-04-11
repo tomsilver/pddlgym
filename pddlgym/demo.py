@@ -55,8 +55,11 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("easyblocks", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("conditionalblocks", 5, render=render, verbose=verbose)
     # demo_ff_planning("conditionalblocks", 5, render=render, test=True, verbose=verbose)
-    demo_ff_planning("conditionalferry", 4, render=render, verbose=verbose)
-    demo_ff_planning("conditionalferry", 4, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("conditionalferry", 4, render=render, verbose=verbose)
+    # demo_ff_planning("conditionalferry", 4, render=render, test=True, verbose=verbose)
+    # demo_ff_planning("blocks_operator_actions", 1, render=render, verbose=verbose)
+    demo_random("blocks_operator_actions", render=render, verbose=verbose)
+
 
 if __name__ == '__main__':
     run_all()
