@@ -17,7 +17,7 @@ Usage example:
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
-from pddlgym.structs import ground_literal
+from pddlgym.structs import ground_literal, Literal
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
@@ -279,7 +279,10 @@ class PDDLEnv(gym.Env):
         selected_operator = None
         assignment = None
         for operator in self.domain.operators.values():
-            conds = operator.preconds.literals
+            if isinstance(operator.preconds, Literal):
+                conds = [operator.preconds]
+            else:
+                conds = operator.preconds.literals
             assignments = find_satisfying_assignments(kb, conds)
             num_assignments = len(assignments)
             if num_assignments > 0:
