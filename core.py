@@ -284,20 +284,29 @@ class PDDLEnv(gym.Env):
         Helper function for step.
         """
         if self.operators_as_actions:
+            # There should be only one possible operator if actions are operators
+            possible_operators = set()
             for name, operator in self.domain.operators.items():
                 if name.lower() == action.predicate.name.lower():
-                    return operator, dict(zip(operator.params, action.variables))
+                    assert len(possible_operators) == 0
+                    possible_operators.add(operator)
+        else:
+            # Possibly multiple operators per action
+            possible_operators = set(self.domain.operators.values())
 
         # Knowledge base: literals in the state + action taken
         kb = self._get_observation() | { action }
 
         selected_operator = None
         assignment = None
-        for operator in self.domain.operators.values():
+        for operator in possible_operators:
             if isinstance(operator.preconds, Literal):
                 conds = [operator.preconds]
             else:
                 conds = operator.preconds.literals
+            # Necessary for binding the operator arguments to the variables
+            if self.operators_as_actions:
+                conds = [action.predicate(*operator.params)] + conds
             assignments = find_satisfying_assignments(kb, conds)
             num_assignments = len(assignments)
             if num_assignments > 0:

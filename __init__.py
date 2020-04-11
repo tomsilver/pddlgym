@@ -43,11 +43,11 @@ for env_name, kwargs in [
         ("conditionalblocks", {'render' : blocks_render}),
         ("conditionalferry", {}),
         ("blocks_operator_actions", {'render' : blocks_render, 
-                                     'operators_as_actions' : True}),
+                                     'operators_as_actions' : True,
+                                     'dynamic_action_space' : True}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
-        "dynamic_action_space": False,
         "compute_approx_reachable_set": False,
         "shape_reward_mode": None,
     }

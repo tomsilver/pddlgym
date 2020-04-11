@@ -27,6 +27,7 @@ def get_objects_from_obs(obs):
         bottom_to_pile[obj] = [obj]
         key = obj
         while key in on_links:
+            assert on_links[key] not in bottom_to_pile[obj]
             bottom_to_pile[obj].append(on_links[key])
             key = on_links[key]
 
