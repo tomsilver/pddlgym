@@ -242,7 +242,7 @@ class PDDLEnv(gym.Env):
         info = {'problem_file' : self._problem.problem_fname,
                 'domain_file' : self.domain.domain_fname,
                 'objects' : self._problem.objects,
-                'image' : self.render()}
+               }
         if self._compute_approx_reachable_set:
             info['approx_reachable_set'] = self._get_approx_reachable_set()
         return info
@@ -454,6 +454,26 @@ class PDDLEnv(gym.Env):
                 new_state.add(effect)
 
         self._state = new_state
+
+    def set_state(self, state):
+        """
+        For use with model-based methods.
+
+        Parameters
+        ----------
+        state : { Literal }
+        """
+        self._state = state
+
+    def get_state(self):
+        """
+        For use with model-based methods.
+
+        Returns
+        ----------
+        state : { Literal }
+        """
+        return self._state.copy()
 
     def render(self, *args, **kwargs):
         if self._render:
