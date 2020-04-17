@@ -76,7 +76,8 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     obs, debug_info = env.reset()
     plan = run_planner(debug_info['domain_file'], debug_info['problem_file'], planner_name)
 
-    actions = [parse_plan_step(s, env.domain.operators.values(), env.action_predicates) \
+    actions = [parse_plan_step(s, env.domain.operators.values(), 
+                env.action_predicates, operators_as_actions=env.operators_as_actions) \
                for s in plan]
     
     tot_reward = 0.

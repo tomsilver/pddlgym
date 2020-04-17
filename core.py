@@ -51,6 +51,9 @@ class PDDLEnv(gym.Env):
         When an action is taken for which no operator's
         preconditions holds, raise InvalidAction() if True;
         otherwise silently make no changes to the state.
+    operators_as_actions : bool
+        If True, the PDDL operators are treated as the actions.
+        Otherwise, actions must be specified separately in the PDDL file.
     dynamic_action_space : bool
         Let self.action_space dynamically change on each iteration to
         include only valid actions (must match operator preconditions).
@@ -73,6 +76,7 @@ class PDDLEnv(gym.Env):
     """
     def __init__(self, domain_file, problem_dir, render=None, seed=0,
                  raise_error_on_invalid_action=False,
+                 operators_as_actions=False,
                  dynamic_action_space=False,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None):
@@ -81,6 +85,7 @@ class PDDLEnv(gym.Env):
         self._render = render
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
+        self.operators_as_actions = operators_as_actions
         self._compute_approx_reachable_set = compute_approx_reachable_set
         self._shape_reward_mode = shape_reward_mode
 
@@ -88,7 +93,8 @@ class PDDLEnv(gym.Env):
         self._problem_index_fixed = False
 
         # Parse the PDDL files
-        self.domain, self.problems = self.load_pddl(domain_file, problem_dir)
+        self.domain, self.problems = self.load_pddl(domain_file, problem_dir,
+            operators_as_actions=self.operators_as_actions)
 
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
@@ -107,7 +113,7 @@ class PDDLEnv(gym.Env):
             self._delete_relaxed_ops = self._get_delete_relaxed_ops()
 
     @staticmethod
-    def load_pddl(domain_file, problem_dir):
+    def load_pddl(domain_file, problem_dir, operators_as_actions=False):
         """
         Parse domain and problem PDDL files.
 
@@ -117,13 +123,17 @@ class PDDLEnv(gym.Env):
             Path to a PDDL domain file.
         problem_dir : str
             Path to a directory of PDDL problem files.
+        operators_as_actions : bool
+            See class docstirng.
 
         Returns
         -------
         domain : PDDLDomainParser
         problems : [ PDDLProblemParser ]
         """
-        domain = PDDLDomainParser(domain_file)
+        domain = PDDLDomainParser(domain_file, 
+            expect_action_preds=(not operators_as_actions),
+            operators_as_actions=operators_as_actions)
         problems = []
         problem_files = [f for f in glob.glob(os.path.join(problem_dir, "*.pddl"))]
         for problem_file in sorted(problem_files):
@@ -273,16 +283,30 @@ class PDDLEnv(gym.Env):
         """
         Helper function for step.
         """
+        if self.operators_as_actions:
+            # There should be only one possible operator if actions are operators
+            possible_operators = set()
+            for name, operator in self.domain.operators.items():
+                if name.lower() == action.predicate.name.lower():
+                    assert len(possible_operators) == 0
+                    possible_operators.add(operator)
+        else:
+            # Possibly multiple operators per action
+            possible_operators = set(self.domain.operators.values())
+
         # Knowledge base: literals in the state + action taken
         kb = self._get_observation() | { action }
 
         selected_operator = None
         assignment = None
-        for operator in self.domain.operators.values():
+        for operator in possible_operators:
             if isinstance(operator.preconds, Literal):
                 conds = [operator.preconds]
             else:
                 conds = operator.preconds.literals
+            # Necessary for binding the operator arguments to the variables
+            if self.operators_as_actions:
+                conds = [action.predicate(*operator.params)] + conds
             assignments = find_satisfying_assignments(kb, conds)
             num_assignments = len(assignments)
             if num_assignments > 0:
