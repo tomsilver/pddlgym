@@ -49,15 +49,20 @@ class LiteralSpace(Space):
         return lit
 
     def sample_literal(self):
-        num_lits = len(self._all_ground_literals)
-        idx = self.np_random.choice(num_lits)
-        return self._all_ground_literals[idx]
+        while True:
+            num_lits = len(self._all_ground_literals)
+            idx = self.np_random.choice(num_lits)
+            lit = self._all_ground_literals[idx]
+            if self.lit_valid_test(lit):
+                break
+        return lit  
 
     def sample(self):
         return self.sample_literal()
 
     def all_ground_literals(self):
-        return set(self._all_ground_literals)
+        return set(l for l in self._all_ground_literals \
+                   if self.lit_valid_test(l))
 
     def _compute_all_ground_literals(self):
         all_ground_literals = set()
@@ -67,8 +72,7 @@ class LiteralSpace(Space):
                 if len(set(choice)) != len(choice):
                     continue
                 lit = predicate(*choice)
-                if self.lit_valid_test(lit):
-                    all_ground_literals.add(lit)
+                all_ground_literals.add(lit)
         return all_ground_literals
 
 
