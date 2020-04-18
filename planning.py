@@ -118,7 +118,6 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
         env = env.env
     except AttributeError:
         pass
-    print("Running async VI for {} iterations".format(vi_maxiters))
     # Record initial state
     initial_state = env.get_state()
     # Get all states
@@ -128,6 +127,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
     start = time.time()
     deltas = []
     while True:
+        print("Running async VI iteration {}/{}".format(itr, vi_maxiters), end='\r')
         if iter_plans and (itr % iter_plan_interval == 0):
             yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         state = env.sample_state()

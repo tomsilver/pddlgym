@@ -5,6 +5,7 @@ import gym
 import matplotlib.pyplot as plt
 import pddlgym
 import numpy as np
+import time
 
 
 def demo_random(gym_name, render=True, problem_index=0, verbose=True):
@@ -21,12 +22,14 @@ def demo_planning(planner_name, gym_name, num_problems, render=True, test=False,
         run_planning_demo(env, planner_name, verbose=verbose)
 
 def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100):
+    start_time = time.time()
     all_results = []
     env = gym.make(gym_name)
     test_env = gym.make(gym_name)
     env._render = None
     test_env._render = None
     for problem_index in range(num_problems):
+        print("\nRunning problem {}/{}".format(problem_index, num_problems))
         results_for_problem = []
         env.fix_problem_index(problem_index)
         env.reset()
@@ -37,6 +40,7 @@ def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_
             result = run_plan(test_env, plan, check_reward=False)
             results_for_problem.append(result)
         all_results.append(results_for_problem)
+    print("\nExperiment time:", time.time() - start_time)
     xs = np.arange(0, iter_plan_interval*len(results_for_problem), iter_plan_interval)
     ys = np.mean(all_results, axis=0)
     yerr = np.std(all_results, axis=0)
@@ -66,9 +70,12 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
-    run_async_vi_experiment("InversePlanningBlocks-v0", 75, vi_maxiters=10000, iter_plan_interval=100)
-    run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 75, vi_maxiters=10000, iter_plan_interval=100)
-    run_async_vi_experiment("InversePlanningGrid-v0", 75, vi_maxiters=10000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=10000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=10000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=10000, iter_plan_interval=100)
+
+    demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
+    demo_random("InversePlanningLogistics-v0", render=render, verbose=verbose)
 
 if __name__ == '__main__':
     run_all(render=True)

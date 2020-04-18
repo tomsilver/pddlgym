@@ -85,3 +85,8 @@ register(
     id='EasyInversePlanningIntrusionDetection-v0',
     entry_point='pddlgym.custom.inverse_planning.intrusion_detection:EasyInversePlanningIntrusionDetectionPDDLEnv',
 )
+
+register(
+    id='InversePlanningLogistics-v0',
+    entry_point='pddlgym.custom.inverse_planning.logistics:InversePlanningLogisticsPDDLEnv',
+)
