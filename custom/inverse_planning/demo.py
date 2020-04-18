@@ -20,8 +20,7 @@ def demo_planning(planner_name, gym_name, num_problems, render=True, test=False,
         env.fix_problem_index(problem_index)
         run_planning_demo(env, planner_name, verbose=verbose)
 
-def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500):
-    iter_plan_interval = 100
+def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100):
     all_results = []
     env = gym.make(gym_name)
     test_env = gym.make(gym_name)
@@ -57,16 +56,19 @@ def run_all(render=True, verbose=True):
     # demo_planning("avi", InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", "EasyInversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
-    # demo_random("InversePlanningBlocks-v0", render=render, verbose=verbose)
+    # demo_random("InversePlanningGrid-v0", render=render, verbose=verbose)
+    # demo_planning("ff", "EasyInversePlanningGrid-v0", 3, render=render, verbose=verbose)
     # demo_ff_planning("InversePlanningGrid-v0", 5, render=render, verbose=verbose)
     # demo_random("InversePlanningGrid-v0", render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningIntrusionDetection-v0", 1, render=render, verbose=verbose)
     # demo_random("InversePlanningIntrusionDetection-v0", render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningGrid-v0", 1, render=render, verbose=verbose)
-    # run_async_vi_experiment("InversePlanningBlocks-v0", 3)
-    run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
+    # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
-    # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
+    run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
+    # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=10, iter_plan_interval=1)
+    # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 75, vi_maxiters=10, iter_plan_interval=1)
+    # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=2, iter_plan_interval=1)
 
 if __name__ == '__main__':
     run_all(render=True)

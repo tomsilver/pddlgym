@@ -13,7 +13,7 @@ class InversePlanningGridPDDLEnv(PDDLEnv):
     def __init__(self, seed=0):
         super().__init__(self.domain_file, self.problem_dir, render=None, seed=seed,
                  raise_error_on_invalid_action=True,
-                 operators_as_actions=True,
+                 operators_as_actions=False,
                  dynamic_action_space=True,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None)
@@ -25,7 +25,11 @@ class InversePlanningGridPDDLEnv(PDDLEnv):
         self._locked = self.domain.predicates['locked'] # (locked ?x - place)
         self._carrying = self.domain.predicates['carrying'] # (carrying ?k - key)
         self._open = self.domain.predicates['open'] # (open ?x - place)
-        self._static_predicates = { self._conn, self._key_shape, self._lock_shape }
+        self._move = self.domain.predicates['move']
+        self._unlock = self.domain.predicates['unlock']
+        self._pickup = self.domain.predicates['pickup']
+        self._static_predicates = { self._conn, self._key_shape, self._lock_shape, 
+            self._move, self._unlock, self._pickup }
         self._rng = np.random.RandomState(seed=0)
 
     def sample_state(self):
