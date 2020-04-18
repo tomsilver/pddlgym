@@ -1,3 +1,4 @@
+from collections import defaultdict
 import sys
 import os
 import numpy as np
@@ -14,6 +15,8 @@ def run_planner(env, domain_file, problem_file, planner_name, **kwargs):
         return run_ff(domain_file, problem_file, **kwargs)
     if planner_name == "vi":
         return run_value_iteration(env, **kwargs)
+    if planner_name == "avi":
+        return run_async_value_iteration(env, **kwargs)
     raise Exception("Unknown planner `{}`".format(planner_name))
 
 def run_ff(domain_file, problem_file, horizon=np.inf, timeout=10):
@@ -108,7 +111,56 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
                 horizon=horizon)
         itr += 1
 
-def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
+def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_maxiters=10000, horizon=100, 
+                              avi_queue_size=1000):
+    # Ugly hack to deal with rendering...
+    try:
+        env = env.env
+    except AttributeError:
+        pass
+    print("Initializing value iteration...")
+    # Record initial state
+    initial_state = env.get_state()
+    # Get all states
+    qvals = defaultdict(float)
+    actions_for_state_cache = {}
+    print("Running async VI for {} iterations".format(vi_maxiters))
+    itr = 0
+    start = time.time()
+    deltas = []
+    while True:
+        state = env.sample_state()
+        frozen_state = frozenset(state)
+        env.set_state(state)
+        if frozen_state not in actions_for_state_cache:
+            actions_for_state_cache[frozen_state] = list(env.action_space.all_ground_literals())
+        actions_for_state = actions_for_state_cache[frozen_state]
+        for act in actions_for_state:
+            env.set_state(state)
+            _, rew, done, _ = env.step(act)
+            next_state = env.get_state()
+            frozen_next_state = frozenset(next_state)
+            if frozen_next_state not in actions_for_state_cache:
+                actions_for_state_cache[frozen_next_state] = list(env.action_space.all_ground_literals())
+            actions_for_next_state = actions_for_state_cache[frozen_next_state]
+            if done:
+                expec = 0
+            else:
+                expec = max(qvals[(frozen_next_state, na)] \
+                            for na in actions_for_next_state)
+            newval = rew + gamma*expec
+            deltas.append(abs(newval-qvals[(frozen_state, act)]))
+            deltas = deltas[-avi_queue_size:]
+            qvals[(frozen_state, act)] = newval
+        if len(deltas) == avi_queue_size and np.mean(deltas) < epsilon:
+            import ipdb; ipdb.set_trace()
+            return vi_finish_helper(env, initial_state, qvals, horizon=horizon)
+        if itr == vi_maxiters:
+            import ipdb; ipdb.set_trace()
+            return vi_finish_helper(env, initial_state, qvals, horizon=horizon)
+        itr += 1
+
+def vi_finish_helper(env, initial_state, qvals, actions_for_state=None, horizon=100):
     env.set_state(initial_state)
     plan = []
 
@@ -116,7 +168,11 @@ def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
         frozen_state = frozenset(env.get_state())
         best_act = None
         best_act_val = -np.inf
-        for a in actions_for_state[frozen_state]:
+        if actions_for_state is None:
+            actions_for_this_state = list(env.action_space.all_ground_literals())
+        else:
+            actions_for_this_state = actions_for_state[frozen_state]
+        for a in actions_for_this_state:
             val = qvals[(frozen_state, a)]
             if val > best_act_val:
                 best_act = a

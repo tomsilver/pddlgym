@@ -8,11 +8,13 @@ import numpy as np
 class InversePlanningBlocksPDDLEnv(PDDLEnv):
     """Blocks domain and problems from Ramirez & Geffner, 2010.
     """
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
+    domain_file = os.path.join(dir_path, "block-words.pddl")
+    problem_dir = os.path.join(dir_path, "block-words")
+
     def __init__(self, seed=0):
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
-        domain_file = os.path.join(dir_path, "block-words.pddl")
-        problem_dir = os.path.join(dir_path, "block-words")
-        super().__init__(domain_file, problem_dir, render=block_words_render, seed=seed,
+        super().__init__(self.domain_file, self.problem_dir, render=block_words_render, 
+                 seed=seed,
                  raise_error_on_invalid_action=True,
                  operators_as_actions=True,
                  dynamic_action_space=True,
@@ -109,6 +111,10 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
             for i in range(1, len(stack)):
                 state.add(self._on(stack[i-1], stack[i]))
         return state
+
+class EasyInversePlanningBlocksPDDLEnv(InversePlanningBlocksPDDLEnv):
+    dir_path = InversePlanningBlocksPDDLEnv.dir_path
+    problem_dir = os.path.join(dir_path, "easy-block-words")
 
 
 # Oooooomph
