@@ -49,10 +49,11 @@ class LiteralSpace(Space):
         return lit
 
     def sample_literal(self):
+        ground_lits = sorted(self.all_ground_literals())
         while True:
-            num_lits = len(self.all_ground_literals())
+            num_lits = len(ground_lits)
             idx = self.np_random.choice(num_lits)
-            lit = self.all_ground_literals()[idx]
+            lit = ground_lits[idx]
             if self.lit_valid_test(lit):
                 break
         return lit  

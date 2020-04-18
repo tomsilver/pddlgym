@@ -99,6 +99,7 @@ class PDDLEnv(gym.Env):
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
         self.action_predicates = [self.domain.predicates[a] for a in actions]
+        self.dynamic_action_space = dynamic_action_space
         if dynamic_action_space:
             self._action_space = LiteralSpace(
                 self.action_predicates, lit_valid_test=self._action_valid_test)

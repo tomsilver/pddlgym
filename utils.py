@@ -84,7 +84,9 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
             actions = [parse_plan_step(s, env.domain.operators.values(), 
                     env.action_predicates, operators_as_actions=env.operators_as_actions) \
                    for s in plan]
+    return run_plan(env, actions, verbose=verbose, check_reward=check_reward)
     
+def run_plan(env, actions, verbose=False, check_reward=True):
     tot_reward = 0.
     for action in actions:
         if verbose:

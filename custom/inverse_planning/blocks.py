@@ -26,7 +26,7 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
         self._on = self.domain.predicates['on']
         self._ontable = self.domain.predicates['ontable']
         self._handempty = self.domain.predicates['handempty']
-        self._rng = np.random.RandomState(seed=0)
+        self._rng = np.random.RandomState(seed=seed)
 
     def sample_state(self):
         blocks = self._extract_blocks_from_state(self._state)

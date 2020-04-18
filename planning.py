@@ -112,19 +112,18 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
         itr += 1
 
 def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_maxiters=10000, horizon=100, 
-                              avi_queue_size=1000):
+                              avi_queue_size=1000, iter_plans=False, iter_plan_interval=100):
     # Ugly hack to deal with rendering...
     try:
         env = env.env
     except AttributeError:
         pass
-    print("Initializing value iteration...")
+    print("Running async VI for {} iterations".format(vi_maxiters))
     # Record initial state
     initial_state = env.get_state()
     # Get all states
     qvals = defaultdict(float)
     actions_for_state_cache = {}
-    print("Running async VI for {} iterations".format(vi_maxiters))
     itr = 0
     start = time.time()
     deltas = []
@@ -132,17 +131,13 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
         state = env.sample_state()
         frozen_state = frozenset(state)
         env.set_state(state)
-        if frozen_state not in actions_for_state_cache:
-            actions_for_state_cache[frozen_state] = list(env.action_space.all_ground_literals())
-        actions_for_state = actions_for_state_cache[frozen_state]
+        actions_for_state = get_actions_for_state(state, actions_for_state_cache, env)
         for act in actions_for_state:
             env.set_state(state)
             _, rew, done, _ = env.step(act)
             next_state = env.get_state()
             frozen_next_state = frozenset(next_state)
-            if frozen_next_state not in actions_for_state_cache:
-                actions_for_state_cache[frozen_next_state] = list(env.action_space.all_ground_literals())
-            actions_for_next_state = actions_for_state_cache[frozen_next_state]
+            actions_for_next_state = get_actions_for_state(next_state, actions_for_state_cache, env)
             if done:
                 expec = 0
             else:
@@ -152,26 +147,37 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             deltas.append(abs(newval-qvals[(frozen_state, act)]))
             deltas = deltas[-avi_queue_size:]
             qvals[(frozen_state, act)] = newval
+        if iter_plans and (itr % iter_plan_interval == 0):
+            yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         if len(deltas) == avi_queue_size and np.mean(deltas) < epsilon:
-            import ipdb; ipdb.set_trace()
-            return vi_finish_helper(env, initial_state, qvals, horizon=horizon)
+            return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         if itr == vi_maxiters:
-            import ipdb; ipdb.set_trace()
-            return vi_finish_helper(env, initial_state, qvals, horizon=horizon)
+            return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         itr += 1
 
-def vi_finish_helper(env, initial_state, qvals, actions_for_state=None, horizon=100):
+def get_actions_for_state(state, cache, env):
+    if not env.dynamic_action_space:
+        if "all" not in cache:
+            cache["all"] = list(env.action_space.all_ground_literals())
+        return cache["all"]
+    frozen_state = frozenset(state)
+    if frozen_state not in cache:
+        state_before = env.get_state()
+        env.set_state(state)
+        cache[frozen_state] = list(env.action_space.all_ground_literals())
+        env.set_state(state_before)
+    return cache[frozen_state]
+
+def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
     env.set_state(initial_state)
     plan = []
 
     for _ in range(horizon):
-        frozen_state = frozenset(env.get_state())
+        state = env.get_state()
+        frozen_state = frozenset(state)
         best_act = None
         best_act_val = -np.inf
-        if actions_for_state is None:
-            actions_for_this_state = list(env.action_space.all_ground_literals())
-        else:
-            actions_for_this_state = actions_for_state[frozen_state]
+        actions_for_this_state = get_actions_for_state(state, actions_for_state, env)
         for a in actions_for_this_state:
             val = qvals[(frozen_state, a)]
             if val > best_act_val:

@@ -3,7 +3,6 @@
 	(:types host)
 	(:predicates
 		(recon-performed ?h - host)
-		(broke-into ?h - host)
 		(deleted-logs ?h - host)
 		(modified-files ?h - host)
 		(access-obtained ?h - host)

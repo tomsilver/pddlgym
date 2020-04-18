@@ -169,14 +169,17 @@ class Literal:
                 elif var.var_type != expected_type:
                     raise TypeError()
 
+        self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
+        self._hash = hash(self._str)
+
     def __str__(self):
-        return str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
+        return self._str
 
     def __repr__(self):
-        return str(self)
+        return self._str
 
     def __hash__(self):
-        return hash(repr(self))
+        return self._hash
 
     def __eq__(self, other):
         return repr(self) == repr(other)
