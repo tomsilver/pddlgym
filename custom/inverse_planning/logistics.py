@@ -16,3 +16,8 @@ class InversePlanningLogisticsPDDLEnv(PDDLEnv):
                  dynamic_action_space=True,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None)
+
+class EasyInversePlanningLogisticsPDDLEnv(InversePlanningLogisticsPDDLEnv):
+    dir_path = InversePlanningLogisticsPDDLEnv.dir_path
+    problem_dir = os.path.join(dir_path, "easy-logistics")
+

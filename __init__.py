@@ -90,3 +90,8 @@ register(
     id='InversePlanningLogistics-v0',
     entry_point='pddlgym.custom.inverse_planning.logistics:InversePlanningLogisticsPDDLEnv',
 )
+
+register(
+    id='EasyInversePlanningLogistics-v0',
+    entry_point='pddlgym.custom.inverse_planning.logistics:EasyInversePlanningLogisticsPDDLEnv',
+)
