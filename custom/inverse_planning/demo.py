@@ -63,7 +63,7 @@ def run_all(render=True, verbose=True):
     # demo_planning("avi", "InversePlanningGrid-v0", 1, render=render, verbose=verbose)
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 1, vi_maxiters=2500)
     # run_async_vi_experiment("InversePlanningBlocks-v0", 3)
-    run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 1, vi_maxiters=2500)
+    run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
 
 if __name__ == '__main__':
     run_all(render=True)
