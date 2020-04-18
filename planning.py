@@ -128,6 +128,8 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
     start = time.time()
     deltas = []
     while True:
+        if iter_plans and (itr % iter_plan_interval == 0):
+            yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         state = env.sample_state()
         frozen_state = frozenset(state)
         env.set_state(state)
@@ -138,7 +140,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             next_state = env.get_state()
             frozen_next_state = frozenset(next_state)
             actions_for_next_state = get_actions_for_state(next_state, actions_for_state_cache, env)
-            if done:
+            if done or len(actions_for_next_state) == 0:
                 expec = 0
             else:
                 expec = max(qvals[(frozen_next_state, na)] \
@@ -147,8 +149,6 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             deltas.append(abs(newval-qvals[(frozen_state, act)]))
             deltas = deltas[-avi_queue_size:]
             qvals[(frozen_state, act)] = newval
-        if iter_plans and (itr % iter_plan_interval == 0):
-            yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         if len(deltas) == avi_queue_size and np.mean(deltas) < epsilon:
             return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         if itr == vi_maxiters:

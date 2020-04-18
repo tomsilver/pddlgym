@@ -6,11 +6,12 @@ import numpy as np
 class InversePlanningGridPDDLEnv(PDDLEnv):
     """Grid domain and problems from Ramirez & Geffner, 2010.
     """
+    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
+    domain_file = os.path.join(dir_path, "grid.pddl")
+    problem_dir = os.path.join(dir_path, "grid")
+
     def __init__(self, seed=0):
-        dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
-        domain_file = os.path.join(dir_path, "grid.pddl")
-        problem_dir = os.path.join(dir_path, "grid")
-        super().__init__(domain_file, problem_dir, render=None, seed=seed,
+        super().__init__(self.domain_file, self.problem_dir, render=None, seed=seed,
                  raise_error_on_invalid_action=True,
                  operators_as_actions=True,
                  dynamic_action_space=True,
@@ -66,11 +67,17 @@ class InversePlanningGridPDDLEnv(PDDLEnv):
 
         return state
 
+class EasyInversePlanningGridPDDLEnv(InversePlanningGridPDDLEnv):
+    dir_path = InversePlanningGridPDDLEnv.dir_path
+    problem_dir = os.path.join(dir_path, "easy-grid")
+
+
 if __name__ == "__main__":
     import imageio
     import time
-    env = InversePlanningGridPDDLEnv()
+    env = EasyInversePlanningGridPDDLEnv()
     env.reset()
     start_time = time.time()
-    sampled_states = [env.sample_state() for _ in range(1000)]
+    sampled_states = [env.sample_state() for _ in range(100)]
     print("Sampling time: {}".format(time.time() - start_time))
+    import ipdb; ipdb.set_trace()
