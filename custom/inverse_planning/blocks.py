@@ -26,25 +26,7 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
         self._handempty = self.domain.predicates['handempty']
         self._rng = np.random.RandomState(seed=0)
 
-    # def sample_states_generic(self, num_samples, burn_in=100):
-    #     initial_state = self.get_state()
-    #     state = initial_state
-    #     samples = []
-    #     for _ in range(num_samples):
-    #         for _ in range(burn_in):
-    #             act = self.action_space.sample()
-    #             state, _, _, _ = self.step(act)
-    #         samples.append(state)
-    #     self.set_state(initial_state)
-    #     return samples
-
-    def sample_states(self, num_samples):
-        initial_state = self.get_state()
-        samples = [self.sample_single_state() for _ in range(num_samples)]
-        self.set_state(initial_state)
-        return samples
-
-    def sample_single_state(self):
+    def sample_state(self):
         blocks = self._extract_blocks_from_state(self._state)
         if self._rng.randint(2):
             return self._sample_state_where_not_holding(blocks)
@@ -180,7 +162,7 @@ if __name__ == "__main__":
     env = InversePlanningBlocksPDDLEnv()
     env.reset()
     start_time = time.time()
-    sampled_states = env.sample_states(100)
+    sampled_states = [env.sample_state() for _ in range(100)]
     print("Sampling time: {}".format(time.time() - start_time))
     for i, state in enumerate(sampled_states):
         env.set_state(state)

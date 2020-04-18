@@ -29,7 +29,7 @@ class LiteralSpace(Space):
 
         self.objects = objs
 
-        self._all_ground_literals = sorted(self._compute_all_ground_literals())
+        self._all_ground_literals = None
 
     def sample_hierarchically(self):
         while True:
@@ -50,9 +50,9 @@ class LiteralSpace(Space):
 
     def sample_literal(self):
         while True:
-            num_lits = len(self._all_ground_literals)
+            num_lits = len(self.all_ground_literals())
             idx = self.np_random.choice(num_lits)
-            lit = self._all_ground_literals[idx]
+            lit = self.all_ground_literals()[idx]
             if self.lit_valid_test(lit):
                 break
         return lit  
@@ -61,6 +61,8 @@ class LiteralSpace(Space):
         return self.sample_literal()
 
     def all_ground_literals(self):
+        if self._all_ground_literals is None:
+            self._all_ground_literals = self._compute_all_ground_literals()
         return set(l for l in self._all_ground_literals \
                    if self.lit_valid_test(l))
 
