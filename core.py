@@ -307,7 +307,19 @@ class PDDLEnv(gym.Env):
             # Necessary for binding the operator arguments to the variables
             if self.operators_as_actions:
                 conds = [action.predicate(*operator.params)] + conds
-            assignments = find_satisfying_assignments(kb, conds)
+            # Check whether action is in the preconditions
+            action_literal = None
+            for lit in conds: 
+                if lit.predicate == action.predicate:
+                    action_literal = lit
+                    break
+            if action_literal is None:
+                continue
+            # For proving, consider action variable first
+            action_variables = action_literal.variables
+            variable_sort_fn = lambda v : (not v in action_variables, v)
+            assignments = find_satisfying_assignments(kb, conds,
+                variable_sort_fn=variable_sort_fn)
             num_assignments = len(assignments)
             if num_assignments > 0:
                 assert num_assignments == 1, "Nondeterministic envs not supported"

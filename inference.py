@@ -5,9 +5,12 @@ from collections import defaultdict
 from copy import deepcopy
 
 
-def find_satisfying_assignments(kb, conds, verbose=False, max_assignment_count=2):
+def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
+                                max_assignment_count=2):
     return ProofSearchTree(kb).prove(list(conds), 
-        max_assignment_count=max_assignment_count, verbose=verbose)
+        max_assignment_count=max_assignment_count, 
+        variable_sort_fn=variable_sort_fn,
+        verbose=verbose)
 
 
 class CommitGoalError(Exception):
@@ -32,7 +35,8 @@ class ProofSearchTree(object):
                 self.all_atoms.add(atom)
         return d
 
-    def prove(self, goal_literal, verbose=False, commit_if_true=False, max_assignment_count=1):
+    def prove(self, goal_literal, verbose=False, commit_if_true=False, max_assignment_count=1,
+              variable_sort_fn=None):
         if not isinstance(goal_literal, list):
             goal_literals = [goal_literal]
         else:
@@ -62,7 +66,7 @@ class ProofSearchTree(object):
         variables = set()
         for lit in goal_literals:
             variables.update(set(lit.variables))
-        variables = sorted(list(variables))
+        variables = sorted(list(variables), key=variable_sort_fn)
 
         if verbose:
             print('variables:', variables)
