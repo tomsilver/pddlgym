@@ -88,7 +88,7 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     
 def run_plan(env, actions, verbose=False, check_reward=True):
     obs, debug_info = env.reset()
-    
+
     tot_reward = 0.
     for action in actions:
         if verbose:
