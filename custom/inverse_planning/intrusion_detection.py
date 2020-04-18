@@ -35,9 +35,7 @@ class InversePlanningIntrusionDetectionPDDLEnv(PDDLEnv):
         state = { self._dummy() }
 
         # extract hosts from state
-        hosts = set()
-        for lit in self.get_state():
-            hosts.update(lit.variables)
+        hosts = set(self._problem.objects)
 
         for host in sorted(hosts):
 
@@ -95,8 +93,9 @@ class EasyInversePlanningIntrusionDetectionPDDLEnv(InversePlanningIntrusionDetec
 if __name__ == "__main__":
     import imageio
     import time
-    env = InversePlanningIntrusionDetectionPDDLEnv()
+    env = EasyInversePlanningIntrusionDetectionPDDLEnv()
     env.reset()
     start_time = time.time()
     sampled_states = [env.sample_state() for _ in range(100)]
     print("Sampling time: {}".format(time.time() - start_time))
+    import ipdb; ipdb.set_trace()
