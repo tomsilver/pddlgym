@@ -91,7 +91,12 @@ class ProofSearchTree(object):
             for child in self.get_children(node, variables, goal_literals, verbose=verbose):
                 if verbose:
                     print(' child:', child['variable_assignments'])
-    
+                # Forward checking.
+                if any(not self.get_possible_assignments(
+                        var, child["variable_assignments"], goal_literals)
+                       for var in variables
+                       if var not in child["variable_assignments"]):
+                    continue
                 self.queue.append(child)
 
         return all_assignments
