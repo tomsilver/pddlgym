@@ -30,7 +30,7 @@ class InversePlanningGridPDDLEnv(PDDLEnv):
         self._pickup = self.domain.predicates['pickup']
         self._static_predicates = { self._conn, self._key_shape, self._lock_shape, 
             self._move, self._unlock, self._pickup }
-        self._rng = np.random.RandomState(seed=0)
+        self._rng = np.random.RandomState(seed=seed)
 
     def sample_state(self):
         # Extract the static components of the state and the objects
