@@ -38,24 +38,6 @@
 (at key_1 place_0_2)
 (key-shape key_1 shape_1)
 
-(move place_0_0)
-(move place_0_1)
-(move place_0_2)
-(move place_0_3)
-(move place_0_4)
-(pickup key_0)
-(pickup key_1)
-(unlock place_0_0 key_0)
-(unlock place_0_1 key_0)
-(unlock place_0_2 key_0)
-(unlock place_0_3 key_0)
-(unlock place_0_4 key_0)
-(unlock place_0_0 key_1)
-(unlock place_0_1 key_1)
-(unlock place_0_2 key_1)
-(unlock place_0_3 key_1)
-(unlock place_0_4 key_1)
-
 )
 (:goal
 (and
