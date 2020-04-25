@@ -76,7 +76,7 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
     for state in all_states:
         frozen_state = frozenset(state)
         env.set_state(state)
-        valid_actions = list(env.action_space.all_ground_literals())
+        valid_actions = list(env.get_valid_actions())
         actions_for_state[frozen_state] = valid_actions
         total_action_count += len(valid_actions)
         for a in valid_actions:
@@ -164,7 +164,7 @@ def get_actions_for_state(state, cache, env):
     if frozen_state not in cache:
         state_before = env.get_state()
         env.set_state(state)
-        cache[frozen_state] = list(env.action_space.all_ground_literals())
+        cache[frozen_state] = list(env.get_valid_actions())
         env.set_state(state_before)
     return cache[frozen_state]
 

@@ -196,6 +196,11 @@ class PDDLEnv(gym.Env):
         self._initialize_reward_shaping_data(debug_info)
         return self._get_observation(), debug_info
 
+    def get_valid_actions(self):
+        """Returns a list of valid actions
+        """
+        return self._action_space.all_ground_literals()
+
     def _get_observation(self):
         """
         Observations are sets of ground literals.

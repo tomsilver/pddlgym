@@ -26,7 +26,95 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
         self._on = self.domain.predicates['on']
         self._ontable = self.domain.predicates['ontable']
         self._handempty = self.domain.predicates['handempty']
+        self._pickup = self.domain.predicates['pick-up']
+        self._putdown = self.domain.predicates['put-down']
+        self._stack = self.domain.predicates['stack']
+        self._unstack = self.domain.predicates['unstack']
         self._rng = np.random.RandomState(seed=seed)
+
+    @staticmethod
+    def get_piles_from_obs(obs):
+        on_links = {}
+        pile_bottoms = set()
+        all_objs = set()
+        holding = None
+        for lit in obs:
+            if lit.predicate.name == "ontable":
+                pile_bottoms.add(lit.variables[0])
+                all_objs.add(lit.variables[0])
+            elif lit.predicate.name == "on":
+                on_links[lit.variables[1]] = lit.variables[0]
+                all_objs.update(lit.variables)
+            elif lit.predicate.name == "holding":
+                holding = lit.variables[0]
+                all_objs.add(lit.variables[0])
+        all_objs = sorted(all_objs)
+
+        bottom_to_pile = {}
+        for obj in pile_bottoms:
+            bottom_to_pile[obj] = [obj]
+            key = obj
+            while key in on_links:
+                assert on_links[key] not in bottom_to_pile[obj]
+                bottom_to_pile[obj].append(on_links[key])
+                key = on_links[key]
+
+        piles = []
+        for pile_base in all_objs:
+            if pile_base in bottom_to_pile:
+                piles.append(bottom_to_pile[pile_base])
+            else:
+                piles.append([])
+
+        return piles, holding
+
+    def get_valid_actions(self):
+        valid_actions = []
+
+        piles, holding = self.get_piles_from_obs(self._state)
+        piles = [pile for pile in piles if len(pile) > 0]
+
+        """
+        (:action pick-up
+         :parameters (?x - block)
+         :precondition (and (clear ?x) (ontable ?x) (handempty))
+        """
+        if holding is None:
+            for pile in piles:
+                if len(pile) == 1:
+                    block = pile[0]
+                    valid_actions.append(self._pickup(block))
+
+        """
+        (:action put-down
+         :parameters (?x - block)
+         :precondition (holding ?x)
+        """
+        if holding is not None:
+            valid_actions.append(self._putdown(holding))
+
+        """
+        (:action stack
+         :parameters (?x - block ?y - block)
+         :precondition (and (holding ?x) (clear ?y) (not (eq ?x ?y)))
+        """
+        if holding is not None:
+            for pile in piles:
+                top = pile[-1]
+                valid_actions.append(self._stack(holding, top))
+
+        """
+        (:action unstack
+         :parameters (?x - block ?y - block)
+         :precondition (and (on ?x ?y) (clear ?x) (handempty) (not (eq ?x ?y)))
+        """
+        if holding is None:
+            for pile in piles:
+                if len(pile) > 1:
+                    top, below = pile[-1], pile[-2]
+                    valid_actions.append(self._unstack(top, below))
+
+        return valid_actions
 
     def sample_state(self):
         blocks = self._extract_blocks_from_state(self._state)
