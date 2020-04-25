@@ -21,27 +21,8 @@ def demo_planning(planner_name, gym_name, num_problems, render=True, test=False,
         env.fix_problem_index(problem_index)
         run_planning_demo(env, planner_name, verbose=verbose)
 
-def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100):
-    start_time = time.time()
-    all_results = []
-    env = gym.make(gym_name)
-    test_env = gym.make(gym_name)
-    env._render = None
-    test_env._render = None
-    for problem_index in range(num_problems):
-        print("\nRunning problem {}/{}".format(problem_index, num_problems))
-        results_for_problem = []
-        env.fix_problem_index(problem_index)
-        env.reset()
-        for plan in run_async_value_iteration(env, iter_plans=True, iter_plan_interval=iter_plan_interval,
-                epsilon=0., vi_maxiters=vi_maxiters):
-            test_env.fix_problem_index(problem_index)
-            test_env.reset()
-            result = run_plan(test_env, plan, check_reward=False)
-            results_for_problem.append(result)
-        all_results.append(results_for_problem)
-    print("\nExperiment time:", time.time() - start_time)
-    xs = np.arange(0, iter_plan_interval*len(results_for_problem), iter_plan_interval)
+def plot_helper(all_results, iter_plan_interval, gym_name):
+    xs = np.arange(0, iter_plan_interval*len(all_results[0]), iter_plan_interval)
     ys = np.mean(all_results, axis=0)
     yerr = np.std(all_results, axis=0)
     outfile = "/tmp/{}_async_vi_experiment.png".format(gym_name)
@@ -53,6 +34,32 @@ def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_
     plt.ylabel("Average plan success")
     plt.savefig(outfile)
     print("Wrote out to {}".format(outfile))
+
+def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100,
+                            first_plot_interval=200):
+    start_time = time.time()
+    all_results = []
+    env = gym.make(gym_name)
+    test_env = gym.make(gym_name)
+    env._render = None
+    test_env._render = None
+    for problem_index in range(num_problems):
+        print("\nRunning problem {}/{}".format(problem_index, num_problems))
+        results_for_problem = []
+        all_results.append(results_for_problem)
+        env.fix_problem_index(problem_index)
+        env.reset()
+        for i, plan in enumerate(run_async_value_iteration(env, iter_plans=True, 
+                iter_plan_interval=iter_plan_interval, epsilon=0., vi_maxiters=vi_maxiters)):
+            test_env.fix_problem_index(problem_index)
+            test_env.reset()
+            result = run_plan(test_env, plan, check_reward=False)
+            results_for_problem.append(result)
+            if problem_index == 0 and (i*iter_plan_interval) % first_plot_interval == 0:
+                plot_helper(all_results, iter_plan_interval, gym_name)
+        plot_helper(all_results, iter_plan_interval, gym_name)
+    plot_helper(all_results, iter_plan_interval, gym_name)
+    print("\nExperiment time:", time.time() - start_time)
 
 
 def run_all(render=True, verbose=True):
