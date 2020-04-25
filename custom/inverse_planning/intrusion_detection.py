@@ -1,4 +1,5 @@
 from pddlgym.core import PDDLEnv
+from collections import defaultdict
 import os
 import pickle
 import numpy as np
@@ -28,8 +29,127 @@ class InversePlanningIntrusionDetectionPDDLEnv(PDDLEnv):
         self._vandalized = self.domain.predicates['vandalized']# (vandalized ?h - host)
         self._data_stolen_from = self.domain.predicates['data-stolen-from']# (data-stolen-from ?h - host)
         self._dummy = self.domain.predicates['dummy']# (dummy)
+        self._recon = self.domain.predicates['recon']
+        self._information_gathering = self.domain.predicates['information-gathering']
+        self._break_into = self.domain.predicates['break-into']
+        self._modify_files = self.domain.predicates['modify-files']
+        self._clean = self.domain.predicates['clean']
+        self._vandalize = self.domain.predicates['vandalize']
+        self._gain_root = self.domain.predicates['gain-root']
+        self._download_files = self.domain.predicates['download-files']
+        self._steal_data = self.domain.predicates['steal-data']
 
         self._rng = np.random.RandomState(seed=seed)
+
+    def get_valid_actions(self):
+        host_statuses = { host : defaultdict(bool) for host in self._problem.objects }
+
+        for lit in self._state:
+            if lit.predicate == self._dummy:
+                continue
+            host = lit.variables[0]
+            host_statuses[host][lit.predicate] = True
+
+        valid_actions = []
+
+        for host, status in host_statuses.items():
+            """
+            (:action recon
+                :parameters (?h - host)
+                :precondition (and (dummy))
+                :effect (and (recon-performed ?h))
+            )
+            """
+
+            valid_actions.append(self._recon(host))
+
+            """
+            (:action information-gathering
+                :parameters (?h - host)
+                :precondition (and (recon-performed ?h))
+                :effect (and (information-gathered ?h))
+            )
+            """
+
+            if status[self._recon_performed]:
+                valid_actions.append(self._information_gathering(host))
+
+            """
+            (:action break-into
+                :parameters (?h - host)
+                :precondition (and (recon-performed ?h))
+                :effect (and (access-obtained ?h))
+            )
+            """
+
+            if status[self._recon_performed]:
+                valid_actions.append(self._break_into(host))
+
+            """
+            (:action modify-files
+                :parameters (?h - host)
+                :precondition (and (access-obtained ?h))
+                :effect (and (modified-files ?h))
+            )
+            """
+
+            if status[self._access_obtained]:
+                valid_actions.append(self._modify_files(host))
+
+            """
+            (:action clean
+                :parameters (?h - host)
+                :precondition (and (access-obtained ?h))
+                :effect (and (deleted-logs ?h))
+            )
+            """
+
+            if status[self._access_obtained]:
+                valid_actions.append(self._clean(host))
+
+            """
+            (:action vandalize
+                :parameters (?h - host)
+                :precondition (and (modified-files ?h) (deleted-logs ?h))
+                :effect (and (vandalized ?h))
+            )
+            """
+
+            if status[self._modified_files] and status[self._deleted_logs]:
+                valid_actions.append(self._vandalize(host))
+
+            """
+            (:action gain-root
+                :parameters (?h - host)
+                :precondition (and (access-obtained ?h))
+                :effect (and (root-access-obtained ?h))
+            )
+            """
+
+            if status[self._access_obtained]:
+                valid_actions.append(self._gain_root(host))
+
+            """
+            (:action download-files
+                :parameters (?h - host)
+                :precondition (and (root-access-obtained ?h))
+                :effect (and (files-downloaded ?h))
+            )
+            """
+            if status[self._root_access_obtained]:
+                valid_actions.append(self._download_files(host))
+
+            """
+            (:action steal-data
+                :parameters (?h - host)
+                :precondition (and (files-downloaded ?h) (deleted-logs ?h))
+                :effect (and (data-stolen-from ?h))
+            )
+            """
+            if status[self._files_downloaded] and status[self._deleted_logs]:
+                valid_actions.append(self._steal_data(host))
+
+        return valid_actions
 
     def sample_state(self):
         state = { self._dummy() }
