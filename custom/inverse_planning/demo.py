@@ -36,7 +36,7 @@ def plot_helper(all_results, iter_plan_interval, gym_name):
     print("Wrote out to {}".format(outfile))
 
 def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100,
-                            first_plot_interval=200):
+                            first_plot_interval=1000):
     start_time = time.time()
     all_results = []
     env = gym.make(gym_name)
@@ -74,14 +74,16 @@ def run_all(render=True, verbose=True):
     # demo_planning("avi", "InversePlanningIntrusionDetection-v0", 1, render=render, verbose=verbose)
     # demo_random("InversePlanningIntrusionDetection-v0", render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningGrid-v0", 1, render=render, verbose=verbose)
+    # demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
-    run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
+    # run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
     # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
-    # run_async_vi_experiment("InversePlanningLogistics-v0", 1, vi_maxiters=10, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningLogistics-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
+    run_async_vi_experiment("InversePlanningCampus-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
 
     # demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
     # demo_random("EasyInversePlanningLogistics-v0", render=render, verbose=verbose)

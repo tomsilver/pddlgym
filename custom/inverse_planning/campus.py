@@ -1,4 +1,5 @@
 from pddlgym.core import PDDLEnv
+from pddlgym.structs import Predicate, Type
 import os
 import numpy as np
 from collections import defaultdict
@@ -18,6 +19,41 @@ class InversePlanningCampusPDDLEnv(PDDLEnv):
                  dynamic_action_space=True,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None)
+        self._places = ["bank", "watson-theater", "hayman-theater", "davis-theater", 
+            "jones-theater", "bookmark-cafe", "library", "cbs", "psychology-bldg", 
+            "angazi-cafe", "tav"]
+        self._static_state = {Predicate("is-{}".format(c), 1, [Type("place")])(c) \
+            for c in self._places}
+        self._at = self.domain.predicates['at']
+        self._state_predicates = [p for _, p in self.domain.predicates.items() \
+            if p != self._at and (not p.name.startswith("is-") or p.name[3:] not in self._places) \
+                and p not in self.action_predicates]
+        self._rng = np.random.RandomState(seed=seed)
+
+    def sample_state(self):
+        state = self._static_state.copy()
+
+        # Random bit flips for the following
+        # (banking)
+        # (lecture-1-taken)
+        # (lecture-2-taken)
+        # (lecture-3-taken)
+        # (lecture-4-taken)
+        # (group-meeting-1)
+        # (group-meeting-2)
+        # (group-meeting-3)
+        # (coffee)
+        # (breakfast)
+        # (lunch)
+        for pred in self._state_predicates:
+            if self._rng.uniform() < 0.25:
+                state.add(pred())
+
+        # Random at
+        place = self._places[self._rng.choice(len(self._places))]
+        state.add(self._at(place))
+
+        return state
 
 
 # class EasyInversePlanningCampusPDDLEnv(InversePlanningCampusPDDLEnv):
@@ -25,11 +61,12 @@ class InversePlanningCampusPDDLEnv(PDDLEnv):
 #     problem_dir = os.path.join(dir_path, "easy-campus")
 
 
-# if __name__ == "__main__":
-#     import time
-#     env = InversePlanningCampusPDDLEnv()
-#     env.reset()
-#     start_time = time.time()
-#     sampled_states = [env.sample_state() for _ in range(1000)]
-#     print("Sampling time: {}".format(time.time() - start_time))
+if __name__ == "__main__":
+    import time
+    env = InversePlanningCampusPDDLEnv()
+    env.reset()
+    start_time = time.time()
+    sampled_states = [env.sample_state() for _ in range(1000)]
+    import ipdb; ipdb.set_trace()
+    print("Sampling time: {}".format(time.time() - start_time))
 
