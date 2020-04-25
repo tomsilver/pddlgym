@@ -1,6 +1,7 @@
 from pddlgym.core import PDDLEnv
 import os
 import numpy as np
+from collections import defaultdict
 
 
 class InversePlanningLogisticsPDDLEnv(PDDLEnv):
@@ -29,15 +30,157 @@ class InversePlanningLogisticsPDDLEnv(PDDLEnv):
         self._islocation = self.domain.predicates['islocation']   # (islocation ?v0 - location)
         self._isairplane = self.domain.predicates['isairplane']   # (isairplane ?v0 - thing)
         self._isairport = self.domain.predicates['isairport']   # (isairport ?v0 - location)
-        self._flyairplane = self.domain.predicates['flyairplane']   # (flyairplane ?v0 - thing ?v1 - location)
-        self._unloadtruck = self.domain.predicates['unloadtruck']   # (unloadtruck ?v0 - thing)
-        self._unloadairplane = self.domain.predicates['unloadairplane']   # (unloadairplane ?v0 - thing)
-        self._loadtruck = self.domain.predicates['loadtruck']   # (loadtruck ?v0 - thing ?v1 - thing)
-        self._loadairplane = self.domain.predicates['loadairplane']   # (loadairplane ?v0 - thing ?v1 - thing)
-        self._drivetruck = self.domain.predicates['drivetruck']   # (drivetruck ?v0 - thing ?v1 - location)
+        self._flyairplane = self.domain.predicates['fly-airplane']   # (flyairplane ?v0 - thing ?v1 - location)
+        self._unloadtruck = self.domain.predicates['unload-truck']   # (unloadtruck ?v0 - thing)
+        self._unloadairplane = self.domain.predicates['unload-airplane']   # (unloadairplane ?v0 - thing)
+        self._loadtruck = self.domain.predicates['load-truck']   # (loadtruck ?v0 - thing ?v1 - thing)
+        self._loadairplane = self.domain.predicates['load-airplane']   # (loadairplane ?v0 - thing ?v1 - thing)
+        self._drivetruck = self.domain.predicates['drive-truck']   # (drivetruck ?v0 - thing ?v1 - location)
         self._dynamic_predicates = { self._at, self._in }
         self._rng = np.random.RandomState(seed=seed)
         self._static_state = None
+
+    def _parse_state(self):
+        trucks, planes, airports, packages, places, vehicles = self._organized_objects
+
+        truck_to_loc = {}
+        loc_to_city = {}
+        airplane_to_loc = {}
+        truck_to_pkgs = defaultdict(list)
+        airplane_to_pkgs = defaultdict(list)
+        loc_to_pkgs = defaultdict(list)
+        city_to_locs = defaultdict(list)
+        airport_locs = airports
+
+        for lit in self._state:
+            if lit.predicate == self._at:
+                thing, loc = lit.variables
+                if thing in trucks:
+                    truck_to_loc[thing] = loc
+                elif thing in planes:
+                    airplane_to_loc[thing] = loc
+                else:
+                    assert thing in packages
+                    loc_to_pkgs[loc].append(thing)
+
+            elif lit.predicate == self._in_city:
+                loc, city = lit.variables
+                city_to_locs[city].append(loc)
+                loc_to_city[loc] = city
+
+            elif lit.predicate == self._in:
+                pkg, vehicle = lit.variables
+                if vehicle in trucks:
+                    truck_to_pkgs[vehicle].append(pkg)
+                else:
+                    assert vehicle in planes
+                    airplane_to_pkgs[vehicle].append(pkg)
+
+        return airplane_to_loc, loc_to_pkgs, airport_locs, truck_to_loc, truck_to_pkgs, \
+            loc_to_city, city_to_locs, airplane_to_pkgs
+
+    def get_valid_actions(self):
+        valid_actions = []
+
+        airplane_to_loc, loc_to_pkgs, airport_locs, truck_to_loc, truck_to_pkgs, \
+            loc_to_city, city_to_locs, airplane_to_pkgs = self._parse_state()
+
+        """
+        (:action load-airplane
+            :parameters (?pkg - thing ?airplane - thing ?loc - location)
+            :precondition (and (at ?airplane ?loc)
+                (at ?pkg ?loc)
+                (isairplane ?airplane)
+                (ispackage ?pkg)
+                (isplace ?loc))
+        )
+        """
+        for airplane, airplane_loc in airplane_to_loc.items():
+            for pkg in loc_to_pkgs[airplane_loc]:
+                valid_actions.append(self._loadairplane(pkg, airplane, airplane_loc))    
+
+        """
+        (:action fly-airplane
+            :parameters (?airplane - thing ?loc_from - location ?loc_to - location)
+            :precondition (and (not (eq ?loc_from ?loc_to))
+                (at ?airplane ?loc_from)
+                (isairplane ?airplane)
+                (isairport ?loc_from)
+                (isairport ?loc_to))
+        )
+        """
+        for airplane, airplane_loc in airplane_to_loc.items():
+            for airport_loc in airport_locs:
+                if airport_loc != airplane_loc:
+                    valid_actions.append(self._flyairplane(airplane, airplane_loc, airport_loc))
+        
+        """
+        (:action unload-truck
+            :parameters (?pkg - thing ?truck - thing ?loc - location)
+            :precondition (and (at ?truck ?loc)
+                (in ?pkg ?truck)
+                (ispackage ?pkg)
+                (isplace ?loc)
+                (istruck ?truck))
+        )
+        """
+        for truck, truck_loc in truck_to_loc.items():
+            for pkg in truck_to_pkgs[truck]:
+                valid_actions.append(self._unloadtruck(pkg, truck, truck_loc))
+
+        """
+        (:action drive-truck
+            :parameters (?truck - thing ?loc_from - location ?loc_to - location ?city - location)
+            :precondition (and (not (eq ?loc_from ?loc_to))
+                (at ?truck ?loc_from)
+                (in-city ?loc_from ?city)
+                (in-city ?loc_to ?city)
+                (iscity ?city)
+                (isplace ?loc_from)
+                (isplace ?loc_to)
+                (istruck ?truck))
+        )
+        """
+        for truck, truck_loc in truck_to_loc.items():
+            if truck_loc not in loc_to_city:
+                continue
+            truck_city = loc_to_city[truck_loc]
+            for loc in city_to_locs[truck_city]:
+                if loc != truck_loc:
+                    valid_actions.append(self._drivetruck(truck, truck_loc, loc, truck_city))
+
+        """
+        (:action unload-airplane
+            :parameters (?pkg - thing ?airplane - thing ?loc - location)
+            :precondition (and (at ?airplane ?loc)
+                (in ?pkg ?airplane)
+                (isairplane ?airplane)
+                (ispackage ?pkg)
+                (isplace ?loc))
+        )
+        """
+        for airplane, airplane_loc in airplane_to_loc.items():
+            for pkg in airplane_to_pkgs[airplane]:
+                valid_actions.append(self._unloadairplane(pkg, airplane, airplane_loc))
+ 
+        """
+        (:action load-truck
+            :parameters (?pkg - thing ?truck - thing ?loc - location)
+            :precondition (and (at ?pkg ?loc)
+                (at ?truck ?loc)
+                (ispackage ?pkg)
+                (isplace ?loc)
+                (istruck ?truck))
+            :effect (and
+                (not (at ?pkg ?loc))
+                (in ?pkg ?truck))
+        )
+        """
+        for truck, truck_loc in truck_to_loc.items():
+            for pkg in loc_to_pkgs[truck_loc]:
+                valid_actions.append(self._loadtruck(pkg, truck, truck_loc))
+
+        return valid_actions
 
     def reset(self):
         out = super().reset()
