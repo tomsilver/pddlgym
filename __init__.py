@@ -105,3 +105,8 @@ register(
     id='EasyInversePlanningCampus-v0',
     entry_point='pddlgym.custom.inverse_planning.campus:EasyInversePlanningCampusPDDLEnv',
 )
+
+register(
+    id='InversePlanningKitchen-v0',
+    entry_point='pddlgym.custom.inverse_planning.kitchen:InversePlanningKitchenPDDLEnv',
+)

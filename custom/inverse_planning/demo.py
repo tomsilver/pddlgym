@@ -77,6 +77,7 @@ def run_all(render=True, verbose=True):
     # demo_random("InversePlanningIntrusionDetection-v0", render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningGrid-v0", 1, render=render, verbose=verbose)
     # demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningKitchen-v0", 75, render=render, verbose=verbose)
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
@@ -84,7 +85,7 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True)
     # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
-    run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningLogistics-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningCampus-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
 
