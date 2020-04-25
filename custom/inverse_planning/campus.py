@@ -56,9 +56,17 @@ class InversePlanningCampusPDDLEnv(PDDLEnv):
         return state
 
 
-# class EasyInversePlanningCampusPDDLEnv(InversePlanningCampusPDDLEnv):
-#     dir_path = InversePlanningCampusPDDLEnv.dir_path
-#     problem_dir = os.path.join(dir_path, "easy-campus")
+class EasyInversePlanningCampusPDDLEnv(InversePlanningCampusPDDLEnv):
+    dir_path = InversePlanningCampusPDDLEnv.dir_path
+    problem_dir = os.path.join(dir_path, "easy-campus")
+
+    def __init__(self, seed=0):
+        super().__init__(seed=seed)
+        self._state_predicates = [p for p in self._state_predicates \
+            if p.name in ["breakfast", "lecture-1-taken"]]
+        self._places = ["watson-theater", "bookmark-cafe", "cbs", "angazi-cafe"]
+        self._static_state = {Predicate("is-{}".format(c), 1, [Type("place")])(c) \
+            for c in self._places}
 
 
 if __name__ == "__main__":

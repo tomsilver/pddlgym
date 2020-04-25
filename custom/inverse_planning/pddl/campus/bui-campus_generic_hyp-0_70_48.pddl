@@ -1,7 +1,7 @@
 
 (define (problem bui-campus_generic_hyp-0_70_48) (:domain campus)
   (:objects
-        angazi-cafe - place
+    angazi-cafe - place
 	bank - place
 	bookmark-cafe - place
 	cbs - place

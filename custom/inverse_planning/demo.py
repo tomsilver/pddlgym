@@ -36,7 +36,7 @@ def plot_helper(all_results, iter_plan_interval, gym_name):
     print("Wrote out to {}".format(outfile))
 
 def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100,
-                            first_plot_interval=1000):
+                            first_plot_interval=1000, use_cache=False):
     start_time = time.time()
     all_results = []
     env = gym.make(gym_name)
@@ -49,7 +49,7 @@ def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_
         all_results.append(results_for_problem)
         env.fix_problem_index(problem_index)
         env.reset()
-        for i, plan in enumerate(run_async_value_iteration(env, iter_plans=True, 
+        for i, plan in enumerate(run_async_value_iteration(env, iter_plans=True, use_cache=use_cache,
                 iter_plan_interval=iter_plan_interval, epsilon=0., vi_maxiters=vi_maxiters)):
             test_env.fix_problem_index(problem_index)
             test_env.reset()
@@ -79,11 +79,12 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
+    run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True)
     # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningLogistics-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
-    run_async_vi_experiment("InversePlanningCampus-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningCampus-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
 
     # demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
     # demo_random("EasyInversePlanningLogistics-v0", render=render, verbose=verbose)

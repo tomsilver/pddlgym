@@ -112,7 +112,7 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
         itr += 1
 
 def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_maxiters=10000, horizon=100, 
-                              avi_queue_size=1000, iter_plans=False, iter_plan_interval=100):
+                              avi_queue_size=1000, iter_plans=False, iter_plan_interval=100, use_cache=False):
     # Ugly hack to deal with rendering...
     try:
         env = env.env
@@ -133,13 +133,13 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
         state = env.sample_state()
         frozen_state = frozenset(state)
         env.set_state(state)
-        actions_for_state = get_actions_for_state(state, actions_for_state_cache, env)
+        actions_for_state = get_actions_for_state(state, actions_for_state_cache, env, use_cache=use_cache)
         for act in actions_for_state:
             env.set_state(state)
             _, rew, done, _ = env.step(act)
             next_state = env.get_state()
             frozen_next_state = frozenset(next_state)
-            actions_for_next_state = get_actions_for_state(next_state, actions_for_state_cache, env)
+            actions_for_next_state = get_actions_for_state(next_state, actions_for_state_cache, env, use_cache=use_cache)
             if done or len(actions_for_next_state) == 0:
                 expec = 0
             else:
@@ -155,18 +155,22 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
         itr += 1
 
-def get_actions_for_state(state, cache, env):
-    if not env.dynamic_action_space:
-        if "all" not in cache:
-            cache["all"] = list(env.action_space.all_ground_literals())
-        return cache["all"]
+def get_actions_for_state(state, cache, env, use_cache=True):
+    assert env.dynamic_action_space
+        # if "all" not in cache:
+            # cache["all"] = list(env.action_space.all_ground_literals())
+        # return cache["all"]
     frozen_state = frozenset(state)
-    if frozen_state not in cache:
+    if not use_cache or frozen_state not in cache:
         state_before = env.get_state()
         env.set_state(state)
-        cache[frozen_state] = list(env.get_valid_actions())
+        result = list(env.get_valid_actions())
+        if use_cache:
+            cache[frozen_state] = result
         env.set_state(state_before)
-    return cache[frozen_state]
+    else:
+        result = cache[frozen_state]
+    return result
 
 def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
     env.set_state(initial_state)
