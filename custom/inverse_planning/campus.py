@@ -60,7 +60,6 @@ class InversePlanningCampusPDDLEnv(PDDLEnv):
         for lit in self._state:
             if lit.predicate == self._at:
                 current_place = lit.variables[0]
-                break
             elif lit.predicate in self._state_predicates:
                 state_names.append(lit.predicate.name)
         assert current_place is not None

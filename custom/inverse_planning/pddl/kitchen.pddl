@@ -228,7 +228,7 @@
                     (made_breakfast)
                                     )
     )
-    (:action ACTIVITY-Make-Breakfast-1
+    (:action ACTIVITY-Make-Breakfast-2
         :parameters (?x - object)
         :precondition   (and
                     (made_coffee)
@@ -252,7 +252,7 @@
                     (made_salad)
                                     )
     )
-    (:action ACTIVITY-Make-Salad-1
+    (:action ACTIVITY-Make-Salad-2
         :parameters (?x - object ?y - object ?z - object)
         :precondition   (and
                     (taken ?x) (is-bowl ?x)

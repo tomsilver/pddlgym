@@ -83,7 +83,7 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
     # run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True)
-    run_async_vi_experiment("EasyInversePlanningKitchen-v0", 1, vi_maxiters=1000, use_cache=True)
+    run_async_vi_experiment("EasyInversePlanningKitchen-v0", 1, vi_maxiters=10000)
     # run_async_vi_experiment("InversePlanningBlocks-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
