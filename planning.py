@@ -132,7 +132,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
     # Record initial state
     initial_state = env.get_state()
     # Get all states
-    qvals = defaultdict(float)
+    qvals = {}
     actions_for_state_cache = {}
     itr = 0
     start = time.time()
@@ -154,10 +154,10 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             if done or len(actions_for_next_state) == 0:
                 expec = 0
             else:
-                expec = max(qvals[(frozen_next_state, hash(na))] \
+                expec = max(qvals.get((frozen_next_state, hash(na)), 0.) \
                             for na in actions_for_next_state)
             newval = rew + gamma*expec
-            deltas.append(abs(newval-qvals[(frozen_state, hash(act))]))
+            deltas.append(abs(newval-qvals.get((frozen_state, hash(act)), 0.)))
             deltas = deltas[-avi_queue_size:]
             qvals[(frozen_state, hash(act))] = newval
         # print("qvals size:", format_bytes(asizeof.asizeof(qvals)))
@@ -196,7 +196,7 @@ def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
         best_act_val = -np.inf
         actions_for_this_state = get_actions_for_state(state, actions_for_state, env)
         for a in actions_for_this_state:
-            val = qvals[(frozen_state, hash(a))]
+            val = qvals.get((frozen_state, hash(a)), 0.)
             if val > best_act_val:
                 best_act = a
                 best_act_val = val
