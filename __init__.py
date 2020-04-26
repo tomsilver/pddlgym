@@ -110,3 +110,8 @@ register(
     id='InversePlanningKitchen-v0',
     entry_point='pddlgym.custom.inverse_planning.kitchen:InversePlanningKitchenPDDLEnv',
 )
+
+register(
+    id='EasyInversePlanningKitchen-v0',
+    entry_point='pddlgym.custom.inverse_planning.kitchen:EasyInversePlanningKitchenPDDLEnv',
+)
