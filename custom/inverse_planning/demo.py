@@ -37,7 +37,7 @@ def plot_helper(all_results, iter_plan_interval, gym_name):
 
 # from memory_profiler import profile
 # @profile
-def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_interval=100,
+def run_async_vi_experiment(gym_name, problems, vi_maxiters=2500, iter_plan_interval=100,
                             first_plot_interval=1000, use_cache=False):
     start_time = time.time()
     all_results = []
@@ -45,7 +45,9 @@ def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_
     test_env = gym.make(gym_name)
     env._render = None
     test_env._render = None
-    for problem_index in range(num_problems):
+    if isinstance(problems, int):
+        problems = list(range(problems))
+    for problem_index in problems:
         print("\nRunning problem {}/{}".format(problem_index, num_problems))
         results_for_problem = []
         all_results.append(results_for_problem)
@@ -65,7 +67,6 @@ def run_async_vi_experiment(gym_name, num_problems, vi_maxiters=2500, iter_plan_
 
 
 def run_all(render=True, verbose=True):
-    # demo_planning("ff", "InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", "EasyInversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
@@ -76,8 +77,12 @@ def run_all(render=True, verbose=True):
     # demo_planning("avi", "InversePlanningIntrusionDetection-v0", 1, render=render, verbose=verbose)
     # demo_random("InversePlanningIntrusionDetection-v0", render=render, verbose=verbose)
     # demo_planning("avi", "InversePlanningGrid-v0", 1, render=render, verbose=verbose)
-    # demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
-    # demo_planning("ff", "InversePlanningKitchen-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningBlocks-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningIntrusionDetection-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningGrid-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
+    demo_planning("ff", "InversePlanningKitchen-v0", 75, render=render, verbose=verbose)
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
@@ -89,7 +94,7 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("InversePlanningGrid-v0", 1, vi_maxiters=250000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningLogistics-v0", 1, vi_maxiters=1000000, iter_plan_interval=100)
     # run_async_vi_experiment("InversePlanningCampus-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
-    run_async_vi_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
+    # run_async_vi_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, iter_plan_interval=100)
 
     # demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
     # demo_random("EasyInversePlanningLogistics-v0", render=render, verbose=verbose)
