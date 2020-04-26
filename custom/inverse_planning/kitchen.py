@@ -177,10 +177,10 @@ class InversePlanningKitchenPDDLEnv(PDDLEnv):
         (:action ACTIVITY-Make-Coffee-1
             :parameters (?w - object ?x - object ?y - object ?z - object)
             :precondition   (and
+                        (taken ?w) (is-sugar ?w)
                         (taken ?x) (is-cup ?x)
                         (taken ?y) (is-coffee ?y)
                         (taken ?z) (is-creamer ?z)
-                        (taken ?w) (is-sugar ?w)
                         (water_boiled)
                     )
             :effect     (and
@@ -193,16 +193,16 @@ class InversePlanningKitchenPDDLEnv(PDDLEnv):
            "creamer" in taken_objects and \
            "sugar" in taken_objects and \
            "water_boiled" in state_names:
-           valid_actions.append(self._activity_make_coffee_1("cup", "coffee", "creamer", "sugar"))
+           valid_actions.append(self._activity_make_coffee_1("sugar", "cup", "coffee", "creamer"))
 
         """
         (:action ACTIVITY-Make-Coffee-2
             :parameters (?w - object ?x - object ?y - object ?z - object)
             :precondition   (and
+                        (taken ?w) (is-sugar ?w)
                         (taken ?x) (is-cup ?x)
                         (taken ?y) (is-coffee ?y)
                         (taken ?z) (is-milk ?z)
-                        (taken ?w) (is-sugar ?w)
                         (water_boiled)
                     )
             :effect     (and
@@ -215,7 +215,7 @@ class InversePlanningKitchenPDDLEnv(PDDLEnv):
            "milk" in taken_objects and \
            "sugar" in taken_objects and \
            "water_boiled" in state_names:
-           valid_actions.append(self._activity_make_coffee_2("cup", "coffee", "milk", "sugar"))
+           valid_actions.append(self._activity_make_coffee_2("sugar", "cup", "coffee", "milk"))
 
         """
         (:action ACTIVITY-Make-Cheese-Sandwich
@@ -258,7 +258,8 @@ class InversePlanningKitchenPDDLEnv(PDDLEnv):
                     )
         )
         """
-        if "butter" in taken_objects and \
+        if "made_toast" in state_names and \
+           "butter" in taken_objects and \
            "knife" in taken_objects:
            valid_actions.append(self._activity_make_buttered_toast("butter", "knife"))
 

@@ -371,6 +371,7 @@ class PDDLEnv(gym.Env):
         # No operator was found
         elif self._raise_error_on_invalid_action:
             # import ipdb; ipdb.set_trace()
+            print("Invalid action:", action)
             raise InvalidAction()
 
         return self._finish_step()
