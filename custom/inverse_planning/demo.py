@@ -145,6 +145,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
         goal_distribution = infer_goal(demonstration, problem_qvals, env)
 
         print(goal_distribution)
+        assert np.argmax(goal_distribution) == gold_problem_index
 
 
 def run_all(render=True, verbose=True):
@@ -188,7 +189,12 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_goal_inference_experiment("InversePlanningBlocks-v0", 3, vi_maxiters=1000, biased=True)
+    # run_goal_inference_experiment("InversePlanningBlocks-v0", 3, vi_maxiters=1000, biased=True)
+    run_goal_inference_experiment("InversePlanningIntrusionDetection-v0", 3, vi_maxiters=1000, biased=True)
+    run_goal_inference_experiment("InversePlanningGrid-v0", 3, vi_maxiters=1000, biased=True)
+    run_goal_inference_experiment("InversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
+    run_goal_inference_experiment("InversePlanningCampus-v0", 3, vi_maxiters=1000, biased=True)
+    run_goal_inference_experiment("InversePlanningKitchen-v0", 3, vi_maxiters=1000, biased=True)
 
 if __name__ == '__main__':
     run_all(render=False)
