@@ -1,0 +1,8 @@
+(unstack t w)
+(stack t e)
+(unstack m o)
+(put-down m)
+(pick-up o)
+(stack o t)
+(unstack r a)
+(stack r o)

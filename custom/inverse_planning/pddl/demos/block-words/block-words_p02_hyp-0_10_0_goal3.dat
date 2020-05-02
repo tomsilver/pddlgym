@@ -1,0 +1,8 @@
+(unstack s a)
+(stack s c)
+(unstack a h)
+(stack a k)
+(unstack s c)
+(stack s h)
+(unstack a k)
+(stack a s)

@@ -1,0 +1,6 @@
+(take bread)
+(take cheese)
+(take lunch-bag)
+(take plate)
+(activity-make-cheese-sandwich bread cheese plate)
+(activity-pack-lunch-1 lunch-bag)
