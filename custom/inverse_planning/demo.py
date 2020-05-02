@@ -108,6 +108,7 @@ def animate_goal_distribution(goal_distribution_per_step, outfile='/tmp/out.gif'
     ax.set_title("Time 0")
     plt.xlabel("Possible Goals")
     plt.ylabel("Distribution")
+    plt.ylim((0., 1.05))
     barcollection = plt.bar(x, goal_distribution_per_step[0], tick_label=x)
 
     def update(i):
