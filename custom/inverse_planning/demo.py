@@ -74,7 +74,7 @@ def run_async_vi_experiment(gym_name, problems, vi_maxiters=2500, iter_plan_inte
     print("\nExperiment time:", time.time() - start_time)
 
 
-def infer_goal(demonstration, problem_qvals, env, beta=10.):
+def infer_goal(demonstration, problem_qvals, env, beta=1.):
     goal_distribution = []
     for qvals in problem_qvals:
         total_log_prob = 0.
@@ -117,7 +117,7 @@ def animate_goal_distribution(goal_distribution_per_step, outfile='/tmp/out.gif'
             b.set_height(y[i])
         return barcollection
 
-    ani = animation.FuncAnimation(fig, update, frames=n, interval=100, blit=True)
+    ani = animation.FuncAnimation(fig, update, frames=n, interval=500, blit=True)
     ani.save(outfile, dpi=80, writer='imagemagick')
     print("Wrote out to {}".format(outfile))
 
@@ -161,7 +161,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
         obs, _ = env.reset()
         plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
             epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False, horizon=horizon))
-        goal_distribution_per_step = []
+        goal_distribution_per_step = [np.ones(len(problem_qvals)) / len(problem_qvals)]
         for action in plan:
             demonstration.append((obs, action))
             obs, _, _, _ = env.step(action)
