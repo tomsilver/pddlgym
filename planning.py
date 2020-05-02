@@ -124,7 +124,7 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
 
 def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_maxiters=10000, horizon=100, 
                               avi_queue_size=1000, iter_plans=False, iter_plan_interval=100, use_cache=False,
-                              biased=False):
+                              biased=False, ret_qvals=False):
     # Ugly hack to deal with rendering...
     try:
         env = env.env
@@ -163,10 +163,11 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             qvals[(frozen_state, hash(act))] = newval
         # print("qvals size:", format_bytes(asizeof.asizeof(qvals)))
         # import ipdb; ipdb.set_trace()
-        if len(deltas) == avi_queue_size and np.mean(deltas) < epsilon:
-            return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
-        if itr == vi_maxiters:
-            return vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
+        if (len(deltas) == avi_queue_size and np.mean(deltas) < epsilon) or (itr == vi_maxiters):
+            if ret_qvals:
+                yield qvals
+            yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
+            return
         itr += 1
 
 def get_actions_for_state(state, cache, env, use_cache=True):

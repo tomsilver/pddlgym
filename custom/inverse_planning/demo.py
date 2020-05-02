@@ -1,6 +1,8 @@
-from pddlgym.planning import run_async_value_iteration
+from pddlgym.planning import run_async_value_iteration, get_actions_for_state
 from pddlgym.utils import run_random_agent_demo, run_planning_demo, run_plan
 
+from collections import defaultdict
+from scipy.special import logsumexp
 import gym
 import matplotlib.pyplot as plt
 import pddlgym
@@ -70,6 +72,81 @@ def run_async_vi_experiment(gym_name, problems, vi_maxiters=2500, iter_plan_inte
     print("\nExperiment time:", time.time() - start_time)
 
 
+def infer_goal(demonstration, problem_qvals, env, beta=10.):
+    goal_distribution = []
+    for qvals in problem_qvals:
+        total_log_prob = 0.
+        for obs, gold_action in demonstration:
+            actions_for_state = get_actions_for_state(obs, None, env, use_cache=False)
+            qvals_s = []
+            gold_action_idx = None
+            for idx, action in enumerate(actions_for_state):
+                key = (hash(frozenset(obs)), hash(action))
+                qval_sa = qvals.get(key, 0.0)
+                qvals_s.append(qval_sa)
+                if action == gold_action:
+                    gold_action_idx = idx
+            assert gold_action_idx is not None
+            action_unnormed_log_distribution = beta*np.array(qvals_s)
+            z = logsumexp(action_unnormed_log_distribution)
+            action_log_distribution = action_unnormed_log_distribution - z
+            gold_action_log_prob = action_log_distribution[gold_action_idx]
+            total_log_prob += gold_action_log_prob
+        goal_distribution.append(total_log_prob)
+    goal_distribution = np.array(goal_distribution)
+    z_goal = logsumexp(goal_distribution)
+    goal_distribution = np.exp(goal_distribution - z_goal)
+    return goal_distribution
+
+
+def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500, use_cache=False, biased=False,
+                                  gold_problem_index=0):
+    start_time = time.time()
+    all_results = []
+    env = gym.make(gym_name)
+    env._render = None
+
+    # Group the problems that have the same initial state but different goals
+    problem_prefix_to_group = defaultdict(list)
+    for problem_idx, problem in enumerate(env.problems):
+        prefix = "_".join(problem.problem_fname.split("_")[:-1])
+        problem_prefix_to_group[prefix].append(problem_idx)
+    problem_groups = [problem_prefix_to_group[p] for p in sorted(problem_prefix_to_group)]
+    assert len(problem_groups) == 75
+    assert num_problem_groups <= 75
+
+    for group_idx in range(num_problem_groups):
+        # Problems in the group
+        problems = problem_groups[group_idx]
+
+        # Get the qvals for all the goals
+        problem_qvals = []
+        for j, problem_index in enumerate(problems):
+            print("\nLearning qvals for problem {}/{}".format(j, len(problems)))
+            results_for_problem = []
+            all_results.append(results_for_problem)
+            env.fix_problem_index(problem_index)
+            env.reset()
+            qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
+                epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=True))
+            problem_qvals.append(qvals)
+
+        # Get the demo trajectory
+        demonstration = []
+        env.fix_problem_index(gold_problem_index)
+        obs, _ = env.reset()
+        plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
+            epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False))
+        for action in plan:
+            demonstration.append((obs, action))
+            obs, _, _, _ = env.step(action)
+
+        # Run goal inference
+        goal_distribution = infer_goal(demonstration, problem_qvals, env)
+
+        print(goal_distribution)
+
+
 def run_all(render=True, verbose=True):
     # demo_planning("avi", InversePlanningBlocks-v0", 1, render=render, verbose=verbose)
     # demo_planning("avi", "EasyInversePlanningBlocks-v0", 1, render=render, verbose=verbose)
@@ -105,12 +182,13 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
     # run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True, biased=True)
     # run_async_vi_experiment("EasyInversePlanningKitchen-v0", 1, vi_maxiters=5000, biased=True)
-    run_async_vi_experiment("InversePlanningBlocks-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningIntrusionDetection-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningGrid-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningBlocks-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningGrid-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
+    run_goal_inference_experiment("InversePlanningBlocks-v0", 3, vi_maxiters=1000, biased=True)
 
 if __name__ == '__main__':
     run_all(render=False)
