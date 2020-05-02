@@ -99,7 +99,7 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
-    run_async_vi_experiment("InversePlanningBlocks-v0", [10], 
+    run_async_vi_experiment("EasyInversePlanningBlocks-v0", [0], 
         vi_maxiters=2500, iter_plan_interval=100, biased=True)
 
 if __name__ == '__main__':
