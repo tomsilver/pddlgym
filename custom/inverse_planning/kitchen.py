@@ -1,11 +1,12 @@
-from pddlgym.core import PDDLEnv
+# from pddlgym.core import PDDLEnv
+from .inverse_planning_env import InversePlanningPDDLEnv
 from pddlgym.structs import Predicate, Type
 import os
 import numpy as np
 from collections import defaultdict
 
 
-class InversePlanningKitchenPDDLEnv(PDDLEnv):
+class InversePlanningKitchenPDDLEnv(InversePlanningPDDLEnv):
     """Kitchen domain and problems from Ramirez & Geffner, 2010.
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -566,7 +567,7 @@ class InversePlanningKitchenPDDLEnv(PDDLEnv):
 
         return valid_actions
 
-    def sample_state(self):
+    def _sample_state(self):
         state = self._static_state.copy()
 
         for pred in self._state_predicates:

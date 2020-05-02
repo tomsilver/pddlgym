@@ -1,10 +1,11 @@
-from pddlgym.core import PDDLEnv
+# from pddlgym.core import PDDLEnv
+from .inverse_planning_env import InversePlanningPDDLEnv
 import os
 import numpy as np
 from collections import defaultdict
 
 
-class InversePlanningLogisticsPDDLEnv(PDDLEnv):
+class InversePlanningLogisticsPDDLEnv(InversePlanningPDDLEnv):
     """Logistics domain and problems from Ramirez & Geffner, 2010.
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -215,7 +216,7 @@ class InversePlanningLogisticsPDDLEnv(PDDLEnv):
 
         return out
 
-    def sample_state(self):
+    def _sample_state(self):
         # Sample for each package, whether it's at a place or in a thing
         # and then for each thing, sample a location. but note that airplanes can only
         # be at airports.

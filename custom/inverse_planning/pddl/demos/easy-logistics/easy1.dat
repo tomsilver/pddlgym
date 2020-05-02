@@ -1,6 +1,0 @@
-(drive-truck tru1 pos1 apt2 cit1)
-(fly-airplane apn1 apt1 apt2)
-(unload-airplane obj1 apn1 apt2)
-(load-truck obj1 tru1 apt2)
-(drive-truck tru1 apt2 pos2 cit1)
-(unload-truck obj1 tru1 pos2)

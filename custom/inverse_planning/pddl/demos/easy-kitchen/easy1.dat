@@ -1,7 +1,0 @@
-(take cloth)
-(take cup)
-(take keetle)
-(take tea-bag)
-(take water-jug)
-(activity-boil-water water-jug keetle cloth)
-(activity-make-tea-3 tea-bag cup)

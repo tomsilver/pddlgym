@@ -1,8 +1,0 @@
-(pickup place_0_0 key_0)
-(unlock place_0_0 place_0_1 key_0 shape_0)
-(move place_0_0 place_0_1)
-(move place_0_1 place_0_2)
-(pickup place_0_2 key_1)
-(move place_0_2 place_0_3)
-(unlock place_0_3 place_0_4 key_1 shape_1)
-(move place_0_3 place_0_4)

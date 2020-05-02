@@ -1,10 +1,11 @@
-from pddlgym.core import PDDLEnv
+# from pddlgym.core import PDDLEnv
+from .inverse_planning_env import InversePlanningPDDLEnv
 import os
 import numpy as np
 from collections import defaultdict
 
 
-class InversePlanningGridPDDLEnv(PDDLEnv):
+class InversePlanningGridPDDLEnv(InversePlanningPDDLEnv):
     """Grid domain and problems from Ramirez & Geffner, 2010.
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -154,7 +155,7 @@ class InversePlanningGridPDDLEnv(PDDLEnv):
                 self._possible_locked_places.add(lit.variables[0])
         return out
 
-    def sample_state(self):
+    def _sample_state(self):
         # Extract the static components of the state and the objects
         state = set()
         places = set()

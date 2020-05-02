@@ -1,11 +1,12 @@
-from pddlgym.core import PDDLEnv
+# from pddlgym.core import PDDLEnv
+from .inverse_planning_env import InversePlanningPDDLEnv
 from collections import defaultdict
 import os
 import pickle
 import numpy as np
 
 
-class InversePlanningIntrusionDetectionPDDLEnv(PDDLEnv):
+class InversePlanningIntrusionDetectionPDDLEnv(InversePlanningPDDLEnv):
     """Intrusion detection domain and problems from Ramirez & Geffner, 2010.
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -151,7 +152,7 @@ class InversePlanningIntrusionDetectionPDDLEnv(PDDLEnv):
 
         return valid_actions
 
-    def sample_state(self):
+    def _sample_state(self):
         state = { self._dummy() }
 
         # extract hosts from state
