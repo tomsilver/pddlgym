@@ -422,14 +422,27 @@ class PDDLProblemParser(PDDLParser):
         self.goal = self._parse_into_literal(goal, params)
 
     @staticmethod
-    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal):
+    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal,
+                         fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
         objects_typed = "\n\t".join(list(sorted(map(lambda o : str(o).replace(":", " - "), 
             objects))))
         init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
 
-        problem_str = """
+        if fast_downward_order:
+            problem_str = """
+(define (problem {}) (:domain {})
+  (:objects
+        {}
+  )
+  (:init \n\t{}
+  )
+  (:goal {})
+)
+        """.format(problem_name, domain_name, objects_typed, init_state, goal.pddl_str())
+        else:
+            problem_str = """
 (define (problem {}) (:domain {})
   (:objects
         {}
@@ -442,11 +455,12 @@ class PDDLProblemParser(PDDLParser):
         with open(fname, 'w') as f:
             f.write(problem_str)
 
-    def write(self, fname):
+    def write(self, fname, fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
         return PDDLProblemParser.create_pddl_file(fname, self.objects, 
-            self.initial_state, self.problem_name, self.domain_name, self.goal)
+            self.initial_state, self.problem_name, self.domain_name, self.goal,
+            fast_downward_order=fast_downward_order)
 
 
 def parse_plan_step(plan_step, operators, action_predicates, operators_as_actions=False):

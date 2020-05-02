@@ -14,7 +14,7 @@ def demo_random(gym_name, render=True, problem_index=0, verbose=True):
     env.fix_problem_index(problem_index)
     run_random_agent_demo(env, verbose=verbose, seed=0)
 
-def demo_planning(planner_name, gym_name, num_problems, render=True, test=False, verbose=True):
+def demo_planning(planner_name, gym_name, num_problems, render=True, verbose=True):
     env = gym.make(gym_name)
     if not render: env._render = None
     for problem_index in range(num_problems):
@@ -39,7 +39,7 @@ def plot_helper(all_results, iter_plan_interval, gym_name, verbose=False):
 # from memory_profiler import profile
 # @profile
 def run_async_vi_experiment(gym_name, problems, vi_maxiters=2500, iter_plan_interval=100,
-                            first_plot_interval=1000, use_cache=False):
+                            first_plot_interval=1000, use_cache=False, biased=False):
     start_time = time.time()
     all_results = []
     env = gym.make(gym_name)
@@ -55,8 +55,10 @@ def run_async_vi_experiment(gym_name, problems, vi_maxiters=2500, iter_plan_inte
         all_results.append(results_for_problem)
         env.fix_problem_index(problem_index)
         env.reset()
-        for i, plan in enumerate(run_async_value_iteration(env, iter_plans=True, use_cache=use_cache,
-                iter_plan_interval=iter_plan_interval, epsilon=0., vi_maxiters=vi_maxiters)):
+        runner = run_async_value_iteration(env, iter_plans=True, use_cache=use_cache,
+            iter_plan_interval=iter_plan_interval, epsilon=0., vi_maxiters=vi_maxiters,
+            biased=biased)
+        for i, plan in enumerate(runner):
             test_env.fix_problem_index(problem_index)
             test_env.reset()
             result = run_plan(test_env, plan, check_reward=False)
@@ -85,18 +87,20 @@ def run_all(render=True, verbose=True):
     # demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
     # demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
     # demo_planning("ff", "InversePlanningKitchen-v0", 75, render=render, verbose=verbose)
-    run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
-    run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
-    run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
-    run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
-    run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True)
-    run_async_vi_experiment("EasyInversePlanningKitchen-v0", 1, vi_maxiters=5000)
+    # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
+    # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
+    # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
+    # run_async_vi_experiment("EasyInversePlanningLogistics-v0", 3, vi_maxiters=1000)
+    # run_async_vi_experiment("EasyInversePlanningCampus-v0", 1, vi_maxiters=1000, use_cache=True)
+    # run_async_vi_experiment("EasyInversePlanningKitchen-v0", 1, vi_maxiters=5000)
     # run_async_vi_experiment("InversePlanningBlocks-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningIntrusionDetection-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningGrid-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
     # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=250000, iter_plan_interval=1000)
+    run_async_vi_experiment("InversePlanningBlocks-v0", [10], 
+        vi_maxiters=2500, iter_plan_interval=100, biased=True)
 
 if __name__ == '__main__':
     run_all(render=False)

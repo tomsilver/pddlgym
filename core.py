@@ -248,6 +248,7 @@ class PDDLEnv(gym.Env):
         info = {'problem_file' : self._problem.problem_fname,
                 'domain_file' : self.domain.domain_fname,
                 'objects' : self._problem.objects,
+                'goal' : self._goal,
                }
         if self._compute_approx_reachable_set:
             info['approx_reachable_set'] = self._get_approx_reachable_set()

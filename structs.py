@@ -269,6 +269,12 @@ class LiteralConjunction:
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def __len__(self):
+        return len(self.literals)
+
+    def __iter__(self):
+        return iter(self.literals)
+
 
 class LiteralDisjunction:
     """A logical disjunction (OR) of Literals.
@@ -415,3 +421,10 @@ def ground_literal(lifted_lit, assignments):
         arg = assignments[v]
         ground_vars.append(arg)
     return lifted_lit.predicate(*ground_vars)
+
+
+
+
+
+
+

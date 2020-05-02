@@ -123,7 +123,8 @@ def run_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-3, vi_maxite
 #     return size, power_labels[n]+'bytes'
 
 def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_maxiters=10000, horizon=100, 
-                              avi_queue_size=1000, iter_plans=False, iter_plan_interval=100, use_cache=False):
+                              avi_queue_size=1000, iter_plans=False, iter_plan_interval=100, use_cache=False,
+                              biased=False):
     # Ugly hack to deal with rendering...
     try:
         env = env.env
@@ -141,7 +142,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
         print("Running async VI iteration {}/{}".format(itr, vi_maxiters), end='\r')
         if iter_plans and (itr % iter_plan_interval == 0):
             yield vi_finish_helper(env, initial_state, qvals, actions_for_state=actions_for_state_cache, horizon=horizon)
-        state = env.sample_state()
+        state = env.sample_state(biased=biased)
         frozen_state = hash(frozenset(state))
         env.set_state(state)
         actions_for_state = get_actions_for_state(state, actions_for_state_cache, env, use_cache=use_cache)

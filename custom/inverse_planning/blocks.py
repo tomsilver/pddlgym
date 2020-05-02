@@ -1,11 +1,12 @@
-from pddlgym.core import PDDLEnv
+# from pddlgym.core import PDDLEnv
+from .inverse_planning_env import InversePlanningPDDLEnv
 from pddlgym.rendering import block_words_render
 import os
 import itertools
 import numpy as np
 
 
-class InversePlanningBlocksPDDLEnv(PDDLEnv):
+class InversePlanningBlocksPDDLEnv(InversePlanningPDDLEnv):
     """Blocks domain and problems from Ramirez & Geffner, 2010.
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -116,7 +117,7 @@ class InversePlanningBlocksPDDLEnv(PDDLEnv):
 
         return valid_actions
 
-    def sample_state(self):
+    def _sample_state(self):
         blocks = self._extract_blocks_from_state(self._state)
         if self._rng.randint(2):
             return self._sample_state_where_not_holding(blocks)
