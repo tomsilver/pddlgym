@@ -35,6 +35,35 @@ class InvalidAction(Exception):
     pass
 
 
+def _apply_effects(state, lifted_effects, assignments):
+    """
+    Update a state given lifted operator effects and
+    assignments of variables to objects.
+
+    Parameters
+    ----------
+    state : #TODO figure out type
+        The state on which the effects are applied.
+    lifted_effects : { Literal }
+    assignments : { TypedEntity : TypedEntity }
+        Maps variables to objects.
+    """
+    new_state = {lit for lit in state}
+
+    for lifted_effect in lifted_effects:
+        effect = ground_literal(lifted_effect, assignments)
+        # Negative effect
+        if effect.is_anti:
+            literal = effect.inverted_anti
+            if literal in new_state:
+                new_state.remove(literal)
+    for lifted_effect in lifted_effects:
+        effect = ground_literal(lifted_effect, assignments)
+        if not effect.is_anti:
+            new_state.add(effect)
+    return new_state
+
+
 class PDDLEnv(gym.Env):
     """
     Parameters
@@ -80,6 +109,7 @@ class PDDLEnv(gym.Env):
                  dynamic_action_space=False,
                  compute_approx_reachable_set=False,
                  shape_reward_mode=None):
+        self._state = None
         self._domain_file = domain_file
         self._problem_dir = problem_dir
         self._render = render
@@ -195,7 +225,7 @@ class PDDLEnv(gym.Env):
         self._initialize_reward_shaping_data(debug_info)
         return self._get_observation(), debug_info
 
-    def _get_observation(self):
+    def _get_observation(self, state):
         """
         Observations are sets of ground literals.
 
@@ -206,7 +236,7 @@ class PDDLEnv(gym.Env):
         obs : { Literal }
         """
         obs = set()
-        for lit in self._state:
+        for lit in state:
             if lit.predicate.name in self.domain.actions:
                 continue
             obs.add(lit)
@@ -360,31 +390,51 @@ class PDDLEnv(gym.Env):
 
         # A ground operator was found; execute the ground effects
         if assignment is not None:
-            self._execute_effects(selected_operator.effects.literals, assignment)
+            self._state = _apply_effects(
+                self._state,
+                selected_operator.effects.literals,
+                assignment,
+            )
 
         # No operator was found
         elif self._raise_error_on_invalid_action:
             # import ipdb; ipdb.set_trace()
             raise InvalidAction()
 
-        return self._finish_step()
-
-    def _finish_step(self):
-        """Helper for step."""
-        obs = self._get_observation()
-        goal_reached = self._is_goal_reached()
+        obs = self._get_observation(self._state)
+        done = self._is_goal_reached(self._state)
         debug_info = self._get_debug_info()
+        reward = self._reward(self._state, done)
 
-        if goal_reached:
+        return obs, reward, done, debug_info
+
+    def sample_transition(self, action):
+        selected_operator, assignment = self._select_operator(action)
+        state = self._state
+
+        # A ground operator was found; execute the ground effects
+        if assignment is not None:
+            state = _apply_effects(
+                self._state,
+                selected_operator.effects.literals,
+                assignment,
+            )
+
+        obs = self._get_observation(state)
+        done = self._is_goal_reached(state)
+        reward = self._reward(state, done)
+
+        return obs, reward, done, {}
+
+    def _reward(self, state, done):
+        if done:
             reward = 1.
-            done = True
         else:
             reward = 0.
-            done = False
 
         if self._shape_reward_mode is not None:
             # Update problem file to contain current state.
-            with open(debug_info["problem_file"], "r") as f:
+            with open(self._problem.problem_fname, "r") as f:
                 problem = f.read().lower()
             obj_ind = problem.index("(:objects")
             objects = PDDLParser._find_balanced_expression(problem, obj_ind)
@@ -392,7 +442,7 @@ class PDDLEnv(gym.Env):
             init = "(:init\n"
             for lit in obs:
                 init += lit.pddl_str()+"\n"
-            for lit in self._state:
+            for lit in state:
                 if lit.predicate.name in self.domain.actions:
                     init += lit.pddl_str()+"\n"
             init += "\n)"
@@ -403,11 +453,11 @@ class PDDLEnv(gym.Env):
             with open("updated_problem.pddl", "w") as f:
                 f.write(updated_problem)
             distance = self._get_distance(
-                debug_info["domain_file"], "updated_problem.pddl")
+                self.domain.domain_fname, "updated_problem.pddl")
             os.remove("updated_problem.pddl")
             reward = 1.0-distance/self._initial_distance  # range: (-inf, 1]
 
-        return obs, reward, done, debug_info
+        return reward
 
     def _get_distance(self, domain_file, problem_file):
         """Used by reward shaping methods. Get distance from initial state to
@@ -418,42 +468,15 @@ class PDDLEnv(gym.Env):
         return get_pyperplan_heuristic(
             self._shape_reward_mode, domain_file, problem_file)
 
-    def _is_goal_reached(self):
+    def _is_goal_reached(self, state):
         """
         Used to calculate reward.
         """
-        return self._goal.holds(self._state)
+        return self._goal.holds(state)
 
     def _action_valid_test(self, action):
         _, assignment = self._select_operator(action)
         return assignment is not None
-
-    def _execute_effects(self, lifted_effects, assignments):
-        """
-        Update the state given lifted operator effects and
-        assignments of variables to objects.
-
-        Parameters
-        ----------
-        lifted_effects : { Literal }
-        assignments : { TypedEntity : TypedEntity }
-            Maps variables to objects.
-        """
-        new_state = { lit for lit in self._state }
-
-        for lifted_effect in lifted_effects:
-            effect = ground_literal(lifted_effect, assignments)
-            # Negative effect
-            if effect.is_anti:
-                literal = effect.inverted_anti
-                if literal in new_state:
-                    new_state.remove(literal)
-        for lifted_effect in lifted_effects:
-            effect = ground_literal(lifted_effect, assignments)
-            if not effect.is_anti:
-                new_state.add(effect)
-
-        self._state = new_state
 
     def render(self, *args, **kwargs):
         if self._render:
