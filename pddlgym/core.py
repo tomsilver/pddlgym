@@ -223,7 +223,7 @@ class PDDLEnv(gym.Env):
         self._observation_space.update(self._problem.objects)
         debug_info = self._get_debug_info()
         self._initialize_reward_shaping_data(debug_info)
-        return self._get_observation(), debug_info
+        return self._get_observation(self._state), debug_info
 
     def _get_observation(self, state):
         """
@@ -293,14 +293,15 @@ class PDDLEnv(gym.Env):
         return relaxed_ops
 
     def _get_approx_reachable_set(self):
-        obs = self._get_observation()
+        obs = self._get_observation(self._state)
         old_ops = self.domain.operators
         self.domain.operators = self._delete_relaxed_ops
         prev_len = 0
         while prev_len != len(obs):  # do the fixed-point iteration
             prev_len = len(obs)
             for action in self.action_space.all_ground_literals():
-                selected_operator, assignment = self._select_operator(action)
+                selected_operator, assignment = self._select_operator(
+                    self._state, action)
                 if assignment is not None:
                     for lifted_effect in selected_operator.effects.literals:
                         effect = ground_literal(lifted_effect, assignment)
@@ -309,7 +310,7 @@ class PDDLEnv(gym.Env):
         self.domain.operators = old_ops
         return obs
 
-    def _select_operator(self, action):
+    def _select_operator(self, state, action):
         """
         Helper function for step.
         """
@@ -325,7 +326,7 @@ class PDDLEnv(gym.Env):
             possible_operators = set(self.domain.operators.values())
 
         # Knowledge base: literals in the state + action taken
-        kb = self._get_observation() | { action }
+        kb = self._get_observation(state) | { action }
 
         selected_operator = None
         assignment = None
@@ -386,7 +387,8 @@ class PDDLEnv(gym.Env):
         debug_info : dict
             See self._get_debug_info.
         """
-        selected_operator, assignment = self._select_operator(action)
+        selected_operator, assignment = self._select_operator(self._state,
+                                                              action)
 
         # A ground operator was found; execute the ground effects
         if assignment is not None:
@@ -409,7 +411,8 @@ class PDDLEnv(gym.Env):
         return obs, reward, done, debug_info
 
     def sample_transition(self, action):
-        selected_operator, assignment = self._select_operator(action)
+        selected_operator, assignment = self._select_operator(self._state,
+                                                              action)
         state = self._state
 
         # A ground operator was found; execute the ground effects
@@ -475,11 +478,11 @@ class PDDLEnv(gym.Env):
         return self._goal.holds(state)
 
     def _action_valid_test(self, action):
-        _, assignment = self._select_operator(action)
+        _, assignment = self._select_operator(self._state, action)
         return assignment is not None
 
     def render(self, *args, **kwargs):
         if self._render:
-            obs = self._get_observation()
+            obs = self._get_observation(self._state)
             return self._render(obs, *args, **kwargs)
 
