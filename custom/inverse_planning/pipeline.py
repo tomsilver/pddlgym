@@ -14,8 +14,10 @@ outdir = 'results'
 do_precomputation = True
 test_qvals = True
 do_goal_inference = True
+test_goal_inference = True
 vi_maxiters = { True : 10000, False : 10000 } # biased? : max_iters
 horizon = 100
+gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
     "InversePlanningBlocks-v0",
@@ -70,7 +72,6 @@ def load_results(run_id):
     outfile = os.path.join(outdir, run_id + '.pkl')
     with open(outfile, 'rb') as f:
         results = pickle.load(f)
-    print("Loaded results from {}.".format(outfile))
     return results
 
 def create_env(env_name, initial_state, goal):
@@ -86,10 +87,10 @@ def create_env(env_name, initial_state, goal):
 def compute_qvals(env_name, initial_state, goal, biased):
     env = create_env(env_name, initial_state, goal)
     qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
-                epsilon=0., vi_maxiters=vi_maxiters[biased], biased=biased, ret_qvals=True))
+                gamma=gamma, epsilon=0., vi_maxiters=vi_maxiters[biased], biased=biased, ret_qvals=True))
     return qvals
 
-def run_test_qvals(env_name, initial_state, goal, qvals, qval_run_id):
+def run_test_qvals(env_name, initial_state, goal, qvals):
     env = create_env(env_name, initial_state, goal)
     obs, _ = env.reset()
     plan = vi_finish_helper(env, obs, qvals, actions_for_state=None, horizon=horizon)
@@ -110,7 +111,7 @@ def get_demonstration(env_name, initial_state, goal):
     # demonstration = []
     # env = create_env(env_name, initial_state, goal)
     # obs, _ = env.reset()
-    # plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
+    # plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=False, gamma=gamma,
     #     epsilon=0., vi_maxiters=vi_maxiters[True], biased=True, ret_qvals=False, horizon=horizon))
     # for action in plan:
     #     demonstration.append((obs, action))
@@ -124,10 +125,17 @@ def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name
         demo_t = demonstration[:t]
         # Run goal inference
         goal_distribution, valid_action_time = infer_goal(demo_t, goal_qvals, env, beta=beta)
-        print(goal_distribution)
         valid_action_time_total += valid_action_time
         goal_distribution_per_step.append(goal_distribution)
     return goal_distribution_per_step, valid_action_time_total
+
+def run_test_goal_inference(goals, goal, posteriors):
+    goal_idx = goals.index(goal)
+    half_posterior = np.array(posteriors[len(posteriors)//2])
+    last_posterior = np.array(posteriors[-1])
+    print("Goal is top at half?", goal_idx in np.argwhere(half_posterior == max(half_posterior)))
+    print("Goal is top at end?", goal_idx in np.argwhere(last_posterior == max(last_posterior)))
+
 
 def report_results():
     raise NotImplementedError()    
@@ -155,7 +163,7 @@ def run_pipeline(biased):
                         results = {"qvals" : qvals, "time_elapsed" : time_elapsed}
                         save_results(qval_run_id, results)
                         if test_qvals:
-                            run_test_qvals(env_name, initial_state, goal, qvals, qval_run_id)
+                            run_test_qvals(env_name, initial_state, goal, qvals)
 
                 # Goal inference
                 for goal in headers[env_name][initial_state]:
@@ -177,7 +185,8 @@ def run_pipeline(biased):
                         time_elapsed = time.time() - start_time - time_to_ignore
                         results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
                         save_results(gi_run_id, results)
-                    import ipdb; ipdb.set_trace()
+                        if test_goal_inference:
+                            run_test_goal_inference(goals, goal, posteriors)
 
     # Results summary
     report_results()
