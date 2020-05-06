@@ -11,7 +11,7 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = True
+do_precomputation = False
 test_qvals = True
 do_goal_inference = True
 test_goal_inference = True
@@ -121,7 +121,7 @@ def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name
     env = create_env(env_name, initial_state, goal)  # Just for valid actions
     goal_distribution_per_step = [np.ones(len(goals)) / len(goals)]
     valid_action_time_total = 0
-    for t in range(1, len(demonstration)):
+    for t in range(1, len(demonstration)+1):
         demo_t = demonstration[:t]
         # Run goal inference
         goal_distribution, valid_action_time = infer_goal(demo_t, goal_qvals, env, beta=beta)
@@ -133,8 +133,11 @@ def run_test_goal_inference(goals, goal, posteriors):
     goal_idx = goals.index(goal)
     half_posterior = np.array(posteriors[len(posteriors)//2])
     last_posterior = np.array(posteriors[-1])
-    print("Goal is top at half?", goal_idx in np.argwhere(half_posterior == max(half_posterior)))
-    print("Goal is top at end?", goal_idx in np.argwhere(last_posterior == max(last_posterior)))
+    half_result = goal_idx in np.argwhere(half_posterior == max(half_posterior))
+    end_result = (goal_idx in np.argwhere(last_posterior == max(last_posterior)))
+    print("Goal is top at half?", half_result)
+    print("Goal is top at end?", end_result)
+    return end_result
 
 
 def report_results():
@@ -186,7 +189,8 @@ def run_pipeline(biased):
                         results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
                         save_results(gi_run_id, results)
                         if test_goal_inference:
-                            run_test_goal_inference(goals, goal, posteriors)
+                            if not run_test_goal_inference(goals, goal, posteriors):
+                                import ipdb; ipdb.set_trace()
 
     # Results summary
     report_results()
