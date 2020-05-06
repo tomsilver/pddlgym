@@ -1,5 +1,0 @@
-(take bowl)
-(take plate)
-(take salad-tosser)
-(activity-make-salad-2 bowl plate salad-tosser)
-(activity-make-dinner-1 )

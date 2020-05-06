@@ -1,8 +1,0 @@
-(unstack t w)
-(put-down t)
-(unstack m o)
-(stack m e)
-(pick-up o)
-(stack o w)
-(unstack m e)
-(stack m o)
