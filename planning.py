@@ -170,7 +170,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             return
         itr += 1
 
-def get_actions_for_state(state, cache, env, use_cache=True):
+def get_actions_for_state(state, cache, env, use_cache=False):
     assert env.dynamic_action_space
         # if "all" not in cache:
             # cache["all"] = list(env.action_space.all_ground_literals())

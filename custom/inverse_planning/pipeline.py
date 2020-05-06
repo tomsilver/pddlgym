@@ -1,4 +1,5 @@
-from pddlgym.planning import run_async_value_iteration, get_actions_for_state
+from goal_inference import infer_goal
+from pddlgym.planning import run_async_value_iteration, vi_finish_helper
 from collections import OrderedDict, defaultdict
 import gym
 import time
@@ -6,13 +7,16 @@ import pddlgym
 import pickle
 import os
 import numpy as np
+import sys
 
 # Hyperparameters
 outdir = 'results'
 do_precomputation = True
+test_qvals = True
 do_goal_inference = True
-vi_maxiters = { True : 1000, False : 1000} # biased? : max_iters
+vi_maxiters = { True : 10000, False : 10000 } # biased? : max_iters
 horizon = 100
+beta = 1. # todo optimize
 env_names = [
     "InversePlanningBlocks-v0",
     "InversePlanningIntrusionDetection-v0",
@@ -31,7 +35,8 @@ def create_headers():
         # Group the problems that have the same initial state but different goals
         problem_prefix_to_group = defaultdict(list)
         for problem in env.problems:
-            split = problem.problem_fname.split("_")
+            fname_alone = os.path.split(problem.problem_fname)[-1]
+            split = fname_alone.split("_")
             prefix = "_".join(split[:-1])
             goal = split[-1][:-len(".pddl")]
             problem_prefix_to_group[prefix].append(goal)
@@ -58,20 +63,20 @@ def get_goal_inference_run_id(env_name, initial_state, goal, biased):
 def save_results(run_id, results):
     outfile = os.path.join(outdir, run_id + '.pkl')
     with open(outfile, 'wb') as f:
-        pickle.dump(results, outfile)
-    print("Dumped results to {}.",format(outfile))
+        pickle.dump(results, f)
+    print("Dumped results to {}.".format(outfile))
 
 def load_results(run_id):
     outfile = os.path.join(outdir, run_id + '.pkl')
     with open(outfile, 'rb') as f:
-        results = pickle.load(outfile)
-    print("Loaded results from {}.",format(outfile))
+        results = pickle.load(f)
+    print("Loaded results from {}.".format(outfile))
     return results
 
 def create_env(env_name, initial_state, goal):
     env = gym.make(env_name)
     problem_fname = initial_state + '_' + goal + '.pddl'
-    found_problems = [p.problem_fname == problem_fname for p in env.problems]
+    found_problems = [os.path.split(p.problem_fname)[-1] == problem_fname for p in env.problems]
     assert sum(found_problems) == 1
     problem_index = np.argwhere(found_problems)[0,0]
     env.fix_problem_index(problem_index)
@@ -82,11 +87,47 @@ def compute_qvals(env_name, initial_state, goal, biased):
     env = create_env(env_name, initial_state, goal)
     qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
                 epsilon=0., vi_maxiters=vi_maxiters[biased], biased=biased, ret_qvals=True))
-    import ipdb; ipdb.set_trace()
     return qvals
 
-def compute_goal_inference_posteriors(qvals, env_name, initial_state, goal):
-    raise NotImplementedError()
+def run_test_qvals(env_name, initial_state, goal, qvals, qval_run_id):
+    env = create_env(env_name, initial_state, goal)
+    obs, _ = env.reset()
+    plan = vi_finish_helper(env, obs, qvals, actions_for_state=None, horizon=horizon)
+    total_reward = 0
+    for action in plan:
+        _, reward, _, _ = env.step(action)
+        total_reward += reward
+    print("Reward accrued following qvals:", total_reward)
+
+def get_demonstration(env_name, initial_state, goal):
+    env = create_env(env_name, initial_state, goal)
+    plan = env.load_demonstration_for_problem()
+    states = env.run_demo(plan)
+    assert len(states) == len(plan) + 1
+    demonstration = list(zip(states[:-1], plan))
+    return demonstration
+    # Uncomment to get a demonstration using computed qvals
+    # demonstration = []
+    # env = create_env(env_name, initial_state, goal)
+    # obs, _ = env.reset()
+    # plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
+    #     epsilon=0., vi_maxiters=vi_maxiters[True], biased=True, ret_qvals=False, horizon=horizon))
+    # for action in plan:
+    #     demonstration.append((obs, action))
+    # return demonstration
+
+def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name, initial_state, goal):
+    env = create_env(env_name, initial_state, goal)  # Just for valid actions
+    goal_distribution_per_step = [np.ones(len(goals)) / len(goals)]
+    valid_action_time_total = 0
+    for t in range(1, len(demonstration)):
+        demo_t = demonstration[:t]
+        # Run goal inference
+        goal_distribution, valid_action_time = infer_goal(demo_t, goal_qvals, env, beta=beta)
+        print(goal_distribution)
+        valid_action_time_total += valid_action_time
+        goal_distribution_per_step.append(goal_distribution)
+    return goal_distribution_per_step, valid_action_time_total
 
 def report_results():
     raise NotImplementedError()    
@@ -101,33 +142,42 @@ def run_pipeline(biased):
     """
     headers = create_headers()
 
-    # Value function precomputation
-    if do_precomputation:
+    if do_precomputation or do_goal_inference:
         for env_name in env_names:
             for initial_state in headers[env_name]:
-                for goal in headers[env_name][initial_state]:
-                    run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                    start_time = time.time()
-                    qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
-                    time_elapsed = time.time() - start_time
-                    results = {"qvals" : qvals, "time_elapsed" : time_elapsed}
-                    save_results(run_id, results)
-
-    # Goal inference
-    if do_goal_inference:
-        for env_name in env_names:
-            for initial_state in headers[env_name]:
+                # Value function precomputation
                 for goal in headers[env_name][initial_state]:
                     qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                    qval_results = load_results(qval_run_id)
-                    qvals = qval_results["qvals"]
-                    
-                    run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
-                    start_time = time.time()
-                    posteriors = compute_goal_inference_posteriors(qvals, env_name, initial_state, goal)
-                    time_elapsed = time.time() - start_time
-                    results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
-                    save_results(run_id, results)
+                    if do_precomputation:
+                        start_time = time.time()
+                        qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
+                        time_elapsed = time.time() - start_time
+                        results = {"qvals" : qvals, "time_elapsed" : time_elapsed}
+                        save_results(qval_run_id, results)
+                        if test_qvals:
+                            run_test_qvals(env_name, initial_state, goal, qvals, qval_run_id)
+
+                # Goal inference
+                for goal in headers[env_name][initial_state]:
+                    gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
+                    if do_goal_inference:
+                        # Get demonstration
+                        demonstration = get_demonstration(env_name, initial_state, goal)
+                        # Load qvals for all goals
+                        goals = headers[env_name][initial_state]
+                        goal_qvals = []
+                        for g in goals:
+                            qval_q_run_id = get_qval_run_id(env_name, initial_state, g, biased=biased)
+                            results_g = load_results(qval_q_run_id)
+                            qvals_g = results_g["qvals"]
+                            goal_qvals.append(qvals_g)
+                        start_time = time.time()
+                        posteriors, time_to_ignore = compute_goal_inference_posteriors(demonstration, 
+                            goals, goal_qvals, env_name, initial_state, goal)
+                        time_elapsed = time.time() - start_time - time_to_ignore
+                        results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
+                        save_results(gi_run_id, results)
+                    import ipdb; ipdb.set_trace()
 
     # Results summary
     report_results()
