@@ -13,9 +13,9 @@ import sys
 outdir = 'results'
 do_precomputation = False
 test_qvals = True
-do_goal_inference = True
+do_goal_inference = False
 test_goal_inference = True
-vi_maxiters = { True : 10000, False : 10000 } # biased? : max_iters
+vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
@@ -139,9 +139,79 @@ def run_test_goal_inference(goals, goal, posteriors):
     print("Goal is top at end?", end_result)
     return end_result
 
+def get_posterior_for_true_goal(goal_idx, gi_results):
+    posteriors = gi_results["posteriors"]
+    return posteriors[len(posteriors)//2][goal_idx]
 
-def report_results():
-    raise NotImplementedError()    
+def get_true_goal_top_ranked(goal_idx, gi_results):
+    posteriors = gi_results["posteriors"]
+    posterior = posteriors[len(posteriors)//2]
+    return goal_idx in np.argwhere(posterior == max(posterior))
+
+def get_num_states_visited(qval_results):
+    unique_state_hashes = { s for s, _ in qval_results["qvals"] }
+    return len(unique_state_hashes)
+
+def report_results(biased):
+    headers = create_headers()
+
+    for env_name in env_names:
+        all_posterior_true_goal = []
+        all_true_goal_top_ranked = []
+        all_initial_time_cost = []
+        all_marginal_time_cost_per_step = []
+        all_average_cost_per_step = []
+        all_states_visited = []
+
+        for initial_state in headers[env_name]:
+            for goal_idx, goal in enumerate(headers[env_name][initial_state]):
+                qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
+                qval_results = load_results(qval_run_id)
+                gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
+                gi_results = load_results(gi_run_id)
+
+                # Accuracy
+                posterior_true_goal = get_posterior_for_true_goal(goal_idx, gi_results)
+                true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
+
+                # Speed
+                initial_time_cost = qval_results['time_elapsed']
+                num_steps = len(gi_results['posteriors'])
+                marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
+                average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
+                states_visited = get_num_states_visited(qval_results)
+
+                all_posterior_true_goal.append(posterior_true_goal)
+                all_true_goal_top_ranked.append(true_goal_top_ranked)
+                all_initial_time_cost.append(initial_time_cost)
+                all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
+                all_average_cost_per_step.append(average_cost_per_step)
+                all_states_visited.append(states_visited)
+
+        print("**** {} ****".format(env_name))
+        print("\nPosterior true goal")
+        print("mean: ", np.mean(all_posterior_true_goal))
+        print("std: ", np.std(all_posterior_true_goal))
+
+        print("\nTrue goal top ranked")
+        print("mean: ", np.mean(all_true_goal_top_ranked))
+        print("std: ", np.std(all_true_goal_top_ranked))
+
+        print("\nInitial time cost")
+        print("mean: ", np.mean(all_initial_time_cost))
+        print("std: ", np.std(all_initial_time_cost))
+
+        print("\nMarginal time cost per step")
+        print("mean: ", np.mean(all_marginal_time_cost_per_step))
+        print("std: ", np.std(all_marginal_time_cost_per_step))
+
+        print("\nAverage cost per step")
+        print("mean: ", np.mean(all_average_cost_per_step))
+        print("std: ", np.std(all_average_cost_per_step))
+
+        print("\nStates visited")
+        print("mean: ", np.mean(all_states_visited))
+        print("std: ", np.std(all_states_visited))
 
 def run_pipeline(biased):
     """
@@ -193,12 +263,12 @@ def run_pipeline(biased):
                                 import ipdb; ipdb.set_trace()
 
     # Results summary
-    report_results()
+    report_results(biased)
 
 
 def main():
     run_pipeline(biased=True)
-    run_pipeline(biased=False)
+    # run_pipeline(biased=False)
 
 if __name__ == "__main__":
     main()
