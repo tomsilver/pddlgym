@@ -225,6 +225,8 @@ class PDDLDomainParser(PDDLParser):
         self.domain_name = None
         # Dict from type name -> structs.Type object.
         self.types = None
+        # Dict from supertype -> immediate subtypes.
+        self.type_hierarchy = None
         self.uses_typing = None
         # Dict from predicate name -> structs.Predicate object.
         self.predicates = None
@@ -251,6 +253,9 @@ class PDDLDomainParser(PDDLParser):
             self.actions = self._create_actions_from_operators()
         elif not expect_action_preds:
             self.actions = set()
+
+        # For convenience, create map of subtype to all parent types
+        self.type_to_parent_types = self._organize_parent_types()
 
     def _parse_actions(self):
         start_ind = re.search(r"\(:actions", self.domain).start()
@@ -284,8 +289,48 @@ class PDDLDomainParser(PDDLParser):
         self.uses_typing = True
         start_ind = match.start()
         types = self._find_balanced_expression(self.domain, start_ind)
-        types = types[7:-1].split()
-        self.types = {type_name: Type(type_name) for type_name in types}
+        # Non-hierarchical types
+        if " - " not in types:
+            types = types[7:-1].split()
+            self.types = {type_name: Type(type_name) for type_name in types}
+            self.type_hierarchy = {}
+        # Hierarchical types
+        else:
+            self.types = {}
+            self.type_hierarchy = {}
+            remaining_type_str = types[7:-1]
+            while " - " in remaining_type_str:
+                dash_index = remaining_type_str.index(" - ")
+                s = remaining_type_str[dash_index:]
+                super_start_index = dash_index + len(s) - len(s.lstrip()) + 2
+                s = remaining_type_str[super_start_index:]
+                super_end_index = super_start_index + min(s.index(" "), s.index("\n"))
+                super_type_name = remaining_type_str[super_start_index:super_end_index]
+                sub_type_names = remaining_type_str[:dash_index].split()
+                # Add new types
+                for new_type in sub_type_names + [super_type_name]:
+                    if new_type not in self.types:
+                        self.types[new_type] = Type(new_type)
+                # Add to hierarchy
+                super_type = self.types[super_type_name]
+                self.type_hierarchy[super_type] = { self.types[t] for t in sub_type_names} 
+                remaining_type_str = remaining_type_str[super_end_index:]
+            assert len(remaining_type_str.strip()) == 0, "Cannot mix hierarchical and non-hierarchical types"
+
+    def _organize_parent_types(self):
+        type_to_parent_types = { t : { t } for t in self.types.values() }
+        for t in self.types.values():
+            parent_types = self._get_parent_types(t)
+            type_to_parent_types[t].update(parent_types)
+        return type_to_parent_types
+
+    def _get_parent_types(self, t):
+        parent_types = set()
+        for super_type, sub_types in self.type_hierarchy.items():
+            if t in sub_types:
+                parent_types.add(super_type)
+                parent_types.update(self._get_parent_types(super_type))
+        return parent_types
 
     def _parse_domain_predicates(self):
         start_ind = re.search(r"\(:predicates", self.domain).start()
@@ -422,14 +467,27 @@ class PDDLProblemParser(PDDLParser):
         self.goal = self._parse_into_literal(goal, params)
 
     @staticmethod
-    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal):
+    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal,
+                         fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
         objects_typed = "\n\t".join(list(sorted(map(lambda o : str(o).replace(":", " - "), 
             objects))))
         init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
 
-        problem_str = """
+        if fast_downward_order:
+            problem_str = """
+(define (problem {}) (:domain {})
+  (:objects
+        {}
+  )
+  (:init \n\t{}
+  )
+  (:goal {})
+)
+        """.format(problem_name, domain_name, objects_typed, init_state, goal.pddl_str())
+        else:
+            problem_str = """
 (define (problem {}) (:domain {})
   (:objects
         {}
@@ -442,11 +500,12 @@ class PDDLProblemParser(PDDLParser):
         with open(fname, 'w') as f:
             f.write(problem_str)
 
-    def write(self, fname):
+    def write(self, fname, fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
         return PDDLProblemParser.create_pddl_file(fname, self.objects, 
-            self.initial_state, self.problem_name, self.domain_name, self.goal)
+            self.initial_state, self.problem_name, self.domain_name, self.goal,
+            fast_downward_order=fast_downward_order)
 
 
 def parse_plan_step(plan_step, operators, action_predicates, operators_as_actions=False):
