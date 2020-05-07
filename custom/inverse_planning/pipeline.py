@@ -43,6 +43,7 @@ def create_headers(verbose=False):
             goal = split[-1][:-len(".pddl")]
             problem_prefix_to_group[prefix].append(goal)
         problem_prefixes = sorted(problem_prefix_to_group)
+        env.close()
 
         for initial_state in problem_prefixes:
             headers[env_name][initial_state] = problem_prefix_to_group[initial_state]
@@ -89,6 +90,7 @@ def compute_qvals(env_name, initial_state, goal, biased):
     env = create_env(env_name, initial_state, goal)
     qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
                 gamma=gamma, epsilon=0., vi_maxiters=vi_maxiters[biased], biased=biased, ret_qvals=True))
+    env.close()
     return qvals
 
 def run_test_qvals(env_name, initial_state, goal, qvals):
@@ -100,6 +102,7 @@ def run_test_qvals(env_name, initial_state, goal, qvals):
         _, reward, _, _ = env.step(action)
         total_reward += reward
     print("Reward accrued following qvals:", total_reward)
+    env.close()
 
 def get_demonstration(env_name, initial_state, goal):
     env = create_env(env_name, initial_state, goal)
@@ -107,6 +110,7 @@ def get_demonstration(env_name, initial_state, goal):
     states = env.run_demo(plan)
     assert len(states) == len(plan) + 1
     demonstration = list(zip(states[:-1], plan))
+    env.close()
     return demonstration
     # Uncomment to get a demonstration using computed qvals
     # demonstration = []
@@ -128,6 +132,7 @@ def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name
         goal_distribution, valid_action_time = infer_goal(demo_t, goal_qvals, env, beta=beta)
         valid_action_time_total += valid_action_time
         goal_distribution_per_step.append(goal_distribution)
+    env.close()
     return goal_distribution_per_step, valid_action_time_total
 
 def run_test_goal_inference(goals, goal, posteriors):
@@ -213,7 +218,7 @@ def report_results():
             print("mean: ", np.mean(all_states_visited))
             print("std: ", np.std(all_states_visited))
 
-def run_pipeline(index, mode, biased):
+def run_pipeline(indices, mode, biased):
     """
     Precomputation phase:
     Environments x Initial States x Goals --> { 'qvals' : Value function, 'time' : s }
@@ -230,8 +235,10 @@ def run_pipeline(index, mode, biased):
                 # Value function precomputation
                 for goal in headers[env_name][initial_state]:
                     qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                    if do_precomputation and mode == "qv" and index == index_counter:
+                    if do_precomputation and mode == "qv":
                         index_counter += 1
+                        if index_counter not in indices:
+                            continue
                         if do_precomputation == "if not exists":
                             try:
                                 load_results(qval_run_id)
@@ -239,6 +246,7 @@ def run_pipeline(index, mode, biased):
                                 continue
                             except FileNotFoundError:
                                 pass
+                        print("Doing index {}".format(index_counter))
                         start_time = time.time()
                         qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
                         time_elapsed = time.time() - start_time
@@ -251,8 +259,10 @@ def run_pipeline(index, mode, biased):
                 # Goal inference
                 for goal in headers[env_name][initial_state]:
                     gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
-                    if do_goal_inference and mode == "gi" and index == index_counter:
+                    if do_goal_inference and mode == "gi":
                         index_counter += 1
+                        if index_counter not in indices:
+                            continue
                         if do_goal_inference == "if not exists":
                             try:
                                 load_results(gi_run_id)
@@ -290,7 +300,7 @@ def count_indices():
     return index
 
 def print_help():
-    print("Usage: python pipeline.py [biased or unbiased] [qv or gi] [index]")
+    print("Usage: python pipeline.py [biased or unbiased] [qv or gi] [start index] [end index]")
     print("where [index] ranges from 0 to {}".format(count_indices() - 1))
 
 
@@ -298,21 +308,21 @@ def main():
     if len(sys.argv) == 2 and sys.argv[1] == "report":
         report_results()
         sys.exit(0)
-    elif len(sys.argv) != 4:
+    elif len(sys.argv) != 5:
         print_help()
         sys.exit(0)
     else:
         biased_arg = sys.argv[1]
         mode = sys.argv[2]
-        index = sys.argv[3]
+        start_index = sys.argv[3]
+        end_index = sys.argv[4]
 
     assert mode == "qv" or mode == "gi"
     assert biased_arg == "biased" or biased_arg == "unbiased"
+    assert start_index.isdigit() and end_index.isdigit()
     biased = (biased_arg == "biased")
 
-    assert index.isdigit()
-    
-    run_pipeline(int(index), mode, biased=biased)
+    run_pipeline(list(range(int(start_index), int(end_index))), mode, biased=biased)
 
 if __name__ == "__main__":
     main()

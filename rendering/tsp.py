@@ -1,10 +1,10 @@
 from .utils import fig2data
 import matplotlib.pyplot as plt
-try:
-    import networkx as nx
-    IMPORT_SUCCESS = True
-except ImportError:
-    IMPORT_SUCCESS = False
+# try:
+#     import networkx as nx
+#     IMPORT_SUCCESS = True
+# except ImportError:
+IMPORT_SUCCESS = False
 
 
 def render(obs, mode='human', close=False):
