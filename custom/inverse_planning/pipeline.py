@@ -11,9 +11,9 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = False
+do_precomputation = True
 test_qvals = True
-do_goal_inference = False
+do_goal_inference = True
 test_goal_inference = True
 vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
@@ -148,10 +148,6 @@ def get_true_goal_top_ranked(goal_idx, gi_results):
     posterior = posteriors[len(posteriors)//2]
     return goal_idx in np.argwhere(posterior == max(posterior))
 
-def get_num_states_visited(qval_results):
-    unique_state_hashes = { s for s, _ in qval_results["qvals"] }
-    return len(unique_state_hashes)
-
 def report_results(biased):
     headers = create_headers()
 
@@ -179,7 +175,7 @@ def report_results(biased):
                 num_steps = len(gi_results['posteriors'])
                 marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
                 average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
-                states_visited = get_num_states_visited(qval_results)
+                states_visited = vi_maxiters[biased]
 
                 all_posterior_true_goal.append(posterior_true_goal)
                 all_true_goal_top_ranked.append(true_goal_top_ranked)
@@ -267,8 +263,8 @@ def run_pipeline(biased):
 
 
 def main():
-    run_pipeline(biased=True)
-    # run_pipeline(biased=False)
+    # run_pipeline(biased=True)
+    run_pipeline(biased=False)
 
 if __name__ == "__main__":
     main()
