@@ -326,7 +326,8 @@ class PDDLEnv(gym.Env):
             action_variables = action_literal.variables
             variable_sort_fn = lambda v : (not v in action_variables, v)
             assignments = find_satisfying_assignments(kb, conds,
-                variable_sort_fn=variable_sort_fn)
+                variable_sort_fn=variable_sort_fn,
+                type_to_parent_types=self.domain.type_to_parent_types)
             num_assignments = len(assignments)
             if num_assignments > 0:
                 assert num_assignments == 1, "Nondeterministic envs not supported"
@@ -372,7 +373,6 @@ class PDDLEnv(gym.Env):
         # No operator was found
         elif self._raise_error_on_invalid_action:
             # import ipdb; ipdb.set_trace()
-            print("Invalid action:", action)
             raise InvalidAction()
 
         return self._finish_step()

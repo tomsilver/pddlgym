@@ -24,7 +24,7 @@ def run_all(render=True, verbose=True):
     # demo_random("rearrangement", render=render, problem_index=6, verbose=verbose)
     # demo_random("minecraft", render=render, verbose=verbose)
     # demo_ff_planning("rearrangement", 1, render=render, verbose=verbose)
-    # demo_ff_planning("sokoban", 5, render=render, verbose=verbose)
+    demo_ff_planning("sokoban", 5, render=render, verbose=verbose)
     # demo_ff_planning("minecraft", 5, render=render, verbose=verbose)
     # demo_ff_planning("minecraft", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("depot", 4, render=render, verbose=verbose)
@@ -62,4 +62,4 @@ def run_all(render=True, verbose=True):
 
 
 if __name__ == '__main__':
-    run_all()
+    run_all(render=False)
