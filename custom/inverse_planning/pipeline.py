@@ -11,9 +11,9 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = True
+do_precomputation = "if not exists"
 test_qvals = True
-do_goal_inference = True
+do_goal_inference = "if not exists"
 test_goal_inference = True
 vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
@@ -226,6 +226,13 @@ def run_pipeline(biased):
                 for goal in headers[env_name][initial_state]:
                     qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
                     if do_precomputation:
+                        if do_precomputation == "if not exists":
+                            try:
+                                load_results(qval_run_id)
+                                print("Found {}, skipping".format(qval_run_id))
+                                continue
+                            except FileNotFoundError:
+                                pass
                         start_time = time.time()
                         qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
                         time_elapsed = time.time() - start_time
@@ -238,6 +245,13 @@ def run_pipeline(biased):
                 for goal in headers[env_name][initial_state]:
                     gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
                     if do_goal_inference:
+                        if do_goal_inference == "if not exists":
+                            try:
+                                load_results(gi_run_id)
+                                print("Found {}, skipping".format(gi_run_id))
+                                continue
+                            except FileNotFoundError:
+                                pass
                         # Get demonstration
                         demonstration = get_demonstration(env_name, initial_state, goal)
                         # Load qvals for all goals
