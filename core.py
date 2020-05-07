@@ -216,7 +216,10 @@ class PDDLEnv(gym.Env):
         if not self._problem_index_fixed:
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
-        self._state = self._problem.initial_state
+        self._state = { lit for lit in self._problem.initial_state \
+            if lit.predicate.name not in self.domain.actions }
+        self._action_lits = { lit for lit in self._problem.initial_state \
+            if lit.predicate.name in self.domain.actions }
         self._goal = self._problem.goal
         # The action and observation spaces depend on the objects
         self._action_space.update(self._problem.objects)
@@ -235,12 +238,7 @@ class PDDLEnv(gym.Env):
         -------
         obs : { Literal }
         """
-        obs = set()
-        for lit in state:
-            if lit.predicate.name in self.domain.actions:
-                continue
-            obs.add(lit)
-        return obs
+        return { lit for lit in state if lit.predicate.name not in self.domain.actions }
 
     def _initialize_reward_shaping_data(self, debug_info):
         """At the start of each episode, initialize whatever is needed to
@@ -443,11 +441,10 @@ class PDDLEnv(gym.Env):
             objects = PDDLParser._find_balanced_expression(problem, obj_ind)
             init_ind = problem.index("(:init")
             init = "(:init\n"
-            for lit in obs:
-                init += lit.pddl_str()+"\n"
             for lit in state:
-                if lit.predicate.name in self.domain.actions:
-                    init += lit.pddl_str()+"\n"
+                init += lit.pddl_str()+"\n"
+            for lit in self._action_lits:
+                init += lit.pddl_str()+"\n"
             init += "\n)"
             goal_ind = problem.index("(:goal")
             goal = PDDLParser._find_balanced_expression(problem, goal_ind)
