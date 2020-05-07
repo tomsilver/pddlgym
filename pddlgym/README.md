@@ -11,7 +11,6 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 ## Status
 
 **The following PDDL features are not yet supported:**
-- Hierarchical types (blocked by: parsing)
 - Equality (blocked by: parsing and inference)
 - Quantifiers (forall, exists) and disjunctions (ors) (blocked by: inference)
 
