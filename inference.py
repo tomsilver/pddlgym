@@ -6,8 +6,8 @@ from copy import deepcopy
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
-                                max_assignment_count=2):
-    return ProofSearchTree(kb).prove(list(conds), 
+                                max_assignment_count=2, type_to_parent_types=None):
+    return ProofSearchTree(kb, type_to_parent_types=type_to_parent_types).prove(list(conds), 
         max_assignment_count=max_assignment_count, 
         variable_sort_fn=variable_sort_fn,
         verbose=verbose)
@@ -19,12 +19,14 @@ class CommitGoalError(Exception):
 
 class ProofSearchTree(object):
     def __init__(self, knowledge_base, allow_redundant_variables=True,
-                 initial_assignments=None, allow_commit_exception=True):
+                 initial_assignments=None, allow_commit_exception=True,
+                 type_to_parent_types=None):
         self.knowledge_base = self.initialize_kb(knowledge_base)
         self.allow_redundant_variables = allow_redundant_variables
         self.goal_literals = []
         self.initial_assignments = initial_assignments
         self.allow_commit_exception = allow_commit_exception
+        self.type_to_parent_types = type_to_parent_types
 
     def initialize_kb(self, knowledge_base):
         self.all_atoms = set()
@@ -150,7 +152,7 @@ class ProofSearchTree(object):
                             literal_may_hold = False
                             literal_definitely_holds = False
                             break
-                        elif v.var_type != atom.var_type:
+                        elif not self.type_is_of_type(atom.var_type, v.var_type):
                             literal_may_hold = False
                             literal_definitely_holds = False
                             break
@@ -197,6 +199,11 @@ class ProofSearchTree(object):
                 possible_assignments = set()
 
         return possible_assignments - impossible_assignments
+
+    def type_is_of_type(self, type1, type2):
+        if self.type_to_parent_types is None:
+            return type1 == type2
+        return type2 in self.type_to_parent_types[type1]
 
     def create_child_node(self, variable, assignment, parent_node, goal_literals):
         variable_assignments = parent_node['variable_assignments'].copy()

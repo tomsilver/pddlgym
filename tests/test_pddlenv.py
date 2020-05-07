@@ -51,5 +51,64 @@ def test_pddlenv():
 
     print("Test passed.")
 
+def test_pddlenv_hierarchical_types():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    domain_file = os.path.join(dir_path, 'pddl', 'hierarchical_type_test_domain.pddl')
+    problem_dir = os.path.join(dir_path, 'pddl', 'hierarchical_type_test_domain')
+
+    env = PDDLEnv(domain_file, problem_dir)
+    obs, _ = env.reset()
+
+    ispresent = Predicate("ispresent", 1, [Type("entity")])
+    islight = Predicate("islight", 1, [Type("object")])
+    isfurry = Predicate("isfurry", 1, [Type("animal")])
+    ishappy = Predicate("ishappy", 1, [Type("animal")])
+    pet = Predicate("pet", 1, [Type("animal")])
+    throw = Predicate("throw", 1, [Type("object")])
+
+    assert obs == {
+        ispresent('nomsy'),
+        ispresent('rover'),
+        ispresent('rene'),
+        ispresent('block1'),
+        ispresent('block2'),
+        ispresent('cylinder1'),
+        islight('block1'),
+        islight('cylinder1'),
+        isfurry('nomsy'),
+    }
+
+    obs, _, _, _ = env.step(pet('block1'))
+
+    assert obs == {
+        ispresent('nomsy'),
+        ispresent('rover'),
+        ispresent('rene'),
+        ispresent('block1'),
+        ispresent('block2'),
+        ispresent('cylinder1'),
+        islight('block1'),
+        islight('cylinder1'),
+        isfurry('nomsy'),
+    }
+
+    obs, _, _, _ = env.step(pet('nomsy'))
+
+    assert obs == {
+        ispresent('nomsy'),
+        ispresent('rover'),
+        ispresent('rene'),
+        ispresent('block1'),
+        ispresent('block2'),
+        ispresent('cylinder1'),
+        islight('block1'),
+        islight('cylinder1'),
+        isfurry('nomsy'),
+        ishappy('nomsy')
+    }
+
+    print("Test passed.")
+
 if __name__ == "__main__":
     test_pddlenv()
+    test_pddlenv_hierarchical_types()
