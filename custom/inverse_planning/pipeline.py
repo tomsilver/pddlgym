@@ -20,7 +20,7 @@ horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    "InversePlanningBlocks-v0",
+    # "InversePlanningBlocks-v0",
     "InversePlanningIntrusionDetection-v0",
     "InversePlanningGrid-v0",
     "InversePlanningLogistics-v0",
@@ -233,6 +233,7 @@ def run_pipeline(biased):
                         save_results(qval_run_id, results)
                         if test_qvals:
                             run_test_qvals(env_name, initial_state, goal, qvals)
+                        del qvals
 
                 # Goal inference
                 for goal in headers[env_name][initial_state]:
@@ -255,8 +256,7 @@ def run_pipeline(biased):
                         results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
                         save_results(gi_run_id, results)
                         if test_goal_inference:
-                            if not run_test_goal_inference(goals, goal, posteriors):
-                                import ipdb; ipdb.set_trace()
+                            run_test_goal_inference(goals, goal, posteriors)
 
     # Results summary
     report_results(biased)

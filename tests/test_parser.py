@@ -66,5 +66,40 @@ def integration_test():
 
     print("Test passed.")
 
+def test_hierarchical_types():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    domain_file = os.path.join(dir_path, 'pddl', 'hierarchical_type_test_domain.pddl')
+    problem_file = os.path.join(dir_path, 'pddl', 'hierarchical_type_test_domain', 
+        'hierarchical_type_test_problem.pddl')
+    domain = PDDLDomainParser(domain_file)
+    problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
+        domain.predicates)
+
+    assert set(domain.types.keys()) == {Type("dog"), Type("cat"), Type("animal"), 
+        Type("block"), Type("cylinder"), Type("jindo"), Type("corgi"), 
+        Type("object"), Type("entity")}
+
+    assert domain.type_hierarchy == {
+        Type("animal") : { Type("dog"), Type("cat") },
+        Type("dog") : { Type("jindo"), Type("corgi") },
+        Type("object") : { Type("block"), Type("cylinder") },
+        Type("entity") : { Type("object"), Type("animal") },
+    }
+
+    assert domain.type_to_parent_types == {
+        Type("entity") : { Type("entity") },
+        Type("object") : { Type("object"), Type("entity") },
+        Type("animal") : { Type("animal"), Type("entity") },
+        Type("dog") : { Type("dog"), Type("animal"), Type("entity") },
+        Type("cat") : { Type("cat"), Type("animal"), Type("entity") },
+        Type("corgi") : { Type("corgi"), Type("dog"), Type("animal"), Type("entity") },
+        Type("jindo") : { Type("jindo"), Type("dog"), Type("animal"), Type("entity") },
+        Type("block") : { Type("block"), Type("object"), Type("entity") },
+        Type("cylinder") : { Type("cylinder"), Type("object"), Type("entity") },
+    }
+
+    print("Test passed.")
+
 if __name__ == "__main__":
     integration_test()
+    test_hierarchical_types()
