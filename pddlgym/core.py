@@ -238,7 +238,7 @@ class PDDLEnv(gym.Env):
         -------
         obs : { Literal }
         """
-        return { lit for lit in state if lit.predicate.name not in self.domain.actions }
+        return state
 
     def _initialize_reward_shaping_data(self, debug_info):
         """At the start of each episode, initialize whatever is needed to
