@@ -11,16 +11,16 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = True
+do_precomputation = "if not exists"
 test_qvals = True
-do_goal_inference = True
+do_goal_inference = "if not exists"
 test_goal_inference = True
 vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    # "InversePlanningBlocks-v0",
+    "InversePlanningBlocks-v0",
     "InversePlanningIntrusionDetection-v0",
     "InversePlanningGrid-v0",
     "InversePlanningLogistics-v0",
@@ -28,7 +28,7 @@ env_names = [
     "InversePlanningKitchen-v0",
 ]
 
-def create_headers():
+def create_headers(verbose=False):
     """headers[env_name][initial_state] -> [goals]"""
     headers = OrderedDict()
     for env_name in env_names:
@@ -47,12 +47,13 @@ def create_headers():
         for initial_state in problem_prefixes:
             headers[env_name][initial_state] = problem_prefix_to_group[initial_state]
 
-    print("All headers:")
-    for env_name in headers:
-        print(env_name)
-        for initial_state in headers[env_name]:
-            print("  {}".format(initial_state))
-            print("    {}".format(headers[env_name][initial_state]))
+    if verbose:
+        print("All headers:")
+        for env_name in headers:
+            print(env_name)
+            for initial_state in headers[env_name]:
+                print("  {}".format(initial_state))
+                print("    {}".format(headers[env_name][initial_state]))
 
     return headers
 
@@ -148,68 +149,71 @@ def get_true_goal_top_ranked(goal_idx, gi_results):
     posterior = posteriors[len(posteriors)//2]
     return goal_idx in np.argwhere(posterior == max(posterior))
 
-def report_results(biased):
-    headers = create_headers()
+def report_results():
+    for biased in [True, False]:
+        print("### Results for biased={}".format(biased))
 
-    for env_name in env_names:
-        all_posterior_true_goal = []
-        all_true_goal_top_ranked = []
-        all_initial_time_cost = []
-        all_marginal_time_cost_per_step = []
-        all_average_cost_per_step = []
-        all_states_visited = []
+        headers = create_headers()
 
-        for initial_state in headers[env_name]:
-            for goal_idx, goal in enumerate(headers[env_name][initial_state]):
-                qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                qval_results = load_results(qval_run_id)
-                gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
-                gi_results = load_results(gi_run_id)
+        for env_name in env_names:
+            all_posterior_true_goal = []
+            all_true_goal_top_ranked = []
+            all_initial_time_cost = []
+            all_marginal_time_cost_per_step = []
+            all_average_cost_per_step = []
+            all_states_visited = []
 
-                # Accuracy
-                posterior_true_goal = get_posterior_for_true_goal(goal_idx, gi_results)
-                true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
+            for initial_state in headers[env_name]:
+                for goal_idx, goal in enumerate(headers[env_name][initial_state]):
+                    qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
+                    qval_results = load_results(qval_run_id)
+                    gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
+                    gi_results = load_results(gi_run_id)
 
-                # Speed
-                initial_time_cost = qval_results['time_elapsed']
-                num_steps = len(gi_results['posteriors'])
-                marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
-                average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
-                states_visited = vi_maxiters[biased]
+                    # Accuracy
+                    posterior_true_goal = get_posterior_for_true_goal(goal_idx, gi_results)
+                    true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
 
-                all_posterior_true_goal.append(posterior_true_goal)
-                all_true_goal_top_ranked.append(true_goal_top_ranked)
-                all_initial_time_cost.append(initial_time_cost)
-                all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
-                all_average_cost_per_step.append(average_cost_per_step)
-                all_states_visited.append(states_visited)
+                    # Speed
+                    initial_time_cost = qval_results['time_elapsed']
+                    num_steps = len(gi_results['posteriors'])
+                    marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
+                    average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
+                    states_visited = vi_maxiters[biased]
 
-        print("**** {} ****".format(env_name))
-        print("\nPosterior true goal")
-        print("mean: ", np.mean(all_posterior_true_goal))
-        print("std: ", np.std(all_posterior_true_goal))
+                    all_posterior_true_goal.append(posterior_true_goal)
+                    all_true_goal_top_ranked.append(true_goal_top_ranked)
+                    all_initial_time_cost.append(initial_time_cost)
+                    all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
+                    all_average_cost_per_step.append(average_cost_per_step)
+                    all_states_visited.append(states_visited)
 
-        print("\nTrue goal top ranked")
-        print("mean: ", np.mean(all_true_goal_top_ranked))
-        print("std: ", np.std(all_true_goal_top_ranked))
+            print("**** {} ****".format(env_name))
+            print("\nPosterior true goal")
+            print("mean: ", np.mean(all_posterior_true_goal))
+            print("std: ", np.std(all_posterior_true_goal))
 
-        print("\nInitial time cost")
-        print("mean: ", np.mean(all_initial_time_cost))
-        print("std: ", np.std(all_initial_time_cost))
+            print("\nTrue goal top ranked")
+            print("mean: ", np.mean(all_true_goal_top_ranked))
+            print("std: ", np.std(all_true_goal_top_ranked))
 
-        print("\nMarginal time cost per step")
-        print("mean: ", np.mean(all_marginal_time_cost_per_step))
-        print("std: ", np.std(all_marginal_time_cost_per_step))
+            print("\nInitial time cost")
+            print("mean: ", np.mean(all_initial_time_cost))
+            print("std: ", np.std(all_initial_time_cost))
 
-        print("\nAverage cost per step")
-        print("mean: ", np.mean(all_average_cost_per_step))
-        print("std: ", np.std(all_average_cost_per_step))
+            print("\nMarginal time cost per step")
+            print("mean: ", np.mean(all_marginal_time_cost_per_step))
+            print("std: ", np.std(all_marginal_time_cost_per_step))
 
-        print("\nStates visited")
-        print("mean: ", np.mean(all_states_visited))
-        print("std: ", np.std(all_states_visited))
+            print("\nAverage cost per step")
+            print("mean: ", np.mean(all_average_cost_per_step))
+            print("std: ", np.std(all_average_cost_per_step))
 
-def run_pipeline(biased):
+            print("\nStates visited")
+            print("mean: ", np.mean(all_states_visited))
+            print("std: ", np.std(all_states_visited))
+
+def run_pipeline(index, mode, biased):
     """
     Precomputation phase:
     Environments x Initial States x Goals --> { 'qvals' : Value function, 'time' : s }
@@ -219,13 +223,22 @@ def run_pipeline(biased):
     """
     headers = create_headers()
 
+    index_counter = 0
     if do_precomputation or do_goal_inference:
         for env_name in env_names:
             for initial_state in headers[env_name]:
                 # Value function precomputation
                 for goal in headers[env_name][initial_state]:
                     qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                    if do_precomputation:
+                    if do_precomputation and mode == "qv" and index == index_counter:
+                        index_counter += 1
+                        if do_precomputation == "if not exists":
+                            try:
+                                load_results(qval_run_id)
+                                print("Found {}, skipping".format(qval_run_id))
+                                continue
+                            except FileNotFoundError:
+                                pass
                         start_time = time.time()
                         qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
                         time_elapsed = time.time() - start_time
@@ -238,7 +251,15 @@ def run_pipeline(biased):
                 # Goal inference
                 for goal in headers[env_name][initial_state]:
                     gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
-                    if do_goal_inference:
+                    if do_goal_inference and mode == "gi" and index == index_counter:
+                        index_counter += 1
+                        if do_goal_inference == "if not exists":
+                            try:
+                                load_results(gi_run_id)
+                                print("Found {}, skipping".format(gi_run_id))
+                                continue
+                            except FileNotFoundError:
+                                pass
                         # Get demonstration
                         demonstration = get_demonstration(env_name, initial_state, goal)
                         # Load qvals for all goals
@@ -256,15 +277,42 @@ def run_pipeline(biased):
                         results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
                         save_results(gi_run_id, results)
                         if test_goal_inference:
-                            run_test_goal_inference(goals, goal, posteriors)
+                            if not run_test_goal_inference(goals, goal, posteriors):
+                                import ipdb; ipdb.set_trace()
 
-    # Results summary
-    report_results(biased)
+def count_indices():
+    headers = create_headers(verbose=False)
+    index = 0
+    for env_name in env_names:
+        for initial_state in headers[env_name]:
+            for goal in headers[env_name][initial_state]:
+                index += 1
+    return index
+
+def print_help():
+    print("Usage: python pipeline.py [biased or unbiased] [qv or gi] [index]")
+    print("where [index] ranges from 0 to {}".format(count_indices() - 1))
 
 
 def main():
-    # run_pipeline(biased=True)
-    run_pipeline(biased=False)
+    if len(sys.argv) == 2 and sys.argv[1] == "report":
+        report_results()
+        sys.exit(0)
+    elif len(sys.argv) != 4:
+        print_help()
+        sys.exit(0)
+    else:
+        biased_arg = sys.argv[1]
+        mode = sys.argv[2]
+        index = sys.argv[3]
+
+    assert mode == "qv" or mode == "gi"
+    assert biased_arg == "biased" or biased_arg == "unbiased"
+    biased = (biased_arg == "biased")
+
+    assert index.isdigit()
+    
+    run_pipeline(int(index), mode, biased=biased)
 
 if __name__ == "__main__":
     main()
