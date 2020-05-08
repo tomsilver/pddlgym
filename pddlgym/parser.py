@@ -514,13 +514,19 @@ class PDDLProblemParser(PDDLParser):
             fast_downward_order=fast_downward_order)
 
 
-def parse_plan_step(plan_step, operators, action_predicates, operators_as_actions=False):
+def parse_plan_step(plan_step, operators, action_predicates, objects, operators_as_actions=False):
     plan_step_split = plan_step.split()
 
     if operators_as_actions:
         action_predicate = [a for a in action_predicates \
             if a.name.lower() == plan_step_split[0].lower()][0]
-        return action_predicate(*plan_step_split[1:])
+        object_names = plan_step_split[1:]
+        args = []
+        for name in object_names:
+            matches = [o for o in objects if o.name == name]
+            assert len(matches) == 1
+            args.append(matches[0])
+        return action_predicate(*args)
 
     # Get the operator from its name
     operator = None
@@ -531,7 +537,12 @@ def parse_plan_step(plan_step, operators, action_predicates, operators_as_action
     assert operator is not None, "Unknown operator '{}'".format(plan_step_split[0])
 
     assert len(plan_step_split) == len(operator.params) + 1
-    args = plan_step_split[1:]
+    object_names = plan_step_split[1:]
+    args = []
+    for name in object_names:
+        matches = [o for o in objects if o.name == name]
+        assert len(matches) == 1
+        args.append(matches[0])
     assignments = dict(zip(operator.params, args))
 
     for cond in operator.preconds.literals:
