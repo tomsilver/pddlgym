@@ -160,14 +160,12 @@ class Literal:
         self.is_anti = predicate.is_anti
         self.negated_as_failure = predicate.negated_as_failure
 
-        # Verify types
+        # Apply types to untyped objects
         if self.predicate.var_types is not None:
             for i, (expected_type, var) in enumerate(zip(self.predicate.var_types, self.variables)):
                 if not hasattr(var, 'var_type'):
                     # Convert strings
                     self.variables[i] = expected_type(var)
-                elif var.var_type != expected_type:
-                    raise TypeError()
 
     def __str__(self):
         return str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'

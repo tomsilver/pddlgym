@@ -115,6 +115,7 @@ class PDDLParser:
                 return Not(self._parse_into_literal(clause, params, is_effect=is_effect))
         string = string[1:-1].split()
         pred, args = string[0], string[1:]
+        typed_args = []
         # Validate types against the given params dict.
         assert pred in self.predicates, "Predicate {} is not defined".format(pred)
         assert self.predicates[pred].arity == len(args), pred
@@ -122,7 +123,12 @@ class PDDLParser:
             if arg not in params:
                 import ipdb; ipdb.set_trace()
             assert arg in params, "Argument {} is not in the params".format(arg)
-        return self.predicates[pred](*args)
+            if isinstance(params, dict):
+                typed_arg = TypedEntity(arg, params[arg])
+            else:
+                typed_arg = params[params.index(arg)]
+            typed_args.append(typed_arg)
+        return self.predicates[pred](*typed_args)
 
     def _parse_objects(self, objects):
         if objects.find("\n") != -1:
