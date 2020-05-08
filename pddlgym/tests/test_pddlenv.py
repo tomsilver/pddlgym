@@ -66,45 +66,52 @@ def test_pddlenv_hierarchical_types():
     pet = Predicate("pet", 1, [Type("animal")])
     throw = Predicate("throw", 1, [Type("object")])
 
+    nomsy = Type("jindo")("nomsy")
+    rover = Type("corgi")("rover")
+    rene = Type("cat")("rene")
+    block1 = Type("block")("block1")
+    block2 = Type("block")("block2")
+    cylinder1 = Type("cylinder")("cylinder1")
+
     assert obs == {
-        ispresent('nomsy'),
-        ispresent('rover'),
-        ispresent('rene'),
-        ispresent('block1'),
-        ispresent('block2'),
-        ispresent('cylinder1'),
-        islight('block1'),
-        islight('cylinder1'),
-        isfurry('nomsy'),
+        ispresent(nomsy),
+        ispresent(rover),
+        ispresent(rene),
+        ispresent(block1),
+        ispresent(block2),
+        ispresent(cylinder1),
+        islight(block1),
+        islight(cylinder1),
+        isfurry(nomsy),
     }
 
     obs, _, _, _ = env.step(pet('block1'))
 
     assert obs == {
-        ispresent('nomsy'),
-        ispresent('rover'),
-        ispresent('rene'),
-        ispresent('block1'),
-        ispresent('block2'),
-        ispresent('cylinder1'),
-        islight('block1'),
-        islight('cylinder1'),
-        isfurry('nomsy'),
+        ispresent(nomsy),
+        ispresent(rover),
+        ispresent(rene),
+        ispresent(block1),
+        ispresent(block2),
+        ispresent(cylinder1),
+        islight(block1),
+        islight(cylinder1),
+        isfurry(nomsy),
     }
 
-    obs, _, _, _ = env.step(pet('nomsy'))
+    obs, _, _, _ = env.step(pet(nomsy))
 
     assert obs == {
-        ispresent('nomsy'),
-        ispresent('rover'),
-        ispresent('rene'),
-        ispresent('block1'),
-        ispresent('block2'),
-        ispresent('cylinder1'),
-        islight('block1'),
-        islight('cylinder1'),
-        isfurry('nomsy'),
-        ishappy('nomsy')
+        ispresent(nomsy),
+        ispresent(rover),
+        ispresent(rene),
+        ispresent(block1),
+        ispresent(block2),
+        ispresent(cylinder1),
+        islight(block1),
+        islight(cylinder1),
+        isfurry(nomsy),
+        ishappy(nomsy)
     }
 
     print("Test passed.")

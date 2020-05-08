@@ -131,13 +131,16 @@ class PDDLEnv(gym.Env):
         self.action_predicates = [self.domain.predicates[a] for a in actions]
         if dynamic_action_space:
             self._action_space = LiteralSpace(
-                self.action_predicates, lit_valid_test=self._action_valid_test)
+                self.action_predicates, lit_valid_test=self._action_valid_test,
+                type_to_parent_types=self.domain.type_to_parent_types)
         else:
-            self._action_space = LiteralSpace(self.action_predicates)
+            self._action_space = LiteralSpace(self.action_predicates,
+                type_to_parent_types=self.domain.type_to_parent_types)
 
         # Initialize observation space with problem-independent components
         self._observation_space = LiteralSetSpace(
-            set(self.domain.predicates.values()) - set(self.action_predicates))
+            set(self.domain.predicates.values()) - set(self.action_predicates),
+            type_to_parent_types=self.domain.type_to_parent_types)
 
         if self._compute_approx_reachable_set:
             self._delete_relaxed_ops = self._get_delete_relaxed_ops()
@@ -348,7 +351,8 @@ class PDDLEnv(gym.Env):
             action_variables = action_literal.variables
             variable_sort_fn = lambda v : (not v in action_variables, v)
             assignments = find_satisfying_assignments(kb, conds,
-                variable_sort_fn=variable_sort_fn)
+                variable_sort_fn=variable_sort_fn,
+                type_to_parent_types=self.domain.type_to_parent_types)
             num_assignments = len(assignments)
             if num_assignments > 0:
                 assert num_assignments == 1, "Nondeterministic envs not supported"

@@ -13,11 +13,13 @@ import itertools
 class LiteralSpace(Space):
 
     def __init__(self, predicates,
-                 lit_valid_test=lambda lit: True):
+                 lit_valid_test=lambda lit: True,
+                 type_to_parent_types=None):
         self.predicates = sorted(predicates)
         self.num_predicates = len(predicates)
         self.objects = set()
         self.lit_valid_test = lit_valid_test
+        self.type_to_parent_types = type_to_parent_types
         super().__init__()
 
     def update(self, objs):
@@ -25,7 +27,11 @@ class LiteralSpace(Space):
         self.type_to_objs = defaultdict(list)
 
         for obj in sorted(objs):
-            self.type_to_objs[obj.var_type].append(obj)
+            if self.type_to_parent_types is None:
+                self.type_to_objs[obj.var_type].append(obj)
+            else:
+                for t in self.type_to_parent_types[obj.var_type]:
+                    self.type_to_objs[t].append(obj)
 
         self.objects = objs
 
