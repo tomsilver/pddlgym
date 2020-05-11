@@ -20,11 +20,11 @@ horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    "InversePlanningBlocks-v0",
-    "InversePlanningIntrusionDetection-v0",
-    "InversePlanningGrid-v0",
-    "InversePlanningLogistics-v0",
-    "InversePlanningCampus-v0",
+    # "InversePlanningBlocks-v0",
+    # "InversePlanningIntrusionDetection-v0",
+    # "InversePlanningGrid-v0",
+    # "InversePlanningLogistics-v0",
+    # "InversePlanningCampus-v0",
     "InversePlanningKitchen-v0",
 ]
 
@@ -75,6 +75,10 @@ def load_results(run_id):
     with open(outfile, 'rb') as f:
         results = pickle.load(f)
     return results
+
+def results_exist(run_id):
+    outfile = os.path.join(outdir, run_id + '.pkl')
+    return os.path.exists(outfile)
 
 def create_env(env_name, initial_state, goal):
     env = gym.make(env_name)
@@ -193,6 +197,11 @@ def report_results():
                     all_average_cost_per_step.append(average_cost_per_step)
                     all_states_visited.append(states_visited)
 
+                    del qval_results
+                    del gi_results
+
+            print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
+
             print("**** {} ****".format(env_name))
             print("\nPosterior true goal")
             print("mean: ", np.mean(all_posterior_true_goal))
@@ -240,12 +249,9 @@ def run_pipeline(indices, mode, biased):
                         if index_counter not in indices:
                             continue
                         if do_precomputation == "if not exists":
-                            try:
-                                load_results(qval_run_id)
+                            if results_exist(qval_run_id):
                                 print("Found {}, skipping".format(qval_run_id))
                                 continue
-                            except FileNotFoundError:
-                                pass
                         print("Doing index {}".format(index_counter))
                         start_time = time.time()
                         qvals = compute_qvals(env_name, initial_state, goal, biased=biased)
@@ -264,12 +270,10 @@ def run_pipeline(indices, mode, biased):
                         if index_counter not in indices:
                             continue
                         if do_goal_inference == "if not exists":
-                            try:
-                                load_results(gi_run_id)
+                            if results_exist(gi_run_id):
                                 print("Found {}, skipping".format(gi_run_id))
                                 continue
-                            except FileNotFoundError:
-                                pass
+                        print("Doing index {}".format(index_counter))
                         # Get demonstration
                         demonstration = get_demonstration(env_name, initial_state, goal)
                         # Load qvals for all goals
@@ -277,8 +281,9 @@ def run_pipeline(indices, mode, biased):
                         goal_qvals = []
                         for g in goals:
                             qval_q_run_id = get_qval_run_id(env_name, initial_state, g, biased=biased)
-                            results_g = load_results(qval_q_run_id)
+                            results_g = load_results(qval_q_run_id) # too large
                             qvals_g = results_g["qvals"]
+                            # qvals_g = os.path.join(outdir, qval_q_run_id + '.pkl')
                             goal_qvals.append(qvals_g)
                         start_time = time.time()
                         posteriors, time_to_ignore = compute_goal_inference_posteriors(demonstration, 
@@ -287,8 +292,7 @@ def run_pipeline(indices, mode, biased):
                         results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
                         save_results(gi_run_id, results)
                         if test_goal_inference:
-                            if not run_test_goal_inference(goals, goal, posteriors):
-                                import ipdb; ipdb.set_trace()
+                            run_test_goal_inference(goals, goal, posteriors)
 
 def count_indices():
     headers = create_headers(verbose=False)
