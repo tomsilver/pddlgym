@@ -113,7 +113,7 @@
 (pasloc-at-loc green loc4)
 (pasloc-at-loc yellow loc20)
 (pasloc-at-loc blue loc23)
-(taxi-at loc24)
+(taxi-at loc6)
 (passenger-at yellow)
 (destination green)
 )

@@ -9,21 +9,19 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
     domain_file = os.path.join(dir_path, "taxi.pddl")
 
-    rng = np.random.RandomState(0)
-    problem_index_to_state = list(range(500))
-    rng.shuffle(problem_index_to_state)
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not os.path.exists(self.domain_file):
             self._create_domain_file()
-        self._problem_index = None
         self._render = super().render
+        self._problem_idx = None
+        self._problem_index_fixed = False
+        self._problem_index_to_state = self._create_problem_index_to_state()
 
     def reset(self):
         obs = super().reset()
-        if self._problem_index is not None:
-            self.s = self.problem_index_to_state[self._problem_index]
+        if self._problem_index_fixed:
+            self.s = self._problem_index_to_state[self._problem_idx]
             obs = self.s
 
         return obs, {
@@ -36,7 +34,8 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
             return self._render(*args, **kwargs)
 
     def fix_problem_index(self, idx):
-        self._problem_index = idx
+        self._problem_index_fixed = True
+        self._problem_idx = idx
 
     def parse_action_str(self, action_str):
         action_str = action_str.strip()
@@ -49,8 +48,21 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
             return 5
         import ipdb; ipdb.set_trace()
 
+    def _create_problem_index_to_state(self):
+        out = []
+        row = 1
+        col = 1
+        for pass_idx in range(4):
+            for dest_idx in range(4):
+                if pass_idx == dest_idx:
+                    continue
+                s = self.encode(row, col, pass_idx, dest_idx)
+                out.append(s)
+        assert len(out) == 12
+        return out
+
     def _get_problem_file(self):
-        problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self._problem_index))
+        problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self._problem_idx))
         if not os.path.exists(problem_file):
             self._create_problem_file(problem_file)
         return problem_file

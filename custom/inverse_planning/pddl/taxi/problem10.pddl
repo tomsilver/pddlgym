@@ -114,8 +114,8 @@
 (pasloc-at-loc yellow loc20)
 (pasloc-at-loc blue loc23)
 (taxi-at loc6)
-(passenger-at green)
-(destination yellow)
+(passenger-at blue)
+(destination green)
 )
 (:goal
 (and

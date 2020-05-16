@@ -154,9 +154,12 @@ class VideoWrapper(gym.Wrapper):
         return obs, reward, done, debug_info
 
     def close(self):
-        imageio.mimsave(self.out_path, self.images, fps=self.fps)
-        print("Wrote out video to {}.".format(self.out_path))
-        return super().close()
+        try:
+            imageio.mimsave(self.out_path, self.images, fps=self.fps)
+            print("Wrote out video to {}.".format(self.out_path))
+            return super().close()
+        except ValueError:
+            pass
 
     def process_image(self, img):
         if self.size is None:
