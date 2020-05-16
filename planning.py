@@ -58,7 +58,7 @@ def run_fd(domain_file, problem_file, horizon=np.inf, timeout=10):
     output = subprocess.getoutput(cmd_str)
     if "no solution" in output:
         # No solution found, just act randomly and hope for the best.
-        return [env.action_var.sample()]
+        import ipdb; ipdb.set_trace()
     if "Solution found." not in output:
         print(output)
         import ipdb; ipdb.set_trace()

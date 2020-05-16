@@ -171,7 +171,7 @@ def run_all(render=True, verbose=True):
     # demo_planning("ff", "InversePlanningLogistics-v0", 75, render=render, verbose=verbose)
     # demo_planning("ff", "InversePlanningCampus-v0", 75, render=render, verbose=verbose)
     # demo_planning("ff", "InversePlanningKitchen-v0", 75, render=render, verbose=verbose)
-    demo_planning("fd", "InversePlanningTaxi-v0", 500, render=render, verbose=verbose)
+    demo_planning("fd", "InversePlanningTaxi-v0", 75, render=render, verbose=verbose)
     # run_async_vi_experiment("EasyInversePlanningBlocks-v0", 3, vi_maxiters=2500)
     # run_async_vi_experiment("EasyInversePlanningIntrusionDetection-v0", 3, vi_maxiters=5000)
     # run_async_vi_experiment("EasyInversePlanningGrid-v0", 3, vi_maxiters=5000)
