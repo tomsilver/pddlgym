@@ -115,11 +115,10 @@
 (pasloc-at-loc blue loc23)
 (taxi-at loc6)
 (passenger-at yellow)
-(destination green)
 )
 (:goal
 (and
-(done)
+(passenger-at green)
 )
 )
 (:metric minimize (total-cost))

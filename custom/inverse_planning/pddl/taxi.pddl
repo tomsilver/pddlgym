@@ -11,7 +11,6 @@
         (taxi-at ?l - loc)
         (passenger-at ?pl - pasloc)
         (pasloc-at-loc ?pl - pasloc ?l - loc)
-        (destination ?pl - pasloc)
         (done)
     )
     (:functions
@@ -48,13 +47,11 @@
             (taxi-at ?loc)
             (passenger-at intaxi)
             (pasloc-at-loc ?pasloc ?loc)
-            (destination ?pasloc)
         )
         :effect (and
             (not (passenger-at intaxi))
             (passenger-at ?pasloc)
             (increase (total-cost) 1)
-            (done)
         )
     )
 )

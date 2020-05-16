@@ -81,7 +81,6 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
         (taxi-at ?l - loc)
         (passenger-at ?pl - pasloc)
         (pasloc-at-loc ?pl - pasloc ?l - loc)
-        (destination ?pl - pasloc)
         (done)
     )
     (:functions
@@ -118,13 +117,11 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
             (taxi-at ?loc)
             (passenger-at intaxi)
             (pasloc-at-loc ?pasloc ?loc)
-            (destination ?pasloc)
         )
         :effect (and
             (not (passenger-at intaxi))
             (passenger-at ?pasloc)
             (increase (total-cost) 1)
-            (done)
         )
     )
 )
@@ -138,6 +135,8 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
 
         dir_order = ['south', 'north', 'east', 'west']
         pasloc_order = ['red', 'green', 'yellow', 'blue', 'intaxi']
+
+        destination = pasloc_order[dest_idx]
 
         max_row = 4
         max_col = 4
@@ -168,9 +167,8 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
 
         taxi_at_str = "(taxi-at loc{})".format(taxi_loc)
         passenger_at_str = "(passenger-at {})".format(pasloc_order[pass_idx])
-        destination_str = "(destination {})".format(pasloc_order[dest_idx])
         
-        state_str = "\n".join([move_dir_str, pasloc_at_loc_str, taxi_at_str, passenger_at_str, destination_str])
+        state_str = "\n".join([move_dir_str, pasloc_at_loc_str, taxi_at_str, passenger_at_str])
         
         problem_str = """
 (define (problem taxiproblem)
@@ -185,12 +183,12 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
 )
 (:goal
 (and
-(done)
+(passenger-at {})
 )
 )
 (:metric minimize (total-cost))
 )
-""".format(state_str)
+""".format(state_str, destination)
         with open(problem_file, "w") as f:
             f.write(problem_str)
 
