@@ -9,6 +9,10 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
     domain_file = os.path.join(dir_path, "taxi.pddl")
 
+    rng = np.random.RandomState(0)
+    problem_index_to_state = list(range(500))
+    rng.shuffle(problem_index_to_state)
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not os.path.exists(self.domain_file):
@@ -19,7 +23,7 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     def reset(self):
         obs = super().reset()
         if self._problem_index is not None:
-            self.s = self._problem_index
+            self.s = self.problem_index_to_state[self._problem_index]
             obs = self.s
 
         return obs, {
@@ -46,7 +50,7 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
         import ipdb; ipdb.set_trace()
 
     def _get_problem_file(self):
-        problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self.s))
+        problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self._problem_index))
         if not os.path.exists(problem_file):
             self._create_problem_file(problem_file)
         return problem_file
