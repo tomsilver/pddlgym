@@ -6,6 +6,7 @@ import re
 import subprocess
 import pyperplan
 import time
+import random
 
 class PlanningException(Exception):
     pass
@@ -13,6 +14,8 @@ class PlanningException(Exception):
 def run_planner(env, domain_file, problem_file, planner_name, **kwargs):
     if planner_name == 'ff':
         return run_ff(domain_file, problem_file, **kwargs)
+    if planner_name == 'fd':
+        return run_fd(domain_file, problem_file, **kwargs)
     if planner_name == "vi":
         return run_value_iteration(env, **kwargs)
     if planner_name == "avi":
@@ -36,6 +39,47 @@ def run_ff(domain_file, problem_file, horizon=np.inf, timeout=10):
     plan = re.findall(r"\d+?: (.+)", output.lower())
     if not plan:
         raise PlanningException("Plan not found with FF! Error: {}".format(output))
+    if len(plan) > horizon:
+        return []
+    return plan
+
+def run_fd(domain_file, problem_file, horizon=np.inf, timeout=10):
+    if 'FD_PATH' not in os.environ:
+        raise Exception("Environment variable `FD_PATH` not found. " + \
+            "Make sure fd is installed and FD_PATH is set to the directory containing the fast-downward.py executable.")
+
+    FD_PATH = os.environ['FD_PATH']
+    rand_num = random.randint(0, 10e8)
+    tmp_plan_file = "plan_{}.dat".format(rand_num)
+    search_method = "astar(lmcut(transform=no_transform(), cache_estimates=true))"
+    timeout_cmd = "gtimeout" if sys.platform == "darwin" else "timeout"
+    cmd_str = "{} {} {}/fast-downward.py --plan-file {} {} {} --search '{}'".format(timeout_cmd, 
+        timeout if timeout is not None else 0, FD_PATH, tmp_plan_file, domain_file, problem_file, search_method)
+    output = subprocess.getoutput(cmd_str)
+    if "no solution" in output:
+        # No solution found, just act randomly and hope for the best.
+        return [env.action_var.sample()]
+    if "Solution found." not in output:
+        print(output)
+        import ipdb; ipdb.set_trace()
+
+    if "no solution" in output:
+        # No solution found
+        import ipdb; ipdb.set_trace()
+    if "Solution found." not in output:
+        print(output)
+        import ipdb; ipdb.set_trace()
+
+    with open(tmp_plan_file, 'r') as f:
+        plan_str = f.read()
+    plan_str = "\n".join(plan_str.rstrip().split("\n")[:-1])
+    plan = []
+    for action_str in plan_str.split("\n"):
+        # Remove parens
+        action_str = action_str.strip().rstrip()[1:-1]
+        plan.append(action_str)
+    os.remove(tmp_plan_file)
+    print("FD solver generated length-{} plan".format(len(plan)))
     if len(plan) > horizon:
         return []
     return plan

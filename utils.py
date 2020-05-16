@@ -80,6 +80,8 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     if plan and len(plan) > 0:
         if isinstance(plan[0], Literal):
             actions = plan
+        elif hasattr(env, 'parse_action_str'):
+            actions = [env.parse_action_str(a) for a in plan]
         else:
             actions = [parse_plan_step(s, env.domain.operators.values(), 
                     env.action_predicates, operators_as_actions=env.operators_as_actions) \
