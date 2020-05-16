@@ -81,7 +81,6 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
         (taxi-at ?l - loc)
         (passenger-at ?pl - pasloc)
         (pasloc-at-loc ?pl - pasloc ?l - loc)
-        (done)
     )
     (:functions
         (total-cost) - number

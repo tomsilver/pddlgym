@@ -204,5 +204,5 @@ def run_all(render=True, verbose=True):
     # run_goal_inference_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, biased=True)
 
 if __name__ == '__main__':
-    run_all(render=True)
+    run_all(render=False)
 
