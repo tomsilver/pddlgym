@@ -6,6 +6,28 @@ from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunc
 import re
 
 
+FAST_DOWNWARD_STR = """
+(define (problem {problem}) (:domain {domain})
+  (:objects
+        {objects}
+  )
+  (:init \n\t{init_state}
+  )
+  (:goal {goal})
+)
+"""
+
+PROBLEM_STR = """
+(define (problem {problem}) (:domain {domain})
+  (:objects
+        {objects}
+  )
+  (:goal {goal})
+  (:init \n\t{init_state}
+))
+"""
+
+
 class Operator:
     """Class to hold an operator.
     """
@@ -472,45 +494,65 @@ class PDDLProblemParser(PDDLParser):
         self.goal = self._parse_into_literal(goal, params)
 
     @staticmethod
-    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal,
-                         fast_downward_order=False):
+    def pddl_string(objects, initial_state, problem_name, domain_name, goal,
+                    fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
-        objects_typed = "\n\t".join(list(sorted(map(lambda o : str(o).replace(":", " - "), 
-            objects))))
+        objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
+                                                    objects))))
         init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
 
-        if fast_downward_order:
-            problem_str = """
-(define (problem {}) (:domain {})
-  (:objects
-        {}
-  )
-  (:init \n\t{}
-  )
-  (:goal {})
-)
-        """.format(problem_name, domain_name, objects_typed, init_state, goal.pddl_str())
-        else:
-            problem_str = """
-(define (problem {}) (:domain {})
-  (:objects
-        {}
-  )
-  (:goal {})
-  (:init \n\t{}
-))
-        """.format(problem_name, domain_name, objects_typed, goal.pddl_str(), init_state)
+        problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
+        return problem_str.format(
+            problem=problem_name,
+            domain=domain_name,
+            objects=objects_typed,
+            init_state=init_state,
+            goal=goal.pddl_str(),
+        )
 
-        with open(fname, 'w') as f:
-            f.write(problem_str)
-
-    def write(self, fname, fast_downward_order=False):
-        """Get the problem PDDL string for a given state.
+    @staticmethod
+    def create_pddl_file(file_or_filepath, objects, initial_state, problem_name,
+                         domain_name, goal, fast_downward_order=False):
+        """Write the problem PDDL string for a given state into a file.
         """
-        return PDDLProblemParser.create_pddl_file(fname, self.objects, 
-            self.initial_state, self.problem_name, self.domain_name, self.goal,
-            fast_downward_order=fast_downward_order)
+        problem_str = PDDLProblemParser.pddl_string(
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=domain_name,
+            goal=goal,
+            fast_downward_order=fast_downward_order,
+        )
+
+        try:
+            file_or_filepath.write(problem_str)
+        except AttributeError:
+            with open(file_or_filepath, 'w') as f:
+                f.write(problem_str)
+
+    def write(self, file_or_filepath, objects=None, initial_state=None, problem_name=None,
+              domain_name=None, goal=None, fast_downward_order=False):
+        """Write the problem PDDL string for a given state.
+        """
+        if objects is None:
+            objects = self.objects
+        if initial_state is None:
+            initial_state = self.initial_state
+        if objects is None:
+            problem_name = self.problem_name
+        if objects is None:
+            domain_name = self.domain_name
+
+        return PDDLProblemParser.create_pddl_file(
+            file_or_filepath,
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=domain_name,
+            goal=goal,
+            fast_downward_order=fast_downward_order,
+        )
 
 
 def parse_plan_step(plan_step, operators, action_predicates, objects, operators_as_actions=False):
