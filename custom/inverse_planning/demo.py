@@ -105,16 +105,29 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
     env._render = None
 
     # Group the problems that have the same initial state but different goals
-    problem_groups = env.get_problem_groups()
+    problem_prefix_to_group = env.get_problem_groups()
+    problem_prefixes = sorted(problem_prefix_to_group)
+    goal_groups = [problem_prefix_to_group[p] for p in problem_prefixes]
+    problem_indices = [[] for _ in goal_groups]
+    for i, problem_prefix in enumerate(problem_prefixes):
+        for j, goal in enumerate(problem_prefix_to_group[problem_prefix]):
+            for k, problem_fname in enumerate(env._problem_index_to_problem_file):
+                if os.path.split(problem_fname)[-1].startswith(problem_prefix) and \
+                    os.path.split(problem_fname)[-1].endswith("{}.pddl".format(goal)):
+                    problem_indices[i].append(k)
+                    break
+    import ipdb; ipdb.set_trace()
 
     for group_idx in range(num_problem_groups):
         # Problems in the group
-        problems = problem_groups[group_idx]
+        problem_prefix = problem_prefixes[group_idx]
+        goal_group = goal_groups[group_idx]
 
         # Get the qvals for all the goals
         problem_qvals = []
-        for j, problem_index in enumerate(problems):
-            print("\nLearning qvals for problem {}/{}".format(j, len(problems)))
+        for j, goal in enumerate(goal_group):
+            problem_index = problem_indices[group_idx][j]
+            print("\nLearning qvals for problem {}/{}".format(j, len(goal_group)))
             results_for_problem = []
             all_results.append(results_for_problem)
             env.fix_problem_index(problem_index)
@@ -125,7 +138,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
 
         # Get the demo trajectory
         demonstration = []
-        env.fix_problem_index(problems[gold_problem_index])
+        env.fix_problem_index(problem_indices[group_idx][gold_problem_index])
         obs, _ = env.reset()
         plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
             epsilon=0, vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False, horizon=horizon))
@@ -143,9 +156,9 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
         assert np.argmax(goal_distribution_per_step[-1]) == gold_problem_index
 
         # Create an animation of the goal distribution evolving over time
-        # experiment_name = os.path.split(problem_prefixes[group_idx])[-1]
-        # outfile = os.path.join("/tmp", experiment_name + "goal_dists.gif")
-        # animate_goal_distribution(goal_distribution_per_step, outfile=outfile)
+        experiment_name = os.path.split(problem_prefixes[group_idx])[-1]
+        outfile = os.path.join("/tmp", experiment_name + "goal_dists.gif")
+        animate_goal_distribution(goal_distribution_per_step, outfile=outfile)
 
 
 def run_all(render=True, verbose=True):
@@ -192,14 +205,14 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    run_async_vi_experiment("InversePlanningTaxi-v0", list(range(12)), vi_maxiters=10000, iter_plan_interval=100, biased=False)
+    # run_async_vi_experiment("InversePlanningTaxi-v0", list(range(12)), vi_maxiters=10000, iter_plan_interval=100, biased=False)
     # run_goal_inference_experiment("InversePlanningBlocks-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningGrid-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningCampus-v0", 11, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, biased=True)
-    # run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=2500, biased=False)
+    run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=2500, biased=False)
 
 if __name__ == '__main__':
     run_all(render=False)
