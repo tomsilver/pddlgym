@@ -17,7 +17,7 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._render = super().render
         self._problem_idx = None
         self._problem_index_fixed = False
-        self._problem_index_to_state, self._problem_index_to_problem_file = \
+        self._problem_index_to_state, self._problem_index_to_problem_file, self._problem_groups = \
             self._create_problem_indices()
         self._rng = np.random.RandomState(seed=seed)
 
@@ -74,18 +74,27 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
     def _create_problem_indices(self):
         problem_index_to_state = []
         problem_index_to_problem_file = []
+        problem_groups = [[] for _ in range(4)]
         row = 1
         col = 1
+        problem_index = 0
         for pass_idx in range(4):
+            goal_idx = 0
             for dest_idx in range(4):
                 if pass_idx == dest_idx:
                     continue
                 s = self.encode(row, col, pass_idx, dest_idx)
-                filename = os.path.join(self.dir_path, "taxi", "taxi{}-goal{}.pddl".format(pass_idx, dest_idx))
+                filename = os.path.join(self.dir_path, "taxi", "taxi{}-goal{}.pddl".format(pass_idx, goal_idx))
                 problem_index_to_state.append(s)
                 problem_index_to_problem_file.append(filename)
+                problem_groups[pass_idx].append(problem_index)
+                goal_idx += 1
+                problem_index += 1
         assert len(problem_index_to_state) == 12
-        return problem_index_to_state, problem_index_to_problem_file
+        return problem_index_to_state, problem_index_to_problem_file, problem_groups
+
+    def get_problem_groups(self):
+        return self._problem_groups
 
     def _get_problems_with_current_initial_state(self):
         problem_indices = []

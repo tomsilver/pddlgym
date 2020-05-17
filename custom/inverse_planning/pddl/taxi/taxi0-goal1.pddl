@@ -118,7 +118,7 @@
 )
 (:goal
 (and
-(passenger-at green)
+(passenger-at yellow)
 )
 )
 (:metric minimize (total-cost))
