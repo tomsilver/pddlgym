@@ -204,6 +204,7 @@ def run_all(render=True, verbose=True):
     # run_goal_inference_experiment("InversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningCampus-v0", 11, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, biased=True)
+    # run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=1000, biased=True)
 
 if __name__ == '__main__':
     run_all(render=False)

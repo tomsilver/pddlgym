@@ -17,7 +17,8 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._render = super().render
         self._problem_idx = None
         self._problem_index_fixed = False
-        self._problem_index_to_state = self._create_problem_index_to_state()
+        self._problem_index_to_state, self._problem_index_to_problem_file = \
+            self._create_problem_indices()
         self._rng = np.random.RandomState(seed=seed)
 
     def reset(self):
@@ -70,8 +71,9 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
             return 5
         import ipdb; ipdb.set_trace()
 
-    def _create_problem_index_to_state(self):
-        out = []
+    def _create_problem_indices(self):
+        problem_index_to_state = []
+        problem_index_to_problem_file = []
         row = 1
         col = 1
         for pass_idx in range(4):
@@ -79,9 +81,11 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
                 if pass_idx == dest_idx:
                     continue
                 s = self.encode(row, col, pass_idx, dest_idx)
-                out.append(s)
-        assert len(out) == 12
-        return out
+                filename = os.path.join(self.dir_path, "taxi", "taxi{}-goal{}.pddl".format(pass_idx, dest_idx))
+                problem_index_to_state.append(s)
+                problem_index_to_problem_file.append(filename)
+        assert len(problem_index_to_state) == 12
+        return problem_index_to_state, problem_index_to_problem_file
 
     def _get_problems_with_current_initial_state(self):
         problem_indices = []
@@ -91,10 +95,11 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
             if row == current_row and col == current_col and pass_idx == current_pass_idx:
                 problem_indices.append(problem_index)
         assert len(problem_indices) == 3
-        return [os.path.join(self.dir_path, "taxi", 'problem{}.pddl'.format(i)) for i in problem_indices]
+        # return [os.path.join(self.dir_path, "taxi", 'problem{}.pddl'.format(i)) for i in problem_indices]
+        return [self._problem_index_to_problem_file[i] for i in problem_indices]
 
     def _get_problem_file(self):
-        problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self._problem_idx))
+        problem_file = self._problem_index_to_problem_file[self._problem_idx]
         if not os.path.exists(problem_file):
             self._create_problem_file(problem_file)
         return problem_file
