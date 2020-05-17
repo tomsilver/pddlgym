@@ -120,7 +120,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
             env.fix_problem_index(problem_index)
             env.reset()
             qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
-                epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=True))
+                epsilon=0, vi_maxiters=vi_maxiters, biased=biased, ret_qvals=True))
             problem_qvals.append(qvals)
 
         # Get the demo trajectory
@@ -128,7 +128,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
         env.fix_problem_index(problems[gold_problem_index])
         obs, _ = env.reset()
         plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
-            epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False, horizon=horizon))
+            epsilon=0, vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False, horizon=horizon))
         goal_distribution_per_step = [np.ones(len(problem_qvals)) / len(problem_qvals)]
         for action in plan:
             demonstration.append((obs, action))
@@ -192,14 +192,14 @@ def run_all(render=True, verbose=True):
     # run_async_vi_experiment("InversePlanningLogistics-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningCampus-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
     # run_async_vi_experiment("InversePlanningKitchen-v0", [0, 10, 20, 30, 40], vi_maxiters=1000, iter_plan_interval=100, biased=True)
-    # run_async_vi_experiment("InversePlanningTaxi-v0", list(range(12)), vi_maxiters=10000, iter_plan_interval=100, biased=True)
+    run_async_vi_experiment("InversePlanningTaxi-v0", list(range(12)), vi_maxiters=15000, iter_plan_interval=100, biased=False)
     # run_goal_inference_experiment("InversePlanningBlocks-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningIntrusionDetection-v0", 1, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningGrid-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningCampus-v0", 11, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, biased=True)
-    run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=10000, biased=True)
+    # run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=2500, biased=False)
 
 if __name__ == '__main__':
     run_all(render=False)
