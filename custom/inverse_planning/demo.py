@@ -125,7 +125,7 @@ def run_goal_inference_experiment(gym_name, num_problem_groups, vi_maxiters=2500
 
         # Get the demo trajectory
         demonstration = []
-        env.fix_problem_index(gold_problem_index)
+        env.fix_problem_index(problems[gold_problem_index])
         obs, _ = env.reset()
         plan = next(run_async_value_iteration(env, iter_plans=False, use_cache=use_cache,
             epsilon=0., vi_maxiters=vi_maxiters, biased=biased, ret_qvals=False, horizon=horizon))
@@ -199,7 +199,7 @@ def run_all(render=True, verbose=True):
     # run_goal_inference_experiment("InversePlanningLogistics-v0", 3, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningCampus-v0", 11, vi_maxiters=1000, biased=True)
     # run_goal_inference_experiment("InversePlanningKitchen-v0", 1, vi_maxiters=1000, biased=True)
-    run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=2000, biased=True)
+    run_goal_inference_experiment("InversePlanningTaxi-v0", 4, vi_maxiters=10000, biased=True)
 
 if __name__ == '__main__':
     run_all(render=False)

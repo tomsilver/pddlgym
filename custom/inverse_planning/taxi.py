@@ -28,12 +28,18 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         else:
             import ipdb; ipdb.set_trace()
         
+        initial_state = self.s
         self._state_buffer = []
         problems = self._get_problems_with_current_initial_state()
-        for problem_fname in problems:
+        for idx in problems:
+            problem_fname = self._problem_index_to_problem_file[idx]
+            # print("Loading demo for problem", problem_fname)
+            self.s = self._problem_index_to_state[idx]
             plan = self.load_demonstration_for_problem(problem_fname)
             states = self.run_demo(plan)
             self._state_buffer.extend(states)
+
+        self.s = initial_state
         
         return obs, {
             'domain_file' : self.domain_file,
@@ -52,7 +58,12 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         return {self.s}
 
     def set_state(self, s_set):
-        self.s = next(iter(s_set))
+        # Never change goal!
+        s = next(iter(s_set))
+        current_goal = list(self.decode(self.s))[-1]
+        state = list(self.decode(s))
+        state[-1] = current_goal
+        self.s = self.encode(*state)
 
     def get_actions_for_state(self, state):
         return list(range(6))
@@ -105,7 +116,7 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
                 problem_indices.append(problem_index)
         assert len(problem_indices) == 3
         # return [os.path.join(self.dir_path, "taxi", 'problem{}.pddl'.format(i)) for i in problem_indices]
-        return [self._problem_index_to_problem_file[i] for i in problem_indices]
+        return problem_indices
 
     def _get_problem_file(self):
         problem_file = self._problem_index_to_problem_file[self._problem_idx]
