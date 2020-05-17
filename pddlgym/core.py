@@ -21,16 +21,13 @@ from pddlgym.structs import ground_literal, Literal
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
+from collections import defaultdict
+
 import copy
 import glob
-import os
-import tempfile
-
 import gym
-
+import os
 import numpy as np
-
-TMP_PDDL_DIR = "/dev/shm" if os.path.exists("/dev/shm") else None
 
 
 class InvalidAction(Exception):
@@ -120,9 +117,7 @@ class PDDLEnv(gym.Env):
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
         self.operators_as_actions = operators_as_actions
         self._compute_approx_reachable_set = compute_approx_reachable_set
-
         self._shape_reward_mode = shape_reward_mode
-        self._current_heuristic = None
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
@@ -188,14 +183,6 @@ class PDDLEnv(gym.Env):
     def action_space(self):
         return self._action_space
 
-    def set_state(self, state):
-        self._state = state
-        if self._shape_reward_mode is not None:
-            self._current_heuristic = self.compute_heuristic(state)
-
-    def get_state(self):
-        return self._state
-
     def seed(self, seed):
         self._seed = seed
         self.rng = np.random.RandomState(seed)
@@ -232,21 +219,16 @@ class PDDLEnv(gym.Env):
         if not self._problem_index_fixed:
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
-
-        # reset the current heuristic
-        self._current_heuristic = None
-        self.set_state({lit for lit in self._problem.initial_state
-                        if lit.predicate.name not in self.domain.actions})
-
-        self._action_lits = {lit for lit in self._problem.initial_state
-                             if lit.predicate.name in self.domain.actions}
+        self._state = { lit for lit in self._problem.initial_state \
+            if lit.predicate.name not in self.domain.actions }
+        self._action_lits = { lit for lit in self._problem.initial_state \
+            if lit.predicate.name in self.domain.actions }
         self._goal = self._problem.goal
-
         # The action and observation spaces depend on the objects
         self._action_space.update(self._problem.objects)
         self._observation_space.update(self._problem.objects)
         debug_info = self._get_debug_info()
-
+        self._initialize_reward_shaping_data(debug_info)
         return self._get_observation(self._state), debug_info
 
     def _get_observation(self, state):
@@ -260,6 +242,28 @@ class PDDLEnv(gym.Env):
         obs : { Literal }
         """
         return state
+
+    def _initialize_reward_shaping_data(self, debug_info):
+        """At the start of each episode, initialize whatever is needed to
+        perform reward shaping.
+        """
+        if self._shape_reward_mode is not None:
+            # Update problem file by ordering objects, init, and goal properly.
+            with open(debug_info["problem_file"], "r") as f:
+                problem = f.read().lower()
+            obj_ind = problem.index("(:objects")
+            objects = PDDLParser._find_balanced_expression(problem, obj_ind)
+            init_ind = problem.index("(:init")
+            init = PDDLParser._find_balanced_expression(problem, init_ind)
+            goal_ind = problem.index("(:goal")
+            goal = PDDLParser._find_balanced_expression(problem, goal_ind)
+            start = problem[:min(obj_ind, init_ind, goal_ind)]
+            updated_problem = start+objects+"\n"+init+"\n"+goal+"\n)"
+            with open("updated_problem.pddl", "w") as f:
+                f.write(updated_problem)
+            self._initial_distance = self._get_distance(
+                debug_info["domain_file"], "updated_problem.pddl")
+            os.remove("updated_problem.pddl")
 
     def _get_debug_info(self):
         """
@@ -388,7 +392,6 @@ class PDDLEnv(gym.Env):
         selected_operator, assignment = self._select_operator(self._state,
                                                               action)
 
-        prev_state = self._state
         # A ground operator was found; execute the ground effects
         if assignment is not None:
             self._state = _apply_effects(
@@ -405,17 +408,7 @@ class PDDLEnv(gym.Env):
         obs = self._get_observation(self._state)
         done = self._is_goal_reached(self._state)
         debug_info = self._get_debug_info()
-
-        reward = self.extrinsic_reward(self._state, done)
-
-        # add intrinsic reward
-        if self._shape_reward_mode:
-            if self._current_heuristic is None:
-                self._current_heuristic = self.compute_heuristic(prev_state)
-
-            next_heuristic = self.compute_heuristic(self._state)
-            reward += self._current_heuristic - next_heuristic
-            self._current_heuristic = next_heuristic
+        reward = self._reward(self._state, done)
 
         return obs, reward, done, debug_info
 
@@ -438,46 +431,50 @@ class PDDLEnv(gym.Env):
 
         obs = self._get_observation(state)
         done = self._is_goal_reached(state)
-
-        reward = self.extrinsic_reward(state, done)
-
-        # add intrinsic reward
-        if self._shape_reward_mode:
-            next_heuristic = self.compute_heuristic(state)
-            reward += self._current_heuristic - next_heuristic
+        reward = self._reward(state, done)
 
         return obs, reward, done, {}
 
-    def extrinsic_reward(self, state, done):
+    def _reward(self, state, done):
         if done:
             reward = 1.
         else:
             reward = 0.
 
+        if self._shape_reward_mode is not None:
+            # Update problem file to contain current state.
+            with open(self._problem.problem_fname, "r") as f:
+                problem = f.read().lower()
+            obj_ind = problem.index("(:objects")
+            objects = PDDLParser._find_balanced_expression(problem, obj_ind)
+            init_ind = problem.index("(:init")
+            init = "(:init\n"
+            for lit in state:
+                init += lit.pddl_str()+"\n"
+            for lit in self._action_lits:
+                init += lit.pddl_str()+"\n"
+            init += "\n)"
+            goal_ind = problem.index("(:goal")
+            goal = PDDLParser._find_balanced_expression(problem, goal_ind)
+            start = problem[:min(obj_ind, init_ind, goal_ind)]
+            updated_problem = start+objects+"\n"+init+"\n"+goal+"\n)"
+            with open("updated_problem.pddl", "w") as f:
+                f.write(updated_problem)
+            distance = self._get_distance(
+                self.domain.domain_fname, "updated_problem.pddl")
+            os.remove("updated_problem.pddl")
+            reward = 1.0-distance/self._initial_distance  # range: (-inf, 1]
+
         return reward
 
-    def compute_heuristic(self, state):
-        """Compute the heuristic for a given state in the current problem.
+    def _get_distance(self, domain_file, problem_file):
+        """Used by reward shaping methods. Get distance from initial state to
+        goal in the problem_file.
         """
-        problem = self.problems[self._problem_idx]
-
-        problem_path = ""
-        try:
-            fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
-            with os.fdopen(fd, "w") as f:
-                problem.write(f, init_state=state)
-
-            if self._shape_reward_mode == "optimal":
-                return get_fd_optimal_plan_cost(
-                    self.domain.domain_fname, problem_path)
-            else:
-                return get_pyperplan_heuristic(
-                    self._shape_reward_mode, self.domain.domain_fname, problem_path)
-        finally:
-            try:
-                os.remove(problem_path)
-            except FileNotFoundError:
-                pass
+        if self._shape_reward_mode == "optimal":
+            return get_fd_optimal_plan_cost(domain_file, problem_file)
+        return get_pyperplan_heuristic(
+            self._shape_reward_mode, domain_file, problem_file)
 
     def _is_goal_reached(self, state):
         """
