@@ -412,7 +412,6 @@ class PDDLDomainParser(PDDLParser):
             f.write(domain_str)
 
 
-
 class PDDLProblemParser(PDDLParser):
     """PDDL problem parsing class.
     """
