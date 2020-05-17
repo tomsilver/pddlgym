@@ -9,7 +9,7 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
     domain_file = os.path.join(dir_path, "taxi.pddl")
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, seed=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
         if not os.path.exists(self.domain_file):
             self._create_domain_file()
@@ -17,6 +17,7 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
         self._problem_idx = None
         self._problem_index_fixed = False
         self._problem_index_to_state = self._create_problem_index_to_state()
+        self._rng = np.random.RandomState(seed=seed)
 
     def reset(self):
         obs = super().reset()
@@ -36,6 +37,19 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     def fix_problem_index(self, idx):
         self._problem_index_fixed = True
         self._problem_idx = idx
+
+    def get_state(self):
+        return {self.s}
+
+    def set_state(self, s_set):
+        self.s = next(iter(s_set))
+
+    def get_actions_for_state(self, state):
+        return list(range(6))
+
+    def sample_state(self, biased=False):
+        assert not biased, "TODO"
+        return { self._rng.randint(500) }
 
     def parse_action_str(self, action_str):
         action_str = action_str.strip()
