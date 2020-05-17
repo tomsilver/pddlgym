@@ -425,6 +425,10 @@ class PDDLEnv(gym.Env):
                 assignment,
             )
 
+        # No operator was found
+        elif self._raise_error_on_invalid_action:
+            raise InvalidAction()
+
         obs = self._get_observation(state)
         done = self._is_goal_reached(state)
         reward = self._reward(state, done)
