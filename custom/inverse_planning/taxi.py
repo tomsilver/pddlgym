@@ -1,9 +1,10 @@
 from gym.envs.toy_text.taxi import TaxiEnv
+from .inverse_planning_env import InversePlanningMixIn
 import numpy as np
 import os
 
 
-class InversePlanningTaxiPDDLEnv(TaxiEnv):
+class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
     """Taxi domain from Dietterich 2000 / OpenAI Gym
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -20,11 +21,19 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
         self._rng = np.random.RandomState(seed=seed)
 
     def reset(self):
-        obs = super().reset()
         if self._problem_index_fixed:
             self.s = self._problem_index_to_state[self._problem_idx]
             obs = self.s
-
+        else:
+            import ipdb; ipdb.set_trace()
+        
+        self._state_buffer = []
+        problems = self._get_problems_with_current_initial_state()
+        for problem_fname in problems:
+            plan = self.load_demonstration_for_problem(problem_fname)
+            states = self.run_demo(plan)
+            self._state_buffer.extend(states)
+        
         return obs, {
             'domain_file' : self.domain_file,
             'problem_file' : self._get_problem_file()
@@ -47,8 +56,7 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
     def get_actions_for_state(self, state):
         return list(range(6))
 
-    def sample_state(self, biased=False):
-        assert not biased, "TODO"
+    def _sample_state(self):
         return { self._rng.randint(500) }
 
     def parse_action_str(self, action_str):
@@ -74,6 +82,16 @@ class InversePlanningTaxiPDDLEnv(TaxiEnv):
                 out.append(s)
         assert len(out) == 12
         return out
+
+    def _get_problems_with_current_initial_state(self):
+        problem_indices = []
+        current_row, current_col, current_pass_idx, _ = self.decode(self.s)
+        for problem_index, state in enumerate(self._problem_index_to_state):
+            row, col, pass_idx, _ = self.decode(state)
+            if row == current_row and col == current_col and pass_idx == current_pass_idx:
+                problem_indices.append(problem_index)
+        assert len(problem_indices) == 3
+        return [os.path.join(self.dir_path, "taxi", 'problem{}.pddl'.format(i)) for i in problem_indices]
 
     def _get_problem_file(self):
         problem_file = os.path.join(self.dir_path, "taxi", "problem{}.pddl".format(self._problem_idx))

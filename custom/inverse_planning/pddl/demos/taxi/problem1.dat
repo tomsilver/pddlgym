@@ -1,0 +1,8 @@
+(move loc6 loc5 west)
+(move loc5 loc0 north)
+(pickup loc0 red)
+(move loc0 loc5 south)
+(move loc5 loc10 south)
+(move loc10 loc15 south)
+(move loc15 loc20 south)
+(dropoff loc20 yellow)
