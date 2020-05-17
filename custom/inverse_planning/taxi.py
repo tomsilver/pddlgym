@@ -2,6 +2,7 @@ from gym.envs.toy_text.taxi import TaxiEnv
 from .inverse_planning_env import InversePlanningMixIn
 import numpy as np
 import os
+from collections import defaultdict
 
 
 class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
@@ -17,8 +18,8 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._render = super().render
         self._problem_idx = None
         self._problem_index_fixed = False
-        self._problem_index_to_state, self._problem_index_to_problem_file, self._problem_groups = \
-            self._create_problem_indices()
+        self._problem_index_to_state, self._problem_index_to_problem_file, \
+            self._problem_prefix_to_group = self._create_problem_indices()
         self._rng = np.random.RandomState(seed=seed)
 
     def reset(self):
@@ -54,6 +55,11 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._problem_index_fixed = True
         self._problem_idx = idx
 
+    def load_demonstration_for_problem(self, problem_fname=None):
+        if problem_fname is None:
+            problem_fname = self._problem_index_to_problem_file[self._problem_idx]
+        return super().load_demonstration_for_problem(problem_fname=problem_fname)
+
     def get_state(self):
         return {self.s}
 
@@ -85,27 +91,28 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
     def _create_problem_indices(self):
         problem_index_to_state = []
         problem_index_to_problem_file = []
-        problem_groups = [[] for _ in range(4)]
+        problem_prefix_to_group = defaultdict(list)
         row = 1
         col = 1
         problem_index = 0
         for pass_idx in range(4):
+            problem_prefix = "taxi{}".format(pass_idx)
             goal_idx = 0
             for dest_idx in range(4):
                 if pass_idx == dest_idx:
                     continue
                 s = self.encode(row, col, pass_idx, dest_idx)
-                filename = os.path.join(self.dir_path, "taxi", "taxi{}-goal{}.pddl".format(pass_idx, goal_idx))
+                filename = os.path.join(self.dir_path, "taxi", problem_prefix + "-goal{}.pddl".format(goal_idx))
                 problem_index_to_state.append(s)
                 problem_index_to_problem_file.append(filename)
-                problem_groups[pass_idx].append(problem_index)
+                problem_prefix_to_group[problem_prefix].append("goal{}".format(goal_idx))
                 goal_idx += 1
                 problem_index += 1
         assert len(problem_index_to_state) == 12
-        return problem_index_to_state, problem_index_to_problem_file, problem_groups
+        return problem_index_to_state, problem_index_to_problem_file, problem_prefix_to_group
 
     def get_problem_groups(self):
-        return self._problem_groups
+        return self._problem_prefix_to_group
 
     def _get_problems_with_current_initial_state(self):
         problem_indices = []

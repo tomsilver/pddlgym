@@ -11,11 +11,11 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = "if not exists"
+do_precomputation = True #"if not exists"
 test_qvals = True
 do_goal_inference = "if not exists"
 test_goal_inference = True
-vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
+vi_maxiters = { True : 2500, False : 10000 } # biased? : max_iters
 horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
@@ -25,7 +25,8 @@ env_names = [
     # "InversePlanningGrid-v0",
     # "InversePlanningLogistics-v0",
     # "InversePlanningCampus-v0",
-    "InversePlanningKitchen-v0",
+    # "InversePlanningKitchen-v0",
+    "InversePlanningTaxi-v0"
 ]
 
 def create_headers(verbose=False):
@@ -35,13 +36,15 @@ def create_headers(verbose=False):
         headers[env_name] = OrderedDict()
         env = gym.make(env_name)
         # Group the problems that have the same initial state but different goals
-        problem_prefix_to_group = defaultdict(list)
-        for problem in env.problems:
-            fname_alone = os.path.split(problem.problem_fname)[-1]
-            split = fname_alone.split("_")
-            prefix = "_".join(split[:-1])
-            goal = split[-1][:-len(".pddl")]
-            problem_prefix_to_group[prefix].append(goal)
+        # problem_prefix_to_group = defaultdict(list)
+        # for problem in env.problems:
+        #     fname_alone = os.path.split(problem.problem_fname)[-1]
+        #     split = fname_alone.split("_")
+        #     prefix = "_".join(split[:-1])
+        #     goal = split[-1][:-len(".pddl")]
+        #     problem_prefix_to_group[prefix].append(goal)
+        # problem_prefixes = sorted(problem_prefix_to_group)
+        problem_prefix_to_group = env.get_problem_groups()
         problem_prefixes = sorted(problem_prefix_to_group)
         env.close()
 
@@ -82,8 +85,12 @@ def results_exist(run_id):
 
 def create_env(env_name, initial_state, goal):
     env = gym.make(env_name)
-    problem_fname = initial_state + '_' + goal + '.pddl'
-    found_problems = [os.path.split(p.problem_fname)[-1] == problem_fname for p in env.problems]
+    if hasattr(env, '_problem_index_to_problem_file'):
+        problem_fname = initial_state + '-' + goal + '.pddl'
+        found_problems = [os.path.split(p)[-1] == problem_fname for p in env._problem_index_to_problem_file]
+    else:
+        problem_fname = initial_state + '_' + goal + '.pddl'
+        found_problems = [os.path.split(p.problem_fname)[-1] == problem_fname for p in env.problems]
     assert sum(found_problems) == 1
     problem_index = np.argwhere(found_problems)[0,0]
     env.fix_problem_index(problem_index)
@@ -99,8 +106,9 @@ def compute_qvals(env_name, initial_state, goal, biased):
 
 def run_test_qvals(env_name, initial_state, goal, qvals):
     env = create_env(env_name, initial_state, goal)
-    obs, _ = env.reset()
-    plan = vi_finish_helper(env, obs, qvals, actions_for_state=None, horizon=horizon)
+    env.reset()
+    state = env.get_state()
+    plan = vi_finish_helper(env, state, qvals, actions_for_state=None, horizon=horizon)
     total_reward = 0
     for action in plan:
         _, reward, _, _ = env.step(action)
