@@ -465,7 +465,7 @@ class PDDLEnv(gym.Env):
         try:
             fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
             with os.fdopen(fd, "w") as f:
-                problem.write(f, init_state=state)
+                problem.write(f, initial_state=state)
 
             if self._shape_reward_mode == "optimal":
                 return get_fd_optimal_plan_cost(
