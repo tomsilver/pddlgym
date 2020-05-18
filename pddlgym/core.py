@@ -189,12 +189,17 @@ class PDDLEnv(gym.Env):
         return self._action_space
 
     def set_state(self, state):
+        self.set_state_no_copy(set(state))
+        if self._shape_reward_mode is not None:
+            self._current_heuristic = self.compute_heuristic(state)
+
+    def set_state_no_copy(self, state):
         self._state = state
         if self._shape_reward_mode is not None:
             self._current_heuristic = self.compute_heuristic(state)
 
     def get_state(self):
-        return self._state
+        return set(self._state)
 
     def seed(self, seed):
         self._seed = seed
