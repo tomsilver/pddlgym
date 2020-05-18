@@ -121,20 +121,60 @@ def test_pddlenv_hierarchical_types():
 
 def test_heuristic():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
-    problem_dir = os.path.join(dir_path, 'pddl', 'test_domain')
+    domain_file = os.path.join(dir_path, 'pddl', 'easyblocks.pddl')
+    problem_dir = os.path.join(dir_path, 'pddl', 'easyblocks')
 
-    env = PDDLEnv(domain_file, problem_dir, shape_reward_mode="hadd")
+    block = Type("block")
+    pickup = Predicate("pickup", 1, [block])
+    stack = Predicate("stack", 2, [block, block])
+
+    shaped_env = PDDLEnv(
+        domain_file,
+        problem_dir,
+        shape_reward_mode="hsa",
+        raise_error_on_invalid_action=True,
+    )
+    env = PDDLEnv(
+        domain_file,
+        problem_dir,
+        shape_reward_mode=None,
+        raise_error_on_invalid_action=True,
+    )
+    shaped_env.reset()
     env.reset()
-    hstart = env.compute_heuristic(env.get_state())
 
-    type1 = Type('type1')
-    action_pred = Predicate('actionpred', 1, [type1])
+    s = shaped_env.get_state()
+    print(s)
+    print(shaped_env.compute_heuristic(s))
+    _, rew, _, _ = env.step(pickup("b"))
+    _, shaped_rew, _, _ = shaped_env.step(pickup("b"))
+    s = shaped_env.get_state()
+    print(s)
+    print(shaped_env.compute_heuristic(s))
 
-    _, rew, _, _ = env.step(action_pred('b2'))
-    hnext = env.compute_heuristic(env.get_state())
+    assert rew == 0.
+    assert shaped_rew == 1.
+    intermediate_state = env.get_state()
 
-    print(hstart, hnext, rew)
+    def assert_last_step():
+        _, rew, done, _ = env.step(stack("b", "a"))
+        _, shaped_rew, shaped_done, _ = env.step(stack("b", "a"))
+        assert done
+        assert shaped_done
+        assert rew == 1.
+        assert shaped_rew == 2.
+    print(intermediate_state)
+    # check if the step to the goal is terminal and with correct rewards
+    assert_last_step()
+    print(intermediate_state)
+
+    # check if shaped reward is consistent after setting the state
+    shaped_env.set_state(intermediate_state)
+    env.set_state(intermediate_state)
+    print(intermediate_state)
+
+    assert_last_step()
+
     print("Test passed.")
 
 

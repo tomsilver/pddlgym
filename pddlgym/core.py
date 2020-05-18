@@ -411,9 +411,6 @@ class PDDLEnv(gym.Env):
 
         # add intrinsic reward
         if self._shape_reward_mode:
-            if self._current_heuristic is None:
-                self._current_heuristic = self.compute_heuristic(prev_state)
-
             next_heuristic = self.compute_heuristic(self._state)
             reward += self._current_heuristic - next_heuristic
             self._current_heuristic = next_heuristic
