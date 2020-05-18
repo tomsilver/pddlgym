@@ -468,10 +468,7 @@ class PDDLEnv(gym.Env):
             # generate a temporary file to hand over to the external planner
             fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
             with os.fdopen(fd, "w") as f:
-                problem.write(f, initial_state=state)
-
-            with open(problem_path, "r") as f:
-                print(f.read())
+                problem.write(f, initial_state=state, fast_downward_order=True)
 
             if self._shape_reward_mode == "optimal":
                 return get_fd_optimal_plan_cost(
