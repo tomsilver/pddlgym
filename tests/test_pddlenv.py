@@ -47,7 +47,7 @@ def test_pddlenv():
 
     obs, _, _, _ = env.step(action)
 
-    assert obs == { pred1('b2'), pred2('c1'), pred2('c2'), pred3('b2', 'd2', 'c2'), 
+    assert obs == { pred1('b2'), pred3('b2', 'd1', 'c1'), 
         pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') }
 
     print("Test passed.")

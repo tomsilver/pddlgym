@@ -23,6 +23,7 @@
     (actionpred a2)
     (actionpred b1)
     (actionpred b2)
+    (actionpred b3)
   )
 
   (:goal (and
