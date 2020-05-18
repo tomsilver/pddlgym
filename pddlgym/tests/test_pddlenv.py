@@ -3,6 +3,7 @@ from pddlgym.structs import Predicate, Type
 
 import os
 
+
 def test_pddlenv():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
@@ -50,6 +51,7 @@ def test_pddlenv():
         pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') }
 
     print("Test passed.")
+
 
 def test_pddlenv_hierarchical_types():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -116,6 +118,27 @@ def test_pddlenv_hierarchical_types():
 
     print("Test passed.")
 
+
+def test_heuristic():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
+    problem_dir = os.path.join(dir_path, 'pddl', 'test_domain')
+
+    env = PDDLEnv(domain_file, problem_dir, shape_reward_mode="hadd")
+    env.reset()
+    hstart = env.compute_heuristic(env.get_state())
+
+    pet = Predicate("pet", 1, [Type("animal")])
+
+    nomsy = Type("jindo")("nomsy")
+    _, rew, _, _ = env.step(pet(nomsy))
+    hnext = env.compute_heuristic(env.get_state())
+
+    print(hstart, hnext, rew)
+    print("Test passed.")
+
+
 if __name__ == "__main__":
     test_pddlenv()
     test_pddlenv_hierarchical_types()
+    test_heuristic()
