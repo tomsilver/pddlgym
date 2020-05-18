@@ -394,7 +394,6 @@ class PDDLEnv(gym.Env):
         selected_operator, assignment = self._select_operator(self._state,
                                                               action)
 
-        prev_state = self._state
         # A ground operator was found; execute the ground effects
         if assignment is not None:
             self._state = _apply_effects(
