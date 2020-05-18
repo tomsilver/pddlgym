@@ -131,7 +131,7 @@ def test_heuristic():
     shaped_env = PDDLEnv(
         domain_file,
         problem_dir,
-        shape_reward_mode="hsa",
+        shape_reward_mode="lmcut",
         raise_error_on_invalid_action=True,
     )
     env = PDDLEnv(
@@ -143,14 +143,8 @@ def test_heuristic():
     shaped_env.reset()
     env.reset()
 
-    s = shaped_env.get_state()
-    print(s)
-    print(shaped_env.compute_heuristic(s))
     _, rew, _, _ = env.step(pickup("b"))
     _, shaped_rew, _, _ = shaped_env.step(pickup("b"))
-    s = shaped_env.get_state()
-    print(s)
-    print(shaped_env.compute_heuristic(s))
 
     assert rew == 0.
     assert shaped_rew == 1.
@@ -158,21 +152,18 @@ def test_heuristic():
 
     def assert_last_step():
         _, rew, done, _ = env.step(stack("b", "a"))
-        _, shaped_rew, shaped_done, _ = env.step(stack("b", "a"))
+        _, shaped_rew, shaped_done, _ = shaped_env.step(stack("b", "a"))
         assert done
         assert shaped_done
         assert rew == 1.
         assert shaped_rew == 2.
-    print(intermediate_state)
+
     # check if the step to the goal is terminal and with correct rewards
     assert_last_step()
-    print(intermediate_state)
 
     # check if shaped reward is consistent after setting the state
     shaped_env.set_state(intermediate_state)
     env.set_state(intermediate_state)
-    print(intermediate_state)
-
     assert_last_step()
 
     print("Test passed.")
