@@ -465,24 +465,33 @@ class PDDLEnv(gym.Env):
         problem = self.problems[self._problem_idx]
         state = state | set(self.action_space._all_ground_literals)
 
-        problem_path = ""
-        try:
-            # generate a temporary file to hand over to the external planner
-            fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
-            with os.fdopen(fd, "w") as f:
-                problem.write(f, initial_state=state, fast_downward_order=True)
+        if self._shape_reward_mode == "optimal":
+            problem_path = ""
+            try:
+                # generate a temporary file to hand over to the external planner
+                fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
+                with os.fdopen(fd, "w") as f:
+                    problem.write(f, initial_state=state, fast_downward_order=True)
 
-            if self._shape_reward_mode == "optimal":
                 return get_fd_optimal_plan_cost(
                     self.domain.domain_fname, problem_path)
-            else:
-                return get_pyperplan_heuristic(
-                    self._shape_reward_mode, self.domain.domain_fname, problem_path)
-        finally:
-            try:
-                os.remove(problem_path)
-            except FileNotFoundError:
-                pass
+            finally:
+                try:
+                    os.remove(problem_path)
+                except FileNotFoundError:
+                    pass
+        else:
+            problem_str = PDDLProblemParser.pddl_string(
+                objects=problem.objects,
+                problem_name=problem.problem_name,
+                domain_name=problem.domain_name,
+                goal=problem.goal,
+                initial_state=state,
+                fast_downward_order=True,
+            )
+            return get_pyperplan_heuristic(
+                self._shape_reward_mode, self.domain.domain, problem_str)
+
 
     def _is_goal_reached(self, state):
         """
