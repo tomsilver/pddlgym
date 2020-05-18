@@ -233,6 +233,10 @@ class PDDLEnv(gym.Env):
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
 
+        # The action and observation spaces depend on the objects
+        self._action_space.update(self._problem.objects)
+        self._observation_space.update(self._problem.objects)
+
         # reset the current heuristic
         self._current_heuristic = None
         self.set_state({lit for lit in self._problem.initial_state
@@ -242,9 +246,6 @@ class PDDLEnv(gym.Env):
                              if lit.predicate.name in self.domain.actions}
         self._goal = self._problem.goal
 
-        # The action and observation spaces depend on the objects
-        self._action_space.update(self._problem.objects)
-        self._observation_space.update(self._problem.objects)
         debug_info = self._get_debug_info()
 
         return self._get_observation(self._state), debug_info
@@ -460,12 +461,17 @@ class PDDLEnv(gym.Env):
         """Compute the heuristic for a given state in the current problem.
         """
         problem = self.problems[self._problem_idx]
+        state = state | set(self.action_space._all_ground_literals)
 
         problem_path = ""
         try:
+            # generate a temporary file to hand over to external planner
             fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
             with os.fdopen(fd, "w") as f:
                 problem.write(f, initial_state=state)
+
+            with open(problem_path, "r") as f:
+                print(f.read())
 
             if self._shape_reward_mode == "optimal":
                 return get_fd_optimal_plan_cost(
@@ -481,7 +487,7 @@ class PDDLEnv(gym.Env):
 
     def _is_goal_reached(self, state):
         """
-        Used to calculate reward.
+        Check if the terminal condition is met, i.e., the goal is reached.
         """
         return self._goal.holds(state)
 
