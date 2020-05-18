@@ -62,13 +62,16 @@ def get_fd_optimal_plan_cost(domain_file, problem_file, timeout=10):
     return cost
 
 
-def get_pyperplan_heuristic(mode, domain_file, problem_file):
+def get_pyperplan_heuristic(mode, domain_str, problem_str):
     assert mode in pyperplan.HEURISTICS, "Invalid shape_reward_mode: {}".format(mode)
     if mode == "landmark":
         raise Exception("Cannot use landmark shape_reward_mode as landmark heuristic is path-dependent")
-    parser = pyperplan.Parser(domain_file, problem_file)
-    domain = parser.parse_domain()
-    problem = parser.parse_problem(domain)
+    parser = pyperplan.Parser(None, None)
+    parser.domInput = domain_str
+    parser.probInput = problem_str
+
+    domain = parser.parse_domain(read_from_file=False)
+    problem = parser.parse_problem(domain, read_from_file=False)
     task = pyperplan.grounding.ground(problem)
     heuristic = pyperplan.HEURISTICS[mode](task)
     root = pyperplan.search.searchspace.make_root_node(task.initial_state)
