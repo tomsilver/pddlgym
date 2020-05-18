@@ -230,7 +230,7 @@ class PDDLEnv(gym.Env):
         Returns
         -------
         obs : { Literal }
-            See self._get_observation()
+            The set of active predicates.
         debug_info : dict
             See self._get_debug_info()
         """
@@ -253,19 +253,7 @@ class PDDLEnv(gym.Env):
 
         debug_info = self._get_debug_info()
 
-        return self._get_observation(self._state), debug_info
-
-    def _get_observation(self, state):
-        """
-        Observations are sets of ground literals.
-
-        Action literals are not included in the observation.
-
-        Returns
-        -------
-        obs : { Literal }
-        """
-        return state
+        return self.get_state(), debug_info
 
     def _get_debug_info(self):
         """
@@ -296,7 +284,7 @@ class PDDLEnv(gym.Env):
         return relaxed_ops
 
     def _get_approx_reachable_set(self):
-        obs = self._get_observation(self._state)
+        obs = self.get_state()
         old_ops = self.domain.operators
         self.domain.operators = self._delete_relaxed_ops
         prev_len = 0
@@ -329,7 +317,7 @@ class PDDLEnv(gym.Env):
             possible_operators = set(self.domain.operators.values())
 
         # Knowledge base: literals in the state + action taken
-        kb = self._get_observation(state) | { action }
+        kb = self.get_state() | {action}
 
         selected_operator = None
         assignment = None
@@ -383,7 +371,7 @@ class PDDLEnv(gym.Env):
         Returns
         -------
         obs : { Literal }
-            See self._get_observation.
+            The set of active predicates.
         reward : float
             1 if the goal is reached and 0 otherwise.
         done : bool
@@ -407,7 +395,7 @@ class PDDLEnv(gym.Env):
             # import ipdb; ipdb.set_trace()
             raise InvalidAction()
 
-        obs = self._get_observation(self._state)
+        obs = set(self._state)
         done = self._is_goal_reached(self._state)
         debug_info = self._get_debug_info()
 
@@ -438,7 +426,7 @@ class PDDLEnv(gym.Env):
         elif self._raise_error_on_invalid_action:
             raise InvalidAction()
 
-        obs = self._get_observation(state)
+        obs = set(state)
         done = self._is_goal_reached(state)
 
         reward = self.extrinsic_reward(state, done)
@@ -495,6 +483,5 @@ class PDDLEnv(gym.Env):
 
     def render(self, *args, **kwargs):
         if self._render:
-            obs = self._get_observation(self._state)
-            return self._render(obs, *args, **kwargs)
+            return self._render(self._state, *args, **kwargs)
 
