@@ -539,10 +539,12 @@ class PDDLProblemParser(PDDLParser):
             objects = self.objects
         if initial_state is None:
             initial_state = self.initial_state
-        if objects is None:
+        if problem_name is None:
             problem_name = self.problem_name
-        if objects is None:
+        if domain_name is None:
             domain_name = self.domain_name
+        if goal is None:
+            goal = self.goal
 
         return PDDLProblemParser.create_pddl_file(
             file_or_filepath,
