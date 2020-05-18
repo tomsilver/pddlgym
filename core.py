@@ -465,7 +465,7 @@ class PDDLEnv(gym.Env):
 
         problem_path = ""
         try:
-            # generate a temporary file to hand over to external planner
+            # generate a temporary file to hand over to the external planner
             fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
             with os.fdopen(fd, "w") as f:
                 problem.write(f, initial_state=state)
