@@ -128,10 +128,10 @@ def test_heuristic():
     env.reset()
     hstart = env.compute_heuristic(env.get_state())
 
-    pet = Predicate("pet", 1, [Type("animal")])
+    type1 = Type('type1')
+    action_pred = Predicate('actionpred', 1, [type1])
 
-    nomsy = Type("jindo")("nomsy")
-    _, rew, _, _ = env.step(pet(nomsy))
+    _, rew, _, _ = env.step(action_pred('b2'))
     hnext = env.compute_heuristic(env.get_state())
 
     print(hstart, hnext, rew)
