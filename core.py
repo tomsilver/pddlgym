@@ -256,11 +256,6 @@ class PDDLEnv(gym.Env):
         self._action_space.update(self._problem.objects)
         self._observation_space.update(self._problem.objects)
 
-        # reset the current heuristic
-        self._current_heuristic = None
-        self.set_state({lit for lit in self._problem.initial_state
-                        if lit.predicate.name not in self.domain.actions})
-
         # Create new heuristic if using reward shaping and either the problem
         # isn't fixed or no heuristic has been created yet.
         if (self._shape_reward_mode is not None
@@ -271,6 +266,11 @@ class PDDLEnv(gym.Env):
                 self._problem.problem_fname,
                 mode=self._shape_reward_mode,
             )
+
+        # reset the current heuristic
+        self._current_heuristic = None
+        self.set_state({lit for lit in self._problem.initial_state
+                        if lit.predicate.name not in self.domain.actions})
 
         self._action_lits = {lit for lit in self._problem.initial_state
                              if lit.predicate.name in self.domain.actions}
