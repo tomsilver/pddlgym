@@ -22,6 +22,8 @@ from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
 import pyperplan
+import copy
+import functools
 import glob
 import os
 import tempfile
@@ -81,13 +83,20 @@ def _apply_effects(state, lifted_effects, assignments):
     return state.with_literals(new_literals)
 
 
-def _make_heuristic(domain_file, problem_file, mode):
+def _make_heuristic(domain_file, problem_file, mode, cache_maxsize=10000):
     parser = pyperplan.Parser(domain_file, problem_file)
     domain = parser.parse_domain()
     problem = parser.parse_problem(domain)
 
     task = pyperplan.grounding.ground(problem)
-    return pyperplan.HEURISTICS[mode](task)
+    heuristic = pyperplan.HEURISTICS[mode](task)
+
+    @functools.lru_cache(cache_maxsize)
+    @functools.wraps(heuristic.__call__)
+    def _call_heuristic(state):
+        return heuristic(state)
+
+    return _call_heuristic
 
 
 class PDDLEnv(gym.Env):
