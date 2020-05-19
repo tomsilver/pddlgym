@@ -15,11 +15,15 @@ Usage example:
 >>> action = env.action_space.sample()
 >>> obs, reward, done, debug_info = env.step(action)
 """
+
+from pddlgym import planning
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
 from pddlgym.structs import ground_literal, Literal
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
+
+import pyperplan
 
 import copy
 import glob
@@ -65,6 +69,15 @@ def _apply_effects(state, lifted_effects, assignments):
         if not effect.is_anti:
             new_state.add(effect)
     return new_state
+
+
+def _make_heuristic(domain_file, problem_file, mode):
+    parser = pyperplan.Parser(domain_file, problem_file)
+    domain = parser.parse_domain()
+    problem = parser.parse_problem(domain)
+
+    task = pyperplan.grounding.ground(problem)
+    return pyperplan.HEURISTICS[mode](task)
 
 
 class PDDLEnv(gym.Env):
@@ -123,6 +136,7 @@ class PDDLEnv(gym.Env):
 
         self._shape_reward_mode = shape_reward_mode
         self._current_heuristic = None
+        self._heuristic = None
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
@@ -246,6 +260,17 @@ class PDDLEnv(gym.Env):
         self._current_heuristic = None
         self.set_state({lit for lit in self._problem.initial_state
                         if lit.predicate.name not in self.domain.actions})
+
+        # Create new heuristic if using reward shaping and either the problem
+        # isn't fixed or no heuristic has been created yet.
+        if (self._shape_reward_mode is not None
+                and self._shape_reward_mode != "optimal"
+                and (not self._problem_index_fixed or self._heuristic is None)):
+            self._heuristic = _make_heuristic(
+                self._domain_file,
+                self._problem.problem_fname,
+                mode=self._shape_reward_mode,
+            )
 
         self._action_lits = {lit for lit in self._problem.initial_state
                              if lit.predicate.name in self.domain.actions}
@@ -481,16 +506,17 @@ class PDDLEnv(gym.Env):
                 except FileNotFoundError:
                     pass
         else:
-            problem_str = PDDLProblemParser.pddl_string(
-                objects=problem.objects,
-                problem_name=problem.problem_name,
-                domain_name=problem.domain_name,
-                goal=problem.goal,
-                initial_state=state,
-                fast_downward_order=True,
-            )
-            return get_pyperplan_heuristic(
-                self._shape_reward_mode, self.domain.domain, problem_str)
+            # problem_str = PDDLProblemParser.pddl_string(
+            #     objects=problem.objects,
+            #     problem_name=problem.problem_name,
+            #     domain_name=problem.domain_name,
+            #     goal=problem.goal,
+            #     initial_state=state,
+            #     fast_downward_order=True,
+            # )
+            # return get_pyperplan_heuristic(
+            #     self._shape_reward_mode, self.domain.domain, problem_str)
+            return self._heuristic(state)
 
 
     def _is_goal_reached(self, state):

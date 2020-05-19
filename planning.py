@@ -76,13 +76,3 @@ def get_pyperplan_heuristic(mode, domain_str, problem_str):
     heuristic = pyperplan.HEURISTICS[mode](task)
     root = pyperplan.search.searchspace.make_root_node(task.initial_state)
     return heuristic(root)
-
-
-class Heuristic:
-
-    def __init__(self, domain_file, problem_file):
-        pass
-
-    def __call__(self, *args, **kwargs):
-        pass
-
