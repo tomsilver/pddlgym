@@ -1,9 +1,11 @@
 """PDDL parsing.
 """
+import collections
+import re
+
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
                      Not, Anti, ForAll, Exists, TypedEntity, ground_literal)
 
-import re
 
 
 FAST_DOWNWARD_STR = """
@@ -434,127 +436,131 @@ class PDDLDomainParser(PDDLParser):
             f.write(domain_str)
 
 
+class PDDLProblem(collections.namedtuple("PDDLProblem",
+                                         ["objects",
+                                          "initial_state",
+                                          "problem_name",
+                                          "domain_name",
+                                          "goal"])):
+    __slots__ = ()
+
+    def pddl_string(self, fast_downward_order=True):
+        """Get the problem PDDL string for a given state.
+        """
+        objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
+                                                    self.objects))))
+        init_state = "\n\t".join([lit.pddl_str() for lit in sorted(self.initial_state)])
+
+        problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
+        return problem_str.format(
+            problem=self.problem_name,
+            domain=self.domain_name,
+            objects=objects_typed,
+            init_state=init_state,
+            goal=self.goal.pddl_str(),
+        )
+
+    def write(self, file_or_filepath, fast_downward_order=True):
+        """Write the problem PDDL string for a given state.
+        """
+        problem_str = self.pddl_string(fast_downward_order)
+
+        try:
+            return file_or_filepath.write(problem_str)
+        except AttributeError:
+            with open(file_or_filepath, 'w') as f:
+                return f.write(problem_str)
+
+    @classmethod
+    def create_pddl_file(cls, file_or_filepath, objects, initial_state, problem_name,
+                         domain_name, goal, fast_downward_order=True):
+        """Write the problem PDDL to a file.
+        """
+        problem = cls(
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=domain_name,
+            goal=goal,
+        )
+        return problem.write(file_or_filepath,
+                             fast_downward_order=fast_downward_order)
+
+
 class PDDLProblemParser(PDDLParser):
     """PDDL problem parsing class.
     """
-    def __init__(self, problem_fname, domain_name, types, predicates):
-        self.problem_fname = problem_fname
+    def __init__(self, domain_name, types, predicates):
         self.domain_name = domain_name
         self.types = types
         self.predicates = predicates
         self.uses_typing = not ("default" in self.types)
 
-        self.problem_name = None
-        # Set of objects, each is a structs.TypedEntity object.
-        self.objects = None
-        # Set of fluents in initial state, each is a structs.Literal.
-        self.initial_state = None
-        # structs.Literal representing the goal.
-        self.goal = None
-
-        ## Read files.
+    def parse(self, problem_fname):
+        # Read files.
         with open(problem_fname, "r") as f:
-            self.problem = f.read().lower()
-        self.problem = self._purge_comments(self.problem)
+            problem_str = f.read().lower()
+        problem_str = self._purge_comments(self.problem)
         assert ";" not in self.problem
 
-        ## Run parsing.
-        self._parse_problem()
+        problem_name = self._parse_problem_name(problem_str)
+        # Set of objects, each is a structs.TypedEntity object.
+        objects = self._parse_problem_objects()
+        # Set of fluents in initial state, each is a structs.Literal.
+        initial_state = self._parse_problem_initial_state(objects)
+        # structs.Literal representing the goal.
+        goal = self._parse_problem_goal()
 
-    def _parse_problem(self):
+        return PDDLProblem(
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=self.domain_name,
+            goal=goal,
+        )
+
+    @classmethod
+    def parse(cls, domain, problem_fname):
+        parser = cls(
+            domain_name=domain.domain_name,
+            types=domain.types,
+            predicates=domain.predicates,
+        )
+        return parser.parse(problem_fname)
+
+    def _parse_problem_name(self, problem_str):
         patt = r"\(problem(.*?)\)"
-        self.problem_name = re.search(patt, self.problem).groups()[0].strip()
+        problem_name = re.search(patt, problem_str).groups()[0].strip()
+
         patt = r"\(:domain(.*?)\)"
-        domain_name = re.search(patt, self.problem).groups()[0].strip()
+        domain_name = re.search(patt, problem_str).groups()[0].strip()
         assert domain_name == self.domain_name, "Problem file doesn't match the domain file!"
-        self._parse_problem_objects()
-        self._parse_problem_initial_state()
-        self._parse_problem_goal()
 
-    def _parse_problem_objects(self):
-        start_ind = re.search(r"\(:objects", self.problem).start()
-        objects = self._find_balanced_expression(self.problem, start_ind)
+        return problem_name
+
+    def _parse_problem_objects(self, problem_str):
+        start_ind = re.search(r"\(:objects", problem_str).start()
+        objects = self._find_balanced_expression(problem_str, start_ind)
         objects = objects[9:-1].strip()
-        self.objects = self._parse_objects(objects)
+        return self._parse_objects(objects)
 
-    def _parse_problem_initial_state(self):
-        start_ind = re.search(r"\(:init", self.problem).start()
-        init = self._find_balanced_expression(self.problem, start_ind)
+    def _parse_problem_initial_state(self, problem_str, objects):
+        start_ind = re.search(r"\(:init", problem_str).start()
+        init = self._find_balanced_expression(problem_str, start_ind)
         fluents = self._find_all_balanced_expressions(init[6:-1].strip())
-        self.initial_state = set()
-        params = {obj.name: obj.var_type for obj in self.objects}
+
+        initial_state = set()
+        params = {obj.name: obj.var_type for obj in objects}
         for fluent in fluents:
-            self.initial_state.add(self._parse_into_literal(fluent, params))
+            initial_state.add(self._parse_into_literal(fluent, params))
+        return initial_state
 
-    def _parse_problem_goal(self):
-        start_ind = re.search(r"\(:goal", self.problem).start()
-        goal = self._find_balanced_expression(self.problem, start_ind)
+    def _parse_problem_goal(self, problem_str, objects):
+        start_ind = re.search(r"\(:goal", problem_str).start()
+        goal = self._find_balanced_expression(problem_str, start_ind)
         goal = goal[6:-1].strip()
-        params = {obj.name: obj.var_type for obj in self.objects}
-        self.goal = self._parse_into_literal(goal, params)
-
-    @staticmethod
-    def pddl_string(objects, initial_state, problem_name, domain_name, goal,
-                    fast_downward_order=False):
-        """Get the problem PDDL string for a given state.
-        """
-        objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
-                                                    objects))))
-        init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
-
-        problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
-        return problem_str.format(
-            problem=problem_name,
-            domain=domain_name,
-            objects=objects_typed,
-            init_state=init_state,
-            goal=goal.pddl_str(),
-        )
-
-    @staticmethod
-    def create_pddl_file(file_or_filepath, objects, initial_state, problem_name,
-                         domain_name, goal, fast_downward_order=False):
-        """Write the problem PDDL string for a given state into a file.
-        """
-        problem_str = PDDLProblemParser.pddl_string(
-            objects=objects,
-            initial_state=initial_state,
-            problem_name=problem_name,
-            domain_name=domain_name,
-            goal=goal,
-            fast_downward_order=fast_downward_order,
-        )
-
-        try:
-            file_or_filepath.write(problem_str)
-        except AttributeError:
-            with open(file_or_filepath, 'w') as f:
-                f.write(problem_str)
-
-    def write(self, file_or_filepath, objects=None, initial_state=None, problem_name=None,
-              domain_name=None, goal=None, fast_downward_order=False):
-        """Write the problem PDDL string for a given state.
-        """
-        if objects is None:
-            objects = self.objects
-        if initial_state is None:
-            initial_state = self.initial_state
-        if problem_name is None:
-            problem_name = self.problem_name
-        if domain_name is None:
-            domain_name = self.domain_name
-        if goal is None:
-            goal = self.goal
-
-        return PDDLProblemParser.create_pddl_file(
-            file_or_filepath,
-            objects=objects,
-            initial_state=initial_state,
-            problem_name=problem_name,
-            domain_name=domain_name,
-            goal=goal,
-            fast_downward_order=fast_downward_order,
-        )
+        params = {obj.name: obj.var_type for obj in objects}
+        return self._parse_into_literal(goal, params)
 
 
 def parse_plan_step(plan_step, operators, action_predicates, objects, operators_as_actions=False):
