@@ -125,3 +125,8 @@ register(
     id='InversePlanningDoorsKeysGems-v0',
     entry_point='pddlgym.custom.inverse_planning.doors_keys_gems:InversePlanningDoorsKeysGemsPDDLEnv',
 )
+
+register(
+    id='EasyInversePlanningDoorsKeysGems-v0',
+    entry_point='pddlgym.custom.inverse_planning.doors_keys_gems:EasyInversePlanningDoorsKeysGemsPDDLEnv',
+)
