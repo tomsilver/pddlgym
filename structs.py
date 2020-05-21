@@ -160,15 +160,14 @@ class Literal:
         self.is_anti = predicate.is_anti
         self.negated_as_failure = predicate.negated_as_failure
 
-        # Verify types
+        # Apply types to untyped objects
         if self.predicate.var_types is not None:
             for i, (expected_type, var) in enumerate(zip(self.predicate.var_types, self.variables)):
                 if not hasattr(var, 'var_type'):
                     # Convert strings
                     self.variables[i] = expected_type(var)
-                elif var.var_type != expected_type:
-                    raise TypeError()
 
+        # Cache str for repr
         self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
         self._hash = hash(self._str)
 
@@ -268,12 +267,6 @@ class LiteralConjunction:
 
     def __eq__(self, other):
         return str(self) == str(other)
-
-    def __len__(self):
-        return len(self.literals)
-
-    def __iter__(self):
-        return iter(self.literals)
 
 
 class LiteralDisjunction:
@@ -421,10 +414,3 @@ def ground_literal(lifted_lit, assignments):
         arg = assignments[v]
         ground_vars.append(arg)
     return lifted_lit.predicate(*ground_vars)
-
-
-
-
-
-
-

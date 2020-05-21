@@ -121,3 +121,7 @@ register(
     entry_point='pddlgym.custom.inverse_planning.taxi:InversePlanningTaxiPDDLEnv',
 )
 
+register(
+    id='InversePlanningDoorsKeysGems-v0',
+    entry_point='pddlgym.custom.inverse_planning.doors_keys_gems:InversePlanningDoorsKeysGemsPDDLEnv',
+)

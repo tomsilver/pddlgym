@@ -6,6 +6,28 @@ from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunc
 import re
 
 
+FAST_DOWNWARD_STR = """
+(define (problem {problem}) (:domain {domain})
+  (:objects
+        {objects}
+  )
+  (:init \n\t{init_state}
+  )
+  (:goal {goal})
+)
+"""
+
+PROBLEM_STR = """
+(define (problem {problem}) (:domain {domain})
+  (:objects
+        {objects}
+  )
+  (:goal {goal})
+  (:init \n\t{init_state}
+))
+"""
+
+
 class Operator:
     """Class to hold an operator.
     """
@@ -115,6 +137,7 @@ class PDDLParser:
                 return Not(self._parse_into_literal(clause, params, is_effect=is_effect))
         string = string[1:-1].split()
         pred, args = string[0], string[1:]
+        typed_args = []
         # Validate types against the given params dict.
         assert pred in self.predicates, "Predicate {} is not defined".format(pred)
         assert self.predicates[pred].arity == len(args), pred
@@ -122,7 +145,12 @@ class PDDLParser:
             if arg not in params:
                 import ipdb; ipdb.set_trace()
             assert arg in params, "Argument {} is not in the params".format(arg)
-        return self.predicates[pred](*args)
+            if isinstance(params, dict):
+                typed_arg = TypedEntity(arg, params[arg])
+            else:
+                typed_arg = params[params.index(arg)]
+            typed_args.append(typed_arg)
+        return self.predicates[pred](*typed_args)
 
     def _parse_objects(self, objects):
         if objects.find("\n") != -1:
@@ -406,7 +434,6 @@ class PDDLDomainParser(PDDLParser):
             f.write(domain_str)
 
 
-
 class PDDLProblemParser(PDDLParser):
     """PDDL problem parsing class.
     """
@@ -467,54 +494,82 @@ class PDDLProblemParser(PDDLParser):
         self.goal = self._parse_into_literal(goal, params)
 
     @staticmethod
-    def create_pddl_file(fname, objects, initial_state, problem_name, domain_name, goal,
-                         fast_downward_order=False):
+    def pddl_string(objects, initial_state, problem_name, domain_name, goal,
+                    fast_downward_order=False):
         """Get the problem PDDL string for a given state.
         """
-        objects_typed = "\n\t".join(list(sorted(map(lambda o : str(o).replace(":", " - "), 
-            objects))))
+        objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
+                                                    objects))))
         init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
 
-        if fast_downward_order:
-            problem_str = """
-(define (problem {}) (:domain {})
-  (:objects
-        {}
-  )
-  (:init \n\t{}
-  )
-  (:goal {})
-)
-        """.format(problem_name, domain_name, objects_typed, init_state, goal.pddl_str())
-        else:
-            problem_str = """
-(define (problem {}) (:domain {})
-  (:objects
-        {}
-  )
-  (:goal {})
-  (:init \n\t{}
-))
-        """.format(problem_name, domain_name, objects_typed, goal.pddl_str(), init_state)
+        problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
+        return problem_str.format(
+            problem=problem_name,
+            domain=domain_name,
+            objects=objects_typed,
+            init_state=init_state,
+            goal=goal.pddl_str(),
+        )
 
-        with open(fname, 'w') as f:
-            f.write(problem_str)
-
-    def write(self, fname, fast_downward_order=False):
-        """Get the problem PDDL string for a given state.
+    @staticmethod
+    def create_pddl_file(file_or_filepath, objects, initial_state, problem_name,
+                         domain_name, goal, fast_downward_order=False):
+        """Write the problem PDDL string for a given state into a file.
         """
-        return PDDLProblemParser.create_pddl_file(fname, self.objects, 
-            self.initial_state, self.problem_name, self.domain_name, self.goal,
-            fast_downward_order=fast_downward_order)
+        problem_str = PDDLProblemParser.pddl_string(
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=domain_name,
+            goal=goal,
+            fast_downward_order=fast_downward_order,
+        )
+
+        try:
+            file_or_filepath.write(problem_str)
+        except AttributeError:
+            with open(file_or_filepath, 'w') as f:
+                f.write(problem_str)
+
+    def write(self, file_or_filepath, objects=None, initial_state=None, problem_name=None,
+              domain_name=None, goal=None, fast_downward_order=False):
+        """Write the problem PDDL string for a given state.
+        """
+        if objects is None:
+            objects = self.objects
+        if initial_state is None:
+            initial_state = self.initial_state
+        if problem_name is None:
+            problem_name = self.problem_name
+        if domain_name is None:
+            domain_name = self.domain_name
+        if goal is None:
+            goal = self.goal
+
+        return PDDLProblemParser.create_pddl_file(
+            file_or_filepath,
+            objects=objects,
+            initial_state=initial_state,
+            problem_name=problem_name,
+            domain_name=domain_name,
+            goal=goal,
+            fast_downward_order=fast_downward_order,
+        )
 
 
-def parse_plan_step(plan_step, operators, action_predicates, operators_as_actions=False):
+def parse_plan_step(plan_step, operators, action_predicates, objects, operators_as_actions=False):
     plan_step_split = plan_step.split()
 
     if operators_as_actions:
         action_predicate = [a for a in action_predicates \
             if a.name.lower() == plan_step_split[0].lower()][0]
-        return action_predicate(*plan_step_split[1:])
+        object_names = plan_step_split[1:]
+        args = []
+        for name in object_names:
+            matches = [o for o in objects if o.name == name]
+            assert len(matches) == 1
+            args.append(matches[0])
+        return action_predicate(*args)
 
     # Get the operator from its name
     operator = None
@@ -525,7 +580,12 @@ def parse_plan_step(plan_step, operators, action_predicates, operators_as_action
     assert operator is not None, "Unknown operator '{}'".format(plan_step_split[0])
 
     assert len(plan_step_split) == len(operator.params) + 1
-    args = plan_step_split[1:]
+    object_names = plan_step_split[1:]
+    args = []
+    for name in object_names:
+        matches = [o for o in objects if o.name == name]
+        assert len(matches) == 1
+        args.append(matches[0])
     assignments = dict(zip(operator.params, args))
 
     for cond in operator.preconds.literals:

@@ -13,11 +13,13 @@ import itertools
 class LiteralSpace(Space):
 
     def __init__(self, predicates,
-                 lit_valid_test=lambda lit: True):
+                 lit_valid_test=lambda lit: True,
+                 type_to_parent_types=None):
         self.predicates = sorted(predicates)
         self.num_predicates = len(predicates)
         self.objects = set()
         self.lit_valid_test = lit_valid_test
+        self.type_to_parent_types = type_to_parent_types
         super().__init__()
 
     def update(self, objs):
@@ -25,11 +27,15 @@ class LiteralSpace(Space):
         self.type_to_objs = defaultdict(list)
 
         for obj in sorted(objs):
-            self.type_to_objs[obj.var_type].append(obj)
+            if self.type_to_parent_types is None:
+                self.type_to_objs[obj.var_type].append(obj)
+            else:
+                for t in self.type_to_parent_types[obj.var_type]:
+                    self.type_to_objs[t].append(obj)
 
         self.objects = objs
 
-        self._all_ground_literals = None
+        self._all_ground_literals = sorted(self._compute_all_ground_literals())
 
     def sample_hierarchically(self):
         while True:
@@ -49,11 +55,10 @@ class LiteralSpace(Space):
         return lit
 
     def sample_literal(self):
-        ground_lits = sorted(self.all_ground_literals())
         while True:
-            num_lits = len(ground_lits)
+            num_lits = len(self._all_ground_literals)
             idx = self.np_random.choice(num_lits)
-            lit = ground_lits[idx]
+            lit = self._all_ground_literals[idx]
             if self.lit_valid_test(lit):
                 break
         return lit  
@@ -62,8 +67,6 @@ class LiteralSpace(Space):
         return self.sample_literal()
 
     def all_ground_literals(self):
-        if self._all_ground_literals is None:
-            self._all_ground_literals = self._compute_all_ground_literals()
         return set(l for l in self._all_ground_literals \
                    if self.lit_valid_test(l))
 
