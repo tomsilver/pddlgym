@@ -139,7 +139,8 @@ class PDDLEnv(gym.Env):
                  raise_error_on_invalid_action=False,
                  operators_as_actions=False,
                  dynamic_action_space=False,
-                 shape_reward_mode=None):
+                 shape_reward_mode=None,
+                 shaping_discount=1.):
         self._state = None
         self._domain_file = domain_file
         self._problem_dir = problem_dir
@@ -149,6 +150,7 @@ class PDDLEnv(gym.Env):
         self.operators_as_actions = operators_as_actions
 
         self._shape_reward_mode = shape_reward_mode
+        self._shaping_discount = shaping_discount
         self._current_heuristic = None
         self._heuristic = None
 
@@ -370,6 +372,8 @@ class PDDLEnv(gym.Env):
         """
         state, reward, done, debug_info = self.sample_transition(action)
         self.set_state(state)
+        if "next_state_heuristic" in debug_info:
+            self._current_heuristic = debug_info["next_state_heuristic"]
         return state, reward, done, debug_info
 
     def sample_transition(self, action):
@@ -392,13 +396,13 @@ class PDDLEnv(gym.Env):
         done = self._is_goal_reached(state)
 
         reward = self.extrinsic_reward(state, done)
+        debug_info = self._get_debug_info()
 
         # add intrinsic reward
         if self._shape_reward_mode:
             next_heuristic = self.compute_heuristic(state)
-            reward += self._current_heuristic - next_heuristic
-
-        debug_info = self._get_debug_info()
+            reward += self._current_heuristic - next_heuristic * self._shaping_discount
+            debug_info["next_state_heuristic"] = next_heuristic
 
         return state, reward, done, debug_info
 
