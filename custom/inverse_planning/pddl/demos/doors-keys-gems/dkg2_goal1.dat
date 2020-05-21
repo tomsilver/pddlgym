@@ -1,0 +1,3 @@
+(move x5y3 x5y2 down)
+(move x5y2 x5y1 down)
+(pickup gem2 x5y1)
