@@ -451,7 +451,7 @@ class PDDLEnv(gym.Env):
 
         # add intrinsic reward
         if self._shape_reward_mode:
-            next_heuristic = self.compute_heuristic(self._state)
+            next_heuristic = 0. if done else self.compute_heuristic(self._state)
             reward += self._current_heuristic - next_heuristic*self._shaping_discount
             self._current_heuristic = next_heuristic
 
@@ -481,7 +481,7 @@ class PDDLEnv(gym.Env):
 
         # add intrinsic reward
         if self._shape_reward_mode:
-            next_heuristic = self.compute_heuristic(state)
+            next_heuristic = 0. if done else self.compute_heuristic(state)
             reward += self._current_heuristic - next_heuristic*self._shaping_discount
 
         return obs, reward, done, {}
