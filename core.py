@@ -132,7 +132,8 @@ class PDDLEnv(gym.Env):
                  operators_as_actions=False,
                  dynamic_action_space=False,
                  compute_approx_reachable_set=False,
-                 shape_reward_mode=None):
+                 shape_reward_mode=None,
+                 shaping_discount=1.):
         self._state = None
         self._domain_file = domain_file
         self._problem_dir = problem_dir
@@ -143,6 +144,7 @@ class PDDLEnv(gym.Env):
         self._compute_approx_reachable_set = compute_approx_reachable_set
 
         self._shape_reward_mode = shape_reward_mode
+        self._shaping_discount = shaping_discount
         self._current_heuristic = None
         self._heuristic = None
 
@@ -450,7 +452,7 @@ class PDDLEnv(gym.Env):
         # add intrinsic reward
         if self._shape_reward_mode:
             next_heuristic = self.compute_heuristic(self._state)
-            reward += self._current_heuristic - next_heuristic
+            reward += self._current_heuristic - next_heuristic*self._shaping_discount
             self._current_heuristic = next_heuristic
 
         return obs, reward, done, debug_info
@@ -480,7 +482,7 @@ class PDDLEnv(gym.Env):
         # add intrinsic reward
         if self._shape_reward_mode:
             next_heuristic = self.compute_heuristic(state)
-            reward += self._current_heuristic - next_heuristic
+            reward += self._current_heuristic - next_heuristic*self._shaping_discount
 
         return obs, reward, done, {}
 
