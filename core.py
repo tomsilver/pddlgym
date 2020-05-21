@@ -517,17 +517,6 @@ class PDDLEnv(gym.Env):
                 except FileNotFoundError:
                     pass
         else:
-            # state = state | set(self.action_space._all_ground_literals)
-            # problem_str = PDDLProblemParser.pddl_string(
-            #     objects=problem.objects,
-            #     problem_name=problem.problem_name,
-            #     domain_name=problem.domain_name,
-            #     goal=problem.goal,
-            #     initial_state=state,
-            #     fast_downward_order=True,
-            # )
-            # return get_pyperplan_heuristic(
-            #     self._shape_reward_mode, self.domain.domain, problem_str)
             state = frozenset({lit.pddl_str() for lit in state})
             node = pyperplan.search.searchspace.make_root_node(state)
             return self._heuristic(node)
