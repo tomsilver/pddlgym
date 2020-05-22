@@ -15,7 +15,7 @@ do_precomputation = True #"if not exists"
 test_qvals = True
 do_goal_inference = "if not exists"
 test_goal_inference = True
-vi_maxiters = { True : 2500, False : 10000 } # biased? : max_iters
+vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
@@ -26,7 +26,8 @@ env_names = [
     # "InversePlanningLogistics-v0",
     # "InversePlanningCampus-v0",
     # "InversePlanningKitchen-v0",
-    "InversePlanningTaxi-v0"
+    # "InversePlanningTaxi-v0"
+    "InversePlanningDoorsKeysGems-v0",
 ]
 
 def create_headers(verbose=False):
@@ -36,16 +37,16 @@ def create_headers(verbose=False):
         headers[env_name] = OrderedDict()
         env = gym.make(env_name)
         # Group the problems that have the same initial state but different goals
-        # problem_prefix_to_group = defaultdict(list)
-        # for problem in env.problems:
-        #     fname_alone = os.path.split(problem.problem_fname)[-1]
-        #     split = fname_alone.split("_")
-        #     prefix = "_".join(split[:-1])
-        #     goal = split[-1][:-len(".pddl")]
-        #     problem_prefix_to_group[prefix].append(goal)
-        # problem_prefixes = sorted(problem_prefix_to_group)
-        problem_prefix_to_group = env.get_problem_groups()
+        problem_prefix_to_group = defaultdict(list)
+        for problem in env.problems:
+            fname_alone = os.path.split(problem.problem_fname)[-1]
+            split = fname_alone.split("_")
+            prefix = "_".join(split[:-1])
+            goal = split[-1][:-len(".pddl")]
+            problem_prefix_to_group[prefix].append(goal)
         problem_prefixes = sorted(problem_prefix_to_group)
+        # problem_prefix_to_group = env.get_problem_groups()
+        # problem_prefixes = sorted(problem_prefix_to_group)
         env.close()
 
         for initial_state in problem_prefixes:
