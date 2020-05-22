@@ -41,11 +41,11 @@ def integration_test():
     # Operator preconditions (set of Literals)
     assert len(operator.preconds.literals) == 4
     assert set(operator.preconds.literals) == { action_pred('?b'), pred1('?b'), 
-        pred3('?a', '?c', '?d'), Not(pred2('?c')) }
+        pred3('?a', '?c', '?d'), pred2('?c') }
 
     # Operator effects (set of Literals)
-    assert len(operator.effects.literals) == 3
-    assert set(operator.effects.literals) == { Anti(pred2('?d')), pred2('?c'), 
+    assert len(operator.effects.literals) == 2
+    assert set(operator.effects.literals) == { Anti(pred2('?c')), 
         pred3('?b', '?d', '?c')}
 
     ## Check problem
@@ -62,7 +62,7 @@ def integration_test():
     # Init
     assert problem.initial_state == { pred1('b2'), pred2('c1'),
         pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), action_pred('a1'), 
-        action_pred('a2'), action_pred('b1'), action_pred('b2')}
+        action_pred('a2'), action_pred('b1'), action_pred('b2'), action_pred('b3')}
 
     print("Test passed.")
 
