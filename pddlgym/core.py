@@ -275,8 +275,8 @@ class PDDLEnv(gym.Env):
         old_ops = self.domain.operators
         self.domain.operators = self._delete_relaxed_ops
         prev_len = 0
-        while prev_len != len(lits):  # do the fixed-point iteration
-            prev_len = len(lits)
+        while prev_len != len(reachable_lits):  # do the fixed-point iteration
+            prev_len = len(reachable_lits)
             for action in self.action_space.all_ground_literals(self._state):
                 selected_operator, assignment = self._select_operator(self._state, action)
                 if assignment is not None:
