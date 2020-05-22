@@ -39,6 +39,7 @@ def test_pddlenv():
         pass
 
     assert action not in env.action_space.all_ground_literals(obs), "Dynamic action space not working"
+    env2.reset()
     assert action in env2.action_space.all_ground_literals(obs), "Dynamic action space not working"
 
     # Valid args
