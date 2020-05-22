@@ -199,16 +199,15 @@ class InversePlanningDoorsKeysGemsPDDLEnv(InversePlanningPDDLEnv):
                 state.add(self._has(item))
             else:
                 # The item is at somewhere
-                if str(item.var_type) == "key":
-                    possible_places = self._possible_key_places
-                else:
-                    assert str(item.var_type) == "gem"
-                    possible_places = self._possible_gem_places
-                place = possible_places[self._rng.choice(len(possible_places))]
-                state.add(self._at(item, place))
-
-                # place = self._possible_places[self._rng.choice(len(self._possible_places))]
+                # if str(item.var_type) == "key":
+                #     possible_places = self._possible_key_places
+                # else:
+                #     assert str(item.var_type) == "gem"
+                #     possible_places = self._possible_gem_places
+                # place = possible_places[self._rng.choice(len(possible_places))]
                 # state.add(self._at(item, place))
+                place = self._possible_places[self._rng.choice(len(self._possible_places))]
+                state.add(self._at(item, place))
 
         # For each possible place, sample whether it's currently a door
         open_places = []
