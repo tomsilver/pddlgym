@@ -24,8 +24,8 @@ def test_pddlenv():
 
     obs, _ = env.reset()
 
-    assert obs == { pred1('b2'), pred2('c1'), pred3('a1', 'c1', 'd1'), 
-        pred3('a2', 'c2', 'd2') }
+    assert obs.literals == frozenset({ pred1('b2'), pred2('c1'), pred3('a1', 'c1', 'd1'), 
+        pred3('a2', 'c2', 'd2') })
 
     operator = env.domain.operators[operator_name]
 
@@ -38,17 +38,16 @@ def test_pddlenv():
     except InvalidAction:
         pass
 
-    assert action not in env.action_space.all_ground_literals(), "Dynamic action space not working"
-    env2.reset()
-    assert action in env2.action_space.all_ground_literals(), "Dynamic action space not working"
+    assert action not in env.action_space.all_ground_literals(obs), "Dynamic action space not working"
+    assert action in env2.action_space.all_ground_literals(obs), "Dynamic action space not working"
 
     # Valid args
     action = action_pred('b2')
 
     obs, _, _, _ = env.step(action)
 
-    assert obs == { pred1('b2'), pred3('b2', 'd1', 'c1'), 
-        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') }
+    assert obs.literals == frozenset({ pred1('b2'), pred3('b2', 'd1', 'c1'), 
+        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') })
 
     print("Test passed.")
 
@@ -75,7 +74,7 @@ def test_pddlenv_hierarchical_types():
     block2 = Type("block")("block2")
     cylinder1 = Type("cylinder")("cylinder1")
 
-    assert obs == {
+    assert obs.literals == frozenset({
         ispresent(nomsy),
         ispresent(rover),
         ispresent(rene),
@@ -85,11 +84,11 @@ def test_pddlenv_hierarchical_types():
         islight(block1),
         islight(cylinder1),
         isfurry(nomsy),
-    }
+    })
 
     obs, _, _, _ = env.step(pet('block1'))
 
-    assert obs == {
+    assert obs.literals == frozenset({
         ispresent(nomsy),
         ispresent(rover),
         ispresent(rene),
@@ -99,11 +98,11 @@ def test_pddlenv_hierarchical_types():
         islight(block1),
         islight(cylinder1),
         isfurry(nomsy),
-    }
+    })
 
     obs, _, _, _ = env.step(pet(nomsy))
 
-    assert obs == {
+    assert obs.literals == frozenset({
         ispresent(nomsy),
         ispresent(rover),
         ispresent(rene),
@@ -114,7 +113,7 @@ def test_pddlenv_hierarchical_types():
         islight(cylinder1),
         isfurry(nomsy),
         ishappy(nomsy)
-    }
+    })
 
     print("Test passed.")
 

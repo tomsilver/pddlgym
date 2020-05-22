@@ -9,7 +9,7 @@ def integration_test():
     problem_file = os.path.join(dir_path, 'pddl', 'test_domain', 'test_problem.pddl')
     domain = PDDLDomainParser(domain_file)
     problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
-        domain.predicates)
+        domain.predicates, domain.actions)
 
     ## Check domain
     type1 = Type('type1')
@@ -60,9 +60,9 @@ def integration_test():
     assert set(problem.goal.literals) == {pred2('c2'), pred3('b1', 'c1', 'd1')}
 
     # Init
-    assert problem.initial_state == { pred1('b2'), pred2('c1'),
-        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), action_pred('a1'), 
-        action_pred('a2'), action_pred('b1'), action_pred('b2'), action_pred('b3')}
+    assert problem.initial_state.literals == frozenset({ pred1('b2'), pred2('c1'),
+        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') })
+    assert problem.initial_state.objects == frozenset(problem.objects)
 
     print("Test passed.")
 
@@ -73,7 +73,7 @@ def test_hierarchical_types():
         'hierarchical_type_test_problem.pddl')
     domain = PDDLDomainParser(domain_file)
     problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
-        domain.predicates)
+        domain.predicates, domain.actions)
 
     assert set(domain.types.keys()) == {Type("dog"), Type("cat"), Type("animal"), 
         Type("block"), Type("cylinder"), Type("jindo"), Type("corgi"), 
