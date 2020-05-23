@@ -91,9 +91,6 @@ class PDDLEnv(gym.Env):
     dynamic_action_space : bool
         Let self.action_space dynamically change on each iteration to
         include only valid actions (must match operator preconditions).
-    compute_approx_reachable_set : bool
-        On each step, compute the approximate reachable set of literals under
-        the delete-relaxed version of the domain. Add it to info dict.
     shape_reward_mode : Method for reward shaping.
         - None: no reward shaping is done.
         - "optimal": Evaluates the current state against the distance to goal
@@ -112,7 +109,6 @@ class PDDLEnv(gym.Env):
                  raise_error_on_invalid_action=False,
                  operators_as_actions=False,
                  dynamic_action_space=False,
-                 compute_approx_reachable_set=False,
                  shape_reward_mode=None):
         self._state = None
         self._domain_file = domain_file
@@ -121,7 +117,6 @@ class PDDLEnv(gym.Env):
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
         self.operators_as_actions = operators_as_actions
-        self._compute_approx_reachable_set = compute_approx_reachable_set
 
         self._shape_reward_mode = shape_reward_mode
         self._current_heuristic = None
@@ -148,9 +143,6 @@ class PDDLEnv(gym.Env):
         self._observation_space = LiteralSetSpace(
             set(self.domain.predicates.values()) - set(self.action_predicates),
             type_to_parent_types=self.domain.type_to_parent_types)
-
-        if self._compute_approx_reachable_set:
-            self._delete_relaxed_ops = self._get_delete_relaxed_ops()
 
     @staticmethod
     def load_pddl(domain_file, problem_dir, operators_as_actions=False):
@@ -251,41 +243,7 @@ class PDDLEnv(gym.Env):
         """
         info = {'problem_file' : self._problem.problem_fname,
                 'domain_file' : self.domain.domain_fname }
-        if self._compute_approx_reachable_set:
-            info['approx_reachable_set'] = self._get_approx_reachable_set()
         return info
-
-    def _get_delete_relaxed_ops(self):
-        relaxed_ops = {}
-        for name, operator in self.domain.operators.items():
-            relaxed_op = copy.deepcopy(operator)
-            for precond in operator.preconds.literals:
-                if precond.is_negative:
-                    relaxed_op.preconds.literals.remove(precond)
-                assert not precond.is_anti, "Should be impossible"
-            for effect in operator.effects.literals:
-                assert not effect.is_negative, "Should be impossible"
-                if effect.is_anti:
-                    relaxed_op.effects.literals.remove(effect)
-            relaxed_ops[name] = relaxed_op
-        return relaxed_ops
-
-    def _get_approx_reachable_set(self):
-        reachable_lits = set(self._state.literals)
-        old_ops = self.domain.operators
-        self.domain.operators = self._delete_relaxed_ops
-        prev_len = 0
-        while prev_len != len(reachable_lits):  # do the fixed-point iteration
-            prev_len = len(reachable_lits)
-            for action in self.action_space.all_ground_literals(self._state):
-                selected_operator, assignment = self._select_operator(self._state, action)
-                if assignment is not None:
-                    for lifted_effect in selected_operator.effects.literals:
-                        effect = ground_literal(lifted_effect, assignment)
-                        assert not effect.is_anti  # should be relaxed
-                        reachable_lits.add(effect)
-        self.domain.operators = old_ops
-        return reachable_lits
 
     def _select_operator(self, state, action):
         """
