@@ -3,7 +3,7 @@ from pddlgym.structs import Predicate, Literal, Type, Not, Anti, LiteralConjunct
 
 import os
 
-def integration_test():
+def test_parser():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
     problem_file = os.path.join(dir_path, 'pddl', 'test_domain', 'test_problem.pddl')
@@ -101,5 +101,5 @@ def test_hierarchical_types():
     print("Test passed.")
 
 if __name__ == "__main__":
-    integration_test()
+    test_parser()
     test_hierarchical_types()
