@@ -1,7 +1,7 @@
 """PDDL parsing.
 """
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
-                     Not, Anti, ForAll, Exists, TypedEntity, ground_literal, State)
+                     Not, Anti, ForAll, Exists, TypedEntity, ground_literal)
 
 import re
 
@@ -448,7 +448,7 @@ class PDDLProblemParser(PDDLParser):
         self.problem_name = None
         # Set of objects, each is a structs.TypedEntity object.
         self.objects = None
-        # Set of fluents in initial state, each is a structs.State.
+        # Set of fluents in initial state, each is a structs.Literal.
         self.initial_state = None
         # structs.Literal representing the goal.
         self.goal = None
@@ -489,7 +489,7 @@ class PDDLProblemParser(PDDLParser):
             if lit.predicate.name in self.action_names:
                 continue
             initial_lits.add(lit)
-        self.initial_state = State(frozenset(initial_lits), frozenset(self.objects))
+        self.initial_state = frozenset(initial_lits)
 
     def _parse_problem_goal(self):
         start_ind = re.search(r"\(:goal", self.problem).start()
@@ -554,7 +554,7 @@ class PDDLProblemParser(PDDLParser):
         return PDDLProblemParser.create_pddl_file(
             file_or_filepath,
             objects=objects,
-            initial_state=initial_state.literals,
+            initial_state=initial_state,
             problem_name=problem_name,
             domain_name=domain_name,
             goal=goal,

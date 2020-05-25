@@ -60,9 +60,8 @@ def test_parser():
     assert set(problem.goal.literals) == {pred2('c2'), pred3('b1', 'c1', 'd1')}
 
     # Init
-    assert problem.initial_state.literals == frozenset({ pred1('b2'), pred2('c1'),
+    assert problem.initial_state == frozenset({ pred1('b2'), pred2('c1'),
         pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') })
-    assert problem.initial_state.objects == frozenset(problem.objects)
 
     print("Test passed.")
 
