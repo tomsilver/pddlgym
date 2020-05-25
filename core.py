@@ -229,7 +229,9 @@ class PDDLEnv(gym.Env):
 
         # reset the current heuristic
         self._current_heuristic = None
-        self.set_state(self._problem.initial_state)
+        initial_state = State(frozenset(self._problem.initial_state), 
+            frozenset(self._problem.objects))
+        self.set_state(initial_state)
 
         self._goal = self._problem.goal
         debug_info = self._get_debug_info()
@@ -374,14 +376,13 @@ class PDDLEnv(gym.Env):
         action_lits = set(self.action_space.all_ground_literals(state, 
             valid_only=False))
         state_lits |= action_lits
-        initial_state = State(frozenset(state_lits), state.objects)
 
         problem_path = ""
         try:
             # generate a temporary file to hand over to the external planner
             fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
             with os.fdopen(fd, "w") as f:
-                problem.write(f, initial_state=initial_state, fast_downward_order=True)
+                problem.write(f, initial_state=state_lits, fast_downward_order=True)
 
             if self._shape_reward_mode == "optimal":
                 return get_fd_optimal_plan_cost(
