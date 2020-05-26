@@ -229,8 +229,8 @@ class PDDLEnv(gym.Env):
 
         # reset the current heuristic
         self._current_heuristic = None
-        initial_state = State(frozenset(self._problem.initial_state), 
-            frozenset(self._problem.objects))
+        initial_state = State(frozenset(self._problem.initial_state),
+                              frozenset(self._problem.objects))
         self.set_state(initial_state)
 
         self._goal = self._problem.goal
@@ -409,4 +409,3 @@ class PDDLEnv(gym.Env):
     def render(self, *args, **kwargs):
         if self._render:
             return self._render(self._state.literals, *args, **kwargs)
-
