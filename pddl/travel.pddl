@@ -5,18 +5,18 @@
   (:predicates (isredplane ?v0 - plane)
 	(caravailable ?v0 - car)
 	(planeavailable ?v0 - plane)
-	(Fly ?v0 - state ?v1 - plane)
+	(fly ?v0 - state ?v1 - plane)
 	(visited ?v0 - state)
 	(adjacent ?v0 - state ?v1 - state)
 	(isblueplane ?v0 - plane)
 	(isbluestate ?v0 - state)
 	(isredstate ?v0 - state)
 	(at ?v0 - state)
-	(Drive ?v0 - state ?v1 - state ?v2 - car)
-	(Walk ?v0 - state)
+	(drive ?v0 - state ?v1 - state ?v2 - car)
+	(walk ?v0 - state)
   )
 
-  ; (:actions Fly Drive Walk)
+  ; (:actions fly drive walk)
 	
 
 	(:action fly-red
@@ -26,7 +26,7 @@
 			(isredstate ?to)
 			(isredplane ?plane)
 			(planeavailable ?plane)
-			(Fly ?to ?plane))
+			(fly ?to ?plane))
 		:effect (and
 			(not (at ?from))
 			(at ?to)
@@ -42,7 +42,7 @@
 			(adjacent ?from ?thru)
 			(adjacent ?thru ?to)
 			(not (at ?to))
-			(Drive ?to ?thru ?car))
+			(drive ?to ?thru ?car))
 		:effect (and
 			(not (at ?from))
 			(at ?to)
@@ -58,7 +58,7 @@
 			(isbluestate ?to)
 			(isblueplane ?plane)
 			(planeavailable ?plane)
-			(Fly ?to ?plane))
+			(fly ?to ?plane))
 		:effect (and
 			(not (at ?from))
 			(at ?to)
@@ -71,7 +71,7 @@
 		:parameters (?from - state ?to - state)
 		:precondition (and (at ?from)
 			(adjacent ?from ?to)
-			(Walk ?to))
+			(walk ?to))
 		:effect (and
 			(not (at ?from))
 			(at ?to)

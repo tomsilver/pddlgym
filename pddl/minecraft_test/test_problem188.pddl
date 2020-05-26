@@ -27,21 +27,21 @@
 
     (:init
     
-	(Hypothetical new-0)
-	(Hypothetical new-1)
-	(Hypothetical new-2)
-	(IsGrass grass-0)
-	(IsLog log-1)
-	(IsGrass grass-2)
-	(IsGrass grass-3)
-	(At grass-0 loc-0-1)
-	(At log-1 loc-3-1)
-	(At grass-2 loc-2-0)
-	(At grass-3 loc-3-2)
-	(AgentAt loc-1-1)
-	(Handsfree agent)
+	(hypothetical new-0)
+	(hypothetical new-1)
+	(hypothetical new-2)
+	(isgrass grass-0)
+	(islog log-1)
+	(isgrass grass-2)
+	(isgrass grass-3)
+	(at grass-0 loc-0-1)
+	(at log-1 loc-3-1)
+	(at grass-2 loc-2-0)
+	(at grass-3 loc-3-2)
+	(agentat loc-1-1)
+	(handsfree agent)
 
-    ; Action literals
+    ; action literals
     
 	(recall grass-0)
 	(craftplank grass-0 log-1)
@@ -120,6 +120,6 @@
 	(move loc-3-2)
     )
 
-    (:goal (and  (Isplanks new-0) ))
+    (:goal (and  (isplanks new-0) ))
 )
     

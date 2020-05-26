@@ -1,35 +1,35 @@
 (define (problem easyblocks)
     (:domain easyblocks)
     (:objects 
-        A - block
-        B - block
-        C - block
+        a - block
+        b - block
+        c - block
         robot - robot
     )
     (:init 
-        (clear C) 
-        (on C B)
-        (on B A)
-        (ontable A)
+        (clear c) 
+        (on c b)
+        (on b a)
+        (ontable a)
         (handempty robot)
 
-        ; Action literals
-        (PickUp A)
-        (PutDown A)
-        (Unstack A)
-        (Stack A B)
-        (Stack A C)
-        (PickUp B)
-        (PutDown B)
-        (Unstack B)
-        (Stack B A)
-        (Stack B C)
-        (PickUp C)
-        (PutDown C)
-        (Unstack C)
-        (Stack C B)
-        (Stack C A)
+        ; action literals
+        (pickup a)
+        (putdown a)
+        (unstack a)
+        (stack a b)
+        (stack a c)
+        (pickup b)
+        (putdown b)
+        (unstack b)
+        (stack b a)
+        (stack b c)
+        (pickup c)
+        (putdown c)
+        (unstack c)
+        (stack c b)
+        (stack c a)
 
     )
-    (:goal (and (on C A) (on A B)))
+    (:goal (and (on c a) (on a b)))
 )

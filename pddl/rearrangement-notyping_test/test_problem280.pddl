@@ -19,31 +19,31 @@
 
     (:init
     
-	(IsBear bear-0)
-	(IsBear bear-1)
-	(IsRobot robot)
-	(At bear-0 loc-0-2)
-	(At bear-1 loc-0-2)
-	(At robot loc-1-2)
-	(Handsfree robot)
+	(isbear bear-0)
+	(isbear bear-1)
+	(isrobot robot)
+	(at bear-0 loc-0-2)
+	(at bear-1 loc-0-2)
+	(at robot loc-1-2)
+	(handsfree robot)
 
-    ; Action literals
+    ; action literals
     
-	(Pick bear-0)
-	(Place bear-0)
-	(Pick bear-1)
-	(Place bear-1)
-	(MoveTo loc-0-0)
-	(MoveTo loc-0-1)
-	(MoveTo loc-0-2)
-	(MoveTo loc-1-0)
-	(MoveTo loc-1-1)
-	(MoveTo loc-1-2)
-	(MoveTo loc-2-0)
-	(MoveTo loc-2-1)
-	(MoveTo loc-2-2)
+	(pick bear-0)
+	(place bear-0)
+	(pick bear-1)
+	(place bear-1)
+	(moveto loc-0-0)
+	(moveto loc-0-1)
+	(moveto loc-0-2)
+	(moveto loc-1-0)
+	(moveto loc-1-1)
+	(moveto loc-1-2)
+	(moveto loc-2-0)
+	(moveto loc-2-1)
+	(moveto loc-2-2)
     )
 
-    (:goal (and  (Holding bear-1)  (At bear-1 loc-2-2) ))
+    (:goal (and  (holding bear-1)  (at bear-1 loc-2-2) ))
 )
     

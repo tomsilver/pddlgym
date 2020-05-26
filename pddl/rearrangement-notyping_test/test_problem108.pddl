@@ -21,30 +21,30 @@
 
     (:init
     
-	(IsPawn pawn-0)
-	(IsRobot robot)
-	(At pawn-0 loc-1-2)
-	(At robot loc-2-3)
-	(Handsfree robot)
+	(ispawn pawn-0)
+	(isrobot robot)
+	(at pawn-0 loc-1-2)
+	(at robot loc-2-3)
+	(handsfree robot)
 
-    ; Action literals
+    ; action literals
     
-	(Pick pawn-0)
-	(Place pawn-0)
-	(MoveTo loc-0-0)
-	(MoveTo loc-0-1)
-	(MoveTo loc-0-2)
-	(MoveTo loc-0-3)
-	(MoveTo loc-1-0)
-	(MoveTo loc-1-1)
-	(MoveTo loc-1-2)
-	(MoveTo loc-1-3)
-	(MoveTo loc-2-0)
-	(MoveTo loc-2-1)
-	(MoveTo loc-2-2)
-	(MoveTo loc-2-3)
+	(pick pawn-0)
+	(place pawn-0)
+	(moveto loc-0-0)
+	(moveto loc-0-1)
+	(moveto loc-0-2)
+	(moveto loc-0-3)
+	(moveto loc-1-0)
+	(moveto loc-1-1)
+	(moveto loc-1-2)
+	(moveto loc-1-3)
+	(moveto loc-2-0)
+	(moveto loc-2-1)
+	(moveto loc-2-2)
+	(moveto loc-2-3)
     )
 
-    (:goal (and  (At pawn-0 loc-2-3)  (Holding pawn-0) ))
+    (:goal (and  (at pawn-0 loc-2-3)  (holding pawn-0) ))
 )
     
