@@ -1,11 +1,11 @@
 
-;; The sliding-tile puzzle (i.e. the eight/fifteen/twentyfour puzzle).
-;; Tile positions are encoded by the predicate (at <tile> <x> <y>), i.e.
+;; the sliding-tile puzzle (i.e. the eight/fifteen/twentyfour puzzle).
+;; tile positions are encoded by the predicate (at <tile> <x> <y>), i.e.
 ;; using one object for horizontal position and one for vertical (there's
-;; a separate predicate for the position of the blank). The predicates
+;; a separate predicate for the position of the blank). the predicates
 ;; "inc" and "dec" encode addition/subtraction of positions.
 
-;; The instance files come in two flavors: The vanilla one uses the same
+;; the instance files come in two flavors: the vanilla one uses the same
 ;; objects for both x and y coordinates, while the other (files that have
 ;; an "x" at the end of their name) uses different objects for x and y
 ;; coordinates; this is because some planners seem to require different
