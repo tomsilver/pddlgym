@@ -1,45 +1,45 @@
 (define (problem blocks)
     (:domain conditionalblocks)
     (:objects 
-        D - block
-        B - block
-        A - block
-        C - block
+        d - block
+        b - block
+        a - block
+        c - block
         robot - robot
     )
     (:init 
-        (clear C) 
-        (clear A) 
-        (clear B) 
-        (clear D) 
-        (ontable C) 
-        (ontable A)
-        (ontable B) 
-        (ontable D) 
+        (clear c) 
+        (clear a) 
+        (clear b) 
+        (clear d) 
+        (ontable c) 
+        (ontable a)
+        (ontable b) 
+        (ontable d) 
         (handempty robot)
 
-        ; Action literals
-        (PickUp A)
-        (PutDown A)
-        (Stack A B)
-        (Stack A C)
-        (Stack A D)
-        (PickUp B)
-        (PutDown B)
-        (Stack B A)
-        (Stack B C)
-        (Stack B D)
-        (PickUp C)
-        (PutDown C)
-        (Stack C B)
-        (Stack C A)
-        (Stack C D)
-        (PickUp D)
-        (PutDown D)
-        (Stack D B)
-        (Stack D C)
-        (Stack D A)
+        ; action literals
+        (pickup a)
+        (putdown a)
+        (stack a b)
+        (stack a c)
+        (stack a d)
+        (pickup b)
+        (putdown b)
+        (stack b a)
+        (stack b c)
+        (stack b d)
+        (pickup c)
+        (putdown c)
+        (stack c b)
+        (stack c a)
+        (stack c d)
+        (pickup d)
+        (putdown d)
+        (stack d b)
+        (stack d c)
+        (stack d a)
 
     )
-    (:goal (and (on D C) (on C B) (on B A)))
+    (:goal (and (on d c) (on c b) (on b a)))
 )

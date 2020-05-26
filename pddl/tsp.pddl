@@ -1,5 +1,5 @@
-;; The Traveling Salesman problem, STRIPS version.
-;; The predicate "connected" defines the graph; it doesn't have to
+;; the traveling salesman problem, strips version.
+;; the predicate "connected" defines the graph; it doesn't have to
 ;; be made symmetric, since there're actions for going both "along"
 ;; and "against" the direction of an arc.
 
@@ -25,7 +25,7 @@
                (connected ?x ?y))
     :effect (and (not (in ?x)) (in ?y) (visited ?y) (not (not-visited ?y))))
 
-  ;; The "return" actions have to used to take the last step of the tour,
+  ;; the "return" actions have to used to take the last step of the tour,
   ;; since this involves returning to a city allready visited (the starting
   ;; city).
   (:action return-along
