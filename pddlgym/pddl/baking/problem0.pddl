@@ -12,23 +12,23 @@
 
     (:init
     
-    (IsEgg egg-0)
-    (IsFlour flour-0)
-    (Hypothetical new-0)
-    (PanIsClean pan-0)
+    (isegg egg-0)
+    (isflour flour-0)
+    (hypothetical new-0)
+    (panisclean pan-0)
 
-    ; Action literals
-    (PutEggInPan egg-0 pan-0)
-    (PutFlourInPan flour-0 pan-0)
-    (Mix pan-0)
-    (PutPanInOven pan-0 oven-0)
-    (RemovePanFromOven pan-0)
-    (BakeCake new-0 oven-0)
-    (BakeSouffle new-0 oven-0)
-    (CleanPan pan-0 soap-0)
+    ; action literals
+    (putegginpan egg-0 pan-0)
+    (putflourinpan flour-0 pan-0)
+    (mix pan-0)
+    (putpaninoven pan-0 oven-0)
+    (removepanfromoven pan-0)
+    (bakecake new-0 oven-0)
+    (bakesouffle new-0 oven-0)
+    (cleanpan pan-0 soap-0)
 
     )
 
-    (:goal (and (IsCake new-0) ))
+    (:goal (and (iscake new-0) ))
 )
     

@@ -1,8 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 4 Op-blocks world
+;;; 4 op-blocks world
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (domain BLOCKS)
+(define (domain blocks)
     (:requirements :strips :typing)
     (:types block robot)
     (:predicates 
@@ -12,18 +12,18 @@
         (handempty ?x - robot)
         (handfull ?x - robot)
         (holding ?x - block)
-        (PickUp ?x - block)
-        (PutDown ?x - block)
-        (Stack ?x - block ?y - block)
-        (Unstack ?x - block)
+        (pickup ?x - block)
+        (putdown ?x - block)
+        (stack ?x - block ?y - block)
+        (unstack ?x - block)
     )
 
-    ; (:actions PickUp PutDown Stack Unstack)
+    ; (:actions pickup putdown stack unstack)
 
     (:action pick-up
         :parameters (?x - block ?robot - robot)
         :precondition (and
-            (PickUp ?x) 
+            (pickup ?x) 
             (clear ?x) 
             (ontable ?x) 
             (handempty ?robot)
@@ -40,7 +40,7 @@
     (:action put-down
         :parameters (?x - block ?robot - robot)
         :precondition (and 
-            (PutDown ?x)
+            (putdown ?x)
             (holding ?x)
             (handfull ?robot)
         )
@@ -55,7 +55,7 @@
     (:action stack
         :parameters (?x - block ?y - block ?robot - robot)
         :precondition (and
-            (Stack ?x ?y)
+            (stack ?x ?y)
             (holding ?x) 
             (clear ?y)
             (handfull ?robot)
@@ -73,7 +73,7 @@
     (:action unstack
         :parameters (?x - block ?y - block ?robot - robot)
         :precondition (and
-            (Unstack ?x)
+            (unstack ?x)
             (on ?x ?y)
             (clear ?x)
             (handempty ?robot)
