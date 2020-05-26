@@ -1,8 +1,8 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;; 4 Op-blocks world
+;;; 4 op-blocks world
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
-(define (domain BLOCKS)
+(define (domain blocks)
     (:requirements :strips :typing)
     (:types block robot)
     (:predicates 

@@ -313,6 +313,7 @@ class PDDLDomainParser(PDDLParser):
         if not match:
             self.types = {"default": Type("default")}
             self.uses_typing = False
+            self.type_hierarchy = {}
             return
         self.uses_typing = True
         start_ind = match.start()

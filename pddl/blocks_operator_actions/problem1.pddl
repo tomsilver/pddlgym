@@ -1,23 +1,23 @@
 (define (problem blocks)
     (:domain blocks)
     (:objects 
-        D - block
-        B - block
-        A - block
-        C - block
+        d - block
+        b - block
+        a - block
+        c - block
         robot - robot
     )
     (:init 
-        (clear C) 
-        (clear A) 
-        (clear B) 
-        (clear D) 
-        (ontable C) 
-        (ontable A)
-        (ontable B) 
-        (ontable D) 
+        (clear c) 
+        (clear a) 
+        (clear b) 
+        (clear d) 
+        (ontable c) 
+        (ontable a)
+        (ontable b) 
+        (ontable d) 
         (handempty robot)
 
     )
-    (:goal (and (on D C) (on C B) (on B A)))
+    (:goal (and (on d c) (on c b) (on b a)))
 )
