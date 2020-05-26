@@ -1,10 +1,10 @@
 
-;; Eight puzzle problems:
-;; Hard1 and Hard2 are the two "hardest" instances of the puzzle,
-;; i.e. having longest solutions (31 steps, see a paper by Reinefeld,
-;; IJCAI -95 or -97).
+;; eight puzzle problems:
+;; hard1 and hard2 are the two "hardest" instances of the puzzle,
+;; i.e. having longest solutions (31 steps, see a paper by reinefeld,
+;; ijcai -95 or -97).
 
-;; This version uses different sets of objects for x and y coordinates.
+;; this version uses different sets of objects for x and y coordinates.
 
 (define (problem hard2)
   (:domain strips-sliding-tile)
