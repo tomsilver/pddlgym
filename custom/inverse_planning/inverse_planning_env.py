@@ -3,9 +3,11 @@ for value iteration and variations
 """
 from pddlgym.core import PDDLEnv
 from pddlgym.parser import parse_plan_step
+import glob
 import os
 from collections import defaultdict
 
+DEMOS = "nonoptimal"
 
 class InversePlanningMixIn:
 
@@ -23,9 +25,9 @@ class InversePlanningMixIn:
         self._state_buffer = []
         problems = self._get_problems_with_current_initial_state()
         for problem_fname in problems:
-            plan = self.load_demonstration_for_problem(problem_fname)
-            states = self.run_demo(plan)
-            self._state_buffer.extend(states)
+            for plan in self.load_demonstrations_for_problem(problem_fname):
+                states = self.run_demo(plan)
+                self._state_buffer.extend(states)
         return out
 
     def _get_problems_with_current_initial_state(self):
@@ -33,22 +35,28 @@ class InversePlanningMixIn:
         prefix = sep.join(self._problem.problem_fname.split(sep)[:-1])
         return self._problem_prefix_to_group[prefix]
 
-    def load_demonstration_for_problem(self, problem_fname=None):
+    def load_demonstrations_for_problem(self, problem_fname=None):
         if problem_fname is None:
             problem_fname = self._problem.problem_fname
         demo_fname_split = list(os.path.normpath(problem_fname).split(os.path.sep))
-        demo_fname_split.insert(-2, "demos")
+        demo_fname_split.insert(-2, "demos" + "_" + DEMOS)
         demo_fname = os.path.join(os.path.sep, os.path.join(*demo_fname_split))
-        demo_fname = demo_fname.replace(".pddl", ".dat")
-        with open(demo_fname, 'r') as f:
-            plan_str = f.read()
-        action_strs = [s.lower().replace("(", "").replace(")", "") \
-            for s in plan_str.split("\n") if len(s) > 0]
-        plan = []
-        for plan_step in action_strs:
-            action = self.parse_action_str(plan_step)
-            plan.append(action)
-        return plan
+        demo_fname = demo_fname.replace(".pddl", "_*.dat")
+        matches = glob.glob(demo_fname)
+        if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
+            import ipdb; ipdb.set_trace()
+        plans = []
+        for filename in matches:
+            with open(filename, 'r') as f:
+                plan_str = f.read()
+            action_strs = [s.lower().replace("(", "").replace(")", "") \
+                for s in plan_str.split("\n") if len(s) > 0]
+            plan = []
+            for plan_step in action_strs:
+                action = self.parse_action_str(plan_step)
+                plan.append(action)
+            plans.append(plan)
+        return plans
 
     def parse_action_str(self, plan_step):
         problem_objects = self._problem.objects

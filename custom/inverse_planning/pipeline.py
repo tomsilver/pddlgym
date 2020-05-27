@@ -11,7 +11,7 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = True #"if not exists"
+do_precomputation = "if not exists"
 test_qvals = True
 do_goal_inference = "if not exists"
 test_goal_inference = True
@@ -20,14 +20,14 @@ horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    # "InversePlanningBlocks-v0",
-    # "InversePlanningIntrusionDetection-v0",
+    "InversePlanningBlocks-v0",
+    # "InversePlanningIntrusionDetection-v0", # todo
     # "InversePlanningGrid-v0",
-    # "InversePlanningLogistics-v0",
-    # "InversePlanningCampus-v0",
+    "InversePlanningLogistics-v0",
+    "InversePlanningCampus-v0",
     # "InversePlanningKitchen-v0",
-    # "InversePlanningTaxi-v0"
-    "InversePlanningDoorsKeysGems-v0",
+    "InversePlanningTaxi-v0"
+    # "InversePlanningDoorsKeysGems-v0",
 ]
 
 def create_headers(verbose=False):
@@ -36,17 +36,23 @@ def create_headers(verbose=False):
     for env_name in env_names:
         headers[env_name] = OrderedDict()
         env = gym.make(env_name)
-        # Group the problems that have the same initial state but different goals
-        problem_prefix_to_group = defaultdict(list)
-        for problem in env.problems:
-            fname_alone = os.path.split(problem.problem_fname)[-1]
-            split = fname_alone.split("_")
-            prefix = "_".join(split[:-1])
-            goal = split[-1][:-len(".pddl")]
-            problem_prefix_to_group[prefix].append(goal)
-        problem_prefixes = sorted(problem_prefix_to_group)
-        # problem_prefix_to_group = env.get_problem_groups()
-        # problem_prefixes = sorted(problem_prefix_to_group)
+
+        # desperate times
+        if env_name == "InversePlanningTaxi-v0":
+            problem_prefix_to_group = env.get_problem_groups()
+            problem_prefixes = sorted(problem_prefix_to_group)
+
+        else:
+            # Group the problems that have the same initial state but different goals
+            problem_prefix_to_group = defaultdict(list)
+            for problem in env.problems:
+                fname_alone = os.path.split(problem.problem_fname)[-1]
+                split = fname_alone.split("_")
+                prefix = "_".join(split[:-1])
+                goal = split[-1][:-len(".pddl")]
+                problem_prefix_to_group[prefix].append(goal)
+            problem_prefixes = sorted(problem_prefix_to_group)
+
         env.close()
 
         for initial_state in problem_prefixes:
@@ -65,8 +71,8 @@ def create_headers(verbose=False):
 def get_qval_run_id(env_name, initial_state, goal, biased):
     return "qval_run_{}_{}_{}_{}".format(env_name, initial_state, goal, biased)
 
-def get_goal_inference_run_id(env_name, initial_state, goal, biased):
-    return "goal_inference_run_{}_{}_{}_{}".format(env_name, initial_state, goal, biased)
+def get_goal_inference_run_id(env_name, initial_state, goal, biased, demonstration_idx):
+    return "goal_inference_run_{}_{}_{}_{}_{}".format(env_name, initial_state, goal, biased, demonstration_idx)
 
 def save_results(run_id, results):
     outfile = os.path.join(outdir, run_id + '.pkl')
@@ -117,14 +123,17 @@ def run_test_qvals(env_name, initial_state, goal, qvals):
     print("Reward accrued following qvals:", total_reward)
     env.close()
 
-def get_demonstration(env_name, initial_state, goal):
+def get_demonstrations(env_name, initial_state, goal):
+    demonstrations = []
     env = create_env(env_name, initial_state, goal)
-    plan = env.load_demonstration_for_problem()
-    states = env.run_demo(plan)
-    assert len(states) == len(plan) + 1
-    demonstration = list(zip(states[:-1], plan))
+    plans = env.load_demonstrations_for_problem()
+    for plan in plans:
+        states = env.run_demo(plan)
+        assert len(states) == len(plan) + 1
+        demonstration = list(zip(states[:-1], plan))
+        demonstrations.append(demonstration)
     env.close()
-    return demonstration
+    return demonstrations
     # Uncomment to get a demonstration using computed qvals
     # demonstration = []
     # env = create_env(env_name, initial_state, goal)
@@ -168,7 +177,7 @@ def get_true_goal_top_ranked(goal_idx, gi_results):
     return goal_idx in np.argwhere(posterior == max(posterior))
 
 def report_results():
-    for biased in [True, False]:
+    for biased in [False]: #[True, False]:
         print("### Results for biased={}".format(biased))
 
         headers = create_headers()
@@ -185,31 +194,34 @@ def report_results():
                 for goal_idx, goal in enumerate(headers[env_name][initial_state]):
                     qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
                     qval_results = load_results(qval_run_id)
-                    gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
-                    gi_results = load_results(gi_run_id)
+                    
+                    demonstrations = get_demonstrations(env_name, initial_state, goal)
+                    for demonstration_idx, demonstration in enumerate(demonstrations):
+                    
+                        gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased,
+                            demonstration_idx=demonstration_idx)
+                        gi_results = load_results(gi_run_id)
 
-                    # Accuracy
-                    posterior_true_goal = get_posterior_for_true_goal(goal_idx, gi_results)
-                    true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
+                        # Accuracy
+                        posterior_true_goal = get_posterior_for_true_goal(goal_idx, gi_results)
+                        true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
 
-                    # Speed
-                    initial_time_cost = qval_results['time_elapsed']
-                    num_steps = len(gi_results['posteriors'])
-                    marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
-                    average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
-                    states_visited = vi_maxiters[biased]
+                        # Speed
+                        initial_time_cost = qval_results['time_elapsed']
+                        num_steps = len(gi_results['posteriors'])
+                        marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
+                        average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
+                        states_visited = vi_maxiters[biased]
 
-                    all_posterior_true_goal.append(posterior_true_goal)
-                    all_true_goal_top_ranked.append(true_goal_top_ranked)
-                    all_initial_time_cost.append(initial_time_cost)
-                    all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
-                    all_average_cost_per_step.append(average_cost_per_step)
-                    all_states_visited.append(states_visited)
+                        all_posterior_true_goal.append(posterior_true_goal)
+                        all_true_goal_top_ranked.append(true_goal_top_ranked)
+                        all_initial_time_cost.append(initial_time_cost)
+                        all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
+                        all_average_cost_per_step.append(average_cost_per_step)
+                        all_states_visited.append(states_visited)
 
+                        del gi_results
                     del qval_results
-                    del gi_results
-
-            print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
 
             print("**** {} ****".format(env_name))
             print("\nPosterior true goal")
@@ -273,7 +285,6 @@ def run_pipeline(indices, mode, biased):
 
                 # Goal inference
                 for goal in headers[env_name][initial_state]:
-                    gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, biased=biased)
                     if do_goal_inference and mode == "gi":
                         index_counter += 1
                         if index_counter not in indices:
@@ -283,25 +294,29 @@ def run_pipeline(indices, mode, biased):
                                 print("Found {}, skipping".format(gi_run_id))
                                 continue
                         print("Doing index {}".format(index_counter))
-                        # Get demonstration
-                        demonstration = get_demonstration(env_name, initial_state, goal)
-                        # Load qvals for all goals
-                        goals = headers[env_name][initial_state]
-                        goal_qvals = []
-                        for g in goals:
-                            qval_q_run_id = get_qval_run_id(env_name, initial_state, g, biased=biased)
-                            results_g = load_results(qval_q_run_id) # too large
-                            qvals_g = results_g["qvals"]
-                            # qvals_g = os.path.join(outdir, qval_q_run_id + '.pkl')
-                            goal_qvals.append(qvals_g)
-                        start_time = time.time()
-                        posteriors, time_to_ignore = compute_goal_inference_posteriors(demonstration, 
-                            goals, goal_qvals, env_name, initial_state, goal)
-                        time_elapsed = time.time() - start_time - time_to_ignore
-                        results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
-                        save_results(gi_run_id, results)
-                        if test_goal_inference:
-                            run_test_goal_inference(goals, goal, posteriors)
+
+                        # Get demonstrations
+                        demonstrations = get_demonstrations(env_name, initial_state, goal)
+                        for demonstration_idx, demonstration in enumerate(demonstrations):
+                            gi_run_id = get_goal_inference_run_id(env_name, initial_state, goal, 
+                                biased=biased, demonstration_idx=demonstration_idx)
+                            # Load qvals for all goals
+                            goals = headers[env_name][initial_state]
+                            goal_qvals = []
+                            for g in goals:
+                                qval_q_run_id = get_qval_run_id(env_name, initial_state, g, biased=biased)
+                                results_g = load_results(qval_q_run_id) # too large
+                                qvals_g = results_g["qvals"]
+                                # qvals_g = os.path.join(outdir, qval_q_run_id + '.pkl')
+                                goal_qvals.append(qvals_g)
+                            start_time = time.time()
+                            posteriors, time_to_ignore = compute_goal_inference_posteriors(demonstration, 
+                                goals, goal_qvals, env_name, initial_state, goal)
+                            time_elapsed = time.time() - start_time - time_to_ignore
+                            results = {"posteriors" : posteriors, "time_elapsed" : time_elapsed}
+                            save_results(gi_run_id, results)
+                            if test_goal_inference:
+                                run_test_goal_inference(goals, goal, posteriors)
 
 def count_indices():
     headers = create_headers(verbose=False)
