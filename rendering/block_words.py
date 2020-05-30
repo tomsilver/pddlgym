@@ -120,6 +120,7 @@ def draw_name_on_rect(rect, ax, block_name):
             weight='bold', fontsize=6, ha='center', va='center')
 
 def render(obs, mode='human', close=False):
+    return False
 
     width, height = 3.2, 3.2
     fig = plt.figure(figsize=(width, height))

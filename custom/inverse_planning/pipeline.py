@@ -11,22 +11,22 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = "if not exists"
+do_precomputation = True #"if not exists"
 test_qvals = True
-do_goal_inference = "if not exists"
+do_goal_inference = True #"if not exists"
 test_goal_inference = True
 vi_maxiters = { True : 10000, False : 250000 } # biased? : max_iters
 horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    "InversePlanningBlocks-v0",
-    # "InversePlanningIntrusionDetection-v0", # todo
+    "InversePlanningIntrusionDetection-v0",
+    # "InversePlanningBlocks-v0",
     # "InversePlanningGrid-v0",
-    "InversePlanningLogistics-v0",
-    "InversePlanningCampus-v0",
+    # "InversePlanningLogistics-v0",
+    # "InversePlanningCampus-v0",
     # "InversePlanningKitchen-v0",
-    "InversePlanningTaxi-v0"
+    # "InversePlanningTaxi-v0"
     # "InversePlanningDoorsKeysGems-v0",
 ]
 
@@ -127,6 +127,7 @@ def get_demonstrations(env_name, initial_state, goal):
     demonstrations = []
     env = create_env(env_name, initial_state, goal)
     plans = env.load_demonstrations_for_problem()
+    assert len(plans) == 2
     for plan in plans:
         states = env.run_demo(plan)
         assert len(states) == len(plan) + 1
@@ -223,6 +224,8 @@ def report_results():
                         del gi_results
                     del qval_results
 
+            print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
+
             print("**** {} ****".format(env_name))
             print("\nPosterior true goal")
             print("mean: ", np.mean(all_posterior_true_goal))
@@ -289,10 +292,10 @@ def run_pipeline(indices, mode, biased):
                         index_counter += 1
                         if index_counter not in indices:
                             continue
-                        if do_goal_inference == "if not exists":
-                            if results_exist(gi_run_id):
-                                print("Found {}, skipping".format(gi_run_id))
-                                continue
+                        # if do_goal_inference == "if not exists":
+                        #     if results_exist(gi_run_id):
+                        #         print("Found {}, skipping".format(gi_run_id))
+                        #         continue
                         print("Doing index {}".format(index_counter))
 
                         # Get demonstrations

@@ -10,6 +10,7 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
     """
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
     domain_file = os.path.join(dir_path, "taxi.pddl")
+    sep = "-"
 
     def __init__(self, seed=0, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -34,11 +35,11 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         problems = self._get_problems_with_current_initial_state()
         for idx in problems:
             problem_fname = self._problem_index_to_problem_file[idx]
-            # print("Loading demo for problem", problem_fname)
+            print("Loading demo for problem", problem_fname)
             self.s = self._problem_index_to_state[idx]
-            plan = self.load_demonstration_for_problem(problem_fname)
-            states = self.run_demo(plan)
-            self._state_buffer.extend(states)
+            for plan in self.load_demonstrations_for_problem(problem_fname):
+                states = self.run_demo(plan)
+                self._state_buffer.extend(states)
 
         self.s = initial_state
         
@@ -55,10 +56,10 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._problem_index_fixed = True
         self._problem_idx = idx
 
-    def load_demonstration_for_problem(self, problem_fname=None):
+    def load_demonstrations_for_problem(self, problem_fname=None):
         if problem_fname is None:
             problem_fname = self._problem_index_to_problem_file[self._problem_idx]
-        return super().load_demonstration_for_problem(problem_fname=problem_fname)
+        return super().load_demonstrations_for_problem(problem_fname=problem_fname)
 
     def get_state(self):
         return {self.s}

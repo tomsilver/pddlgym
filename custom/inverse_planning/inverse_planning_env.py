@@ -11,10 +11,12 @@ DEMOS = "nonoptimal"
 
 class InversePlanningMixIn:
 
+    sep = "_"
+
     def get_problem_groups(self):
         problem_prefix_to_group = defaultdict(list)
         for problem_idx, problem in enumerate(self.problems):
-            prefix = "_".join(problem.problem_fname.split("_")[:-1])
+            prefix = self.sep.join(problem.problem_fname.split(self.sep)[:-1])
             problem_prefix_to_group[prefix].append(problem_idx)
         problem_prefixes = sorted(problem_prefix_to_group)
         problem_groups = [problem_prefix_to_group[p] for p in problem_prefixes]
@@ -31,8 +33,7 @@ class InversePlanningMixIn:
         return out
 
     def _get_problems_with_current_initial_state(self):
-        sep = "_"
-        prefix = sep.join(self._problem.problem_fname.split(sep)[:-1])
+        prefix = self.sep.join(self._problem.problem_fname.split(self.sep)[:-1])
         return self._problem_prefix_to_group[prefix]
 
     def load_demonstrations_for_problem(self, problem_fname=None):
@@ -96,10 +97,9 @@ class InversePlanningPDDLEnv(InversePlanningMixIn, PDDLEnv):
         super().__init__(*args, **kwargs)
 
         # Group the problems that have the same initial state but different goals
-        sep = "_"
         self._problem_prefix_to_group = defaultdict(list)
         for problem in self.problems:
-            prefix = sep.join(problem.problem_fname.split(sep)[:-1])
+            prefix = self.sep.join(problem.problem_fname.split(self.sep)[:-1])
             self._problem_prefix_to_group[prefix].append(problem.problem_fname)
 
 
