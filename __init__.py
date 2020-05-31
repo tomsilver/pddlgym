@@ -48,7 +48,6 @@ for env_name, kwargs in [
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
-        "compute_approx_reachable_set": False,
         "shape_reward_mode": None,
     }
     kwargs.update(other_args)

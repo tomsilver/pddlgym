@@ -3,8 +3,8 @@
 One PDDLEnv corresponds to one PDDL domain. Each episode corresponds to
 one one PDDL problem; calling env.reset() sets up a new problem.
 
-Observations are sets of ground literals. Actions are single ground
-literals (not operators -- see README).
+Observations are namedtuples with attributes `literals` and `objects`.
+Actions are single ground literals (not operators -- see README).
 
 The debug_info returned by reset and step contains the domain PDDL file
 and current problem PDDL file to facilitate interaction with a planner.
@@ -15,11 +15,9 @@ Usage example:
 >>> action = env.action_space.sample()
 >>> obs, reward, done, debug_info = env.step(action)
 """
-
-from pddlgym import planning
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
-from pddlgym.structs import ground_literal, Literal
+from pddlgym.structs import ground_literal, Literal, State
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
@@ -50,25 +48,26 @@ def _apply_effects(state, lifted_effects, assignments):
 
     Parameters
     ----------
-    state : #TODO figure out type
+    state : State
         The state on which the effects are applied.
     lifted_effects : { Literal }
     assignments : { TypedEntity : TypedEntity }
         Maps variables to objects.
     """
-    new_state = {lit for lit in state}
+    new_literals = set(state.literals)
 
     for lifted_effect in lifted_effects:
         effect = ground_literal(lifted_effect, assignments)
         # Negative effect
         if effect.is_anti:
             literal = effect.inverted_anti
-            if literal in new_state:
-                new_state.remove(literal)
+            if literal in new_literals:
+                new_literals.remove(literal)
     for lifted_effect in lifted_effects:
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
-            new_state.add(effect)
+            new_literals.add(effect)
+    new_state = State(frozenset(new_literals), state.objects)
     return new_state
 
 
@@ -82,7 +81,7 @@ def _make_heuristic(domain_file, problem_file, mode, cache_maxsize=10000):
 
     @functools.lru_cache(cache_maxsize)
     def _call_heuristic(state):
-        state = frozenset({lit.pddl_str() for lit in state})
+        state = frozenset({lit.pddl_str() for lit in state.literals})
         node = pyperplan.search.searchspace.make_root_node(state)
         return heuristic(node)
 
@@ -111,9 +110,6 @@ class PDDLEnv(gym.Env):
     dynamic_action_space : bool
         Let self.action_space dynamically change on each iteration to
         include only valid actions (must match operator preconditions).
-    compute_approx_reachable_set : bool
-        On each step, compute the approximate reachable set of literals under
-        the delete-relaxed version of the domain. Add it to info dict.
     shape_reward_mode : Method for reward shaping.
         - None: no reward shaping is done.
         - "optimal": Evaluates the current state against the distance to goal
@@ -132,7 +128,6 @@ class PDDLEnv(gym.Env):
                  raise_error_on_invalid_action=False,
                  operators_as_actions=False,
                  dynamic_action_space=False,
-                 compute_approx_reachable_set=False,
                  shape_reward_mode=None,
                  shaping_discount=1.):
         self._state = None
@@ -142,7 +137,6 @@ class PDDLEnv(gym.Env):
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
         self.operators_as_actions = operators_as_actions
-        self._compute_approx_reachable_set = compute_approx_reachable_set
 
         if shape_reward_mode == "none":
             shape_reward_mode = None
@@ -174,9 +168,6 @@ class PDDLEnv(gym.Env):
             set(self.domain.predicates.values()) - set(self.action_predicates),
             type_to_parent_types=self.domain.type_to_parent_types)
 
-        if self._compute_approx_reachable_set:
-            self._delete_relaxed_ops = self._get_delete_relaxed_ops()
-
     @staticmethod
     def load_pddl(domain_file, problem_dir, operators_as_actions=False):
         """
@@ -203,7 +194,7 @@ class PDDLEnv(gym.Env):
         problem_files = [f for f in glob.glob(os.path.join(problem_dir, "*.pddl"))]
         for problem_file in sorted(problem_files):
             problem = PDDLProblemParser(problem_file, domain.domain_name, 
-                domain.types, domain.predicates)
+                domain.types, domain.predicates, domain.actions)
             problems.append(problem)
         return domain, problems
 
@@ -216,17 +207,12 @@ class PDDLEnv(gym.Env):
         return self._action_space
 
     def set_state(self, state):
-        self.set_state_no_copy(set(state))
-        if self._shape_reward_mode is not None:
-            self._current_heuristic = self.compute_heuristic(state)
-
-    def set_state_no_copy(self, state):
         self._state = state
         if self._shape_reward_mode is not None:
             self._current_heuristic = self.compute_heuristic(state)
 
     def get_state(self):
-        return frozenset(self._state)
+        return self._state
 
     def seed(self, seed):
         self._seed = seed
@@ -265,10 +251,6 @@ class PDDLEnv(gym.Env):
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
 
-        # The action and observation spaces depend on the objects
-        self._action_space.update(self._problem.objects)
-        self._observation_space.update(self._problem.objects)
-
         # Create new heuristic if using reward shaping and either the problem
         # isn't fixed or no heuristic has been created yet.
         if (self._shape_reward_mode is not None
@@ -278,13 +260,11 @@ class PDDLEnv(gym.Env):
 
         # reset the current heuristic
         self._current_heuristic = None
-        self.set_state({lit for lit in self._problem.initial_state
-                        if lit.predicate.name not in self.domain.actions})
+        initial_state = State(frozenset(self._problem.initial_state),
+                              frozenset(self._problem.objects))
+        self.set_state(initial_state)
 
-        self._action_lits = {lit for lit in self._problem.initial_state
-                             if lit.predicate.name in self.domain.actions}
         self._goal = self._problem.goal
-
         debug_info = self._get_debug_info()
 
         return self.get_state(), debug_info
@@ -298,49 +278,12 @@ class PDDLEnv(gym.Env):
 
     def _get_debug_info(self):
         """
-        Contains the problem file, domain file, and objects
+        Contains the problem file and domain file
         for interaction with a planner.
         """
         info = {'problem_file' : self._problem.problem_fname,
-                'domain_file' : self.domain.domain_fname,
-                'objects' : self._problem.objects,
-                'image' : self.render()}
-        if self._compute_approx_reachable_set:
-            info['approx_reachable_set'] = self._get_approx_reachable_set()
+                'domain_file' : self.domain.domain_fname }
         return info
-
-    def _get_delete_relaxed_ops(self):
-        relaxed_ops = {}
-        for name, operator in self.domain.operators.items():
-            relaxed_op = copy.deepcopy(operator)
-            for precond in operator.preconds.literals:
-                if precond.is_negative:
-                    relaxed_op.preconds.literals.remove(precond)
-                assert not precond.is_anti, "Should be impossible"
-            for effect in operator.effects.literals:
-                assert not effect.is_negative, "Should be impossible"
-                if effect.is_anti:
-                    relaxed_op.effects.literals.remove(effect)
-            relaxed_ops[name] = relaxed_op
-        return relaxed_ops
-
-    def _get_approx_reachable_set(self):
-        obs = self.get_state()
-        old_ops = self.domain.operators
-        self.domain.operators = self._delete_relaxed_ops
-        prev_len = 0
-        while prev_len != len(obs):  # do the fixed-point iteration
-            prev_len = len(obs)
-            for action in self.action_space.all_ground_literals():
-                selected_operator, assignment = self._select_operator(
-                    self._state, action)
-                if assignment is not None:
-                    for lifted_effect in selected_operator.effects.literals:
-                        effect = ground_literal(lifted_effect, assignment)
-                        assert not effect.is_anti  # should be relaxed
-                        obs.add(effect)
-        self.domain.operators = old_ops
-        return obs
 
     def _select_operator(self, state, action):
         """
@@ -358,7 +301,7 @@ class PDDLEnv(gym.Env):
             possible_operators = set(self.domain.operators.values())
 
         # Knowledge base: literals in the state + action taken
-        kb = self.get_state() | {action}
+        kb = set(state.literals) | {action}
 
         selected_operator = None
         assignment = None
@@ -411,7 +354,7 @@ class PDDLEnv(gym.Env):
 
         Returns
         -------
-        obs : { Literal }
+        state : State
             The set of active predicates.
         reward : float
             1 if the goal is reached and 0 otherwise.
@@ -420,35 +363,11 @@ class PDDLEnv(gym.Env):
         debug_info : dict
             See self._get_debug_info.
         """
-        selected_operator, assignment = self._select_operator(self._state,
-                                                              action)
-
-        # A ground operator was found; execute the ground effects
-        if assignment is not None:
-            self._state = _apply_effects(
-                self._state,
-                selected_operator.effects.literals,
-                assignment,
-            )
-
-        # No operator was found
-        elif self._raise_error_on_invalid_action:
-            # import ipdb; ipdb.set_trace()
-            raise InvalidAction()
-
-        obs = frozenset(self._state)
-        done = self._is_goal_reached(self._state)
-        debug_info = self._get_debug_info()
-
-        reward = self.extrinsic_reward(self._state, done)
-
-        # add intrinsic reward
-        if self._shape_reward_mode:
-            next_heuristic = 0. if done else self.compute_heuristic(self._state)
-            reward += self._current_heuristic - next_heuristic*self._shaping_discount
-            self._current_heuristic = next_heuristic
-
-        return obs, reward, done, debug_info
+        state, reward, done, debug_info = self.sample_transition(action)
+        self.set_state(state)
+        if "next_state_heuristic" in debug_info:
+            self._current_heuristic = debug_info["next_state_heuristic"]
+        return state, reward, done, debug_info
 
     def sample_transition(self, action):
         selected_operator, assignment = self._select_operator(self._state,
@@ -467,17 +386,18 @@ class PDDLEnv(gym.Env):
         elif self._raise_error_on_invalid_action:
             raise InvalidAction()
 
-        obs = frozenset(state)
         done = self._is_goal_reached(state)
 
         reward = self.extrinsic_reward(state, done)
+        debug_info = self._get_debug_info()
 
         # add intrinsic reward
         if self._shape_reward_mode:
             next_heuristic = 0. if done else self.compute_heuristic(state)
-            reward += self._current_heuristic - next_heuristic*self._shaping_discount
+            reward += self._current_heuristic - next_heuristic * self._shaping_discount
+            debug_info["next_state_heuristic"] = next_heuristic
 
-        return obs, reward, done, {}
+        return state, reward, done, debug_info
 
     def extrinsic_reward(self, state, done):
         if done:
@@ -493,14 +413,18 @@ class PDDLEnv(gym.Env):
         problem = self.problems[self._problem_idx]
 
         if self._shape_reward_mode == "optimal":
-            state = state | set(self.action_space._all_ground_literals)
+            # Add action literals to state to enable planning
+            state_lits = set(state.literals)
+            action_lits = set(
+                self.action_space.all_ground_literals(state, valid_only=False))
+            state_lits |= action_lits
 
             problem_path = ""
             try:
                 # generate a temporary file to hand over to the external planner
                 fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
                 with os.fdopen(fd, "w") as f:
-                    problem.write(f, initial_state=state, fast_downward_order=True)
+                    problem.write(f, initial_state=state_lits, fast_downward_order=True)
 
                 return get_fd_optimal_plan_cost(
                     self.domain.domain_fname, problem_path)
@@ -516,13 +440,12 @@ class PDDLEnv(gym.Env):
         """
         Check if the terminal condition is met, i.e., the goal is reached.
         """
-        return self._goal.holds(state)
+        return self._goal.holds(state.literals)
 
-    def _action_valid_test(self, action):
-        _, assignment = self._select_operator(self._state, action)
+    def _action_valid_test(self, state, action):
+        _, assignment = self._select_operator(state, action)
         return assignment is not None
 
     def render(self, *args, **kwargs):
         if self._render:
-            return self._render(self._state, *args, **kwargs)
-
+            return self._render(self._state.literals, *args, **kwargs)

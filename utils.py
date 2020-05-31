@@ -36,7 +36,7 @@ def run_random_agent_demo(env, outdir='/tmp', max_num_steps=10, fps=3,
         if verbose:
             print("Obs:", obs)
     
-        action = env.action_space.sample()
+        action = env.action_space.sample(obs)
         if verbose:
             print("Act:", action)
 
@@ -76,9 +76,16 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     obs, debug_info = env.reset()
     plan = run_planner(debug_info['domain_file'], debug_info['problem_file'], planner_name)
 
-    actions = [parse_plan_step(s, env.domain.operators.values(), env.action_predicates,
-                debug_info["objects"], operators_as_actions=env.operators_as_actions) \
-               for s in plan]
+    actions = []
+    for s in plan:
+        a = parse_plan_step(
+                s, 
+                env.domain.operators.values(), 
+                env.action_predicates,
+                obs.objects, 
+                operators_as_actions=env.operators_as_actions
+            )
+        actions.append(a)
     
     tot_reward = 0.
     for action in actions:

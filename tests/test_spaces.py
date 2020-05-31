@@ -1,5 +1,5 @@
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
-from pddlgym.structs import Predicate, Literal, Type, Not, Anti, LiteralConjunction
+from pddlgym.structs import Predicate, Literal, Type, Not, Anti, LiteralConjunction, State
 from pddlgym.spaces import LiteralSpace
 
 import os
@@ -12,14 +12,14 @@ def test_hierarchical_spaces():
         'hierarchical_type_test_problem.pddl')
     domain = PDDLDomainParser(domain_file)
     problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
-        domain.predicates)
+        domain.predicates, domain.actions)
     actions = list(domain.actions)
     action_predicates = [domain.predicates[a] for a in actions]
 
     space = LiteralSpace(set(domain.predicates.values()) - set(action_predicates),
         type_to_parent_types=domain.type_to_parent_types)
-    space.update(problem.objects)
-    all_ground_literals = space.all_ground_literals()
+    all_ground_literals = space.all_ground_literals(State(problem.initial_state, 
+        problem.objects))
 
     ispresent = Predicate("ispresent", 1, [Type("entity")])
     islight = Predicate("islight", 1, [Type("object")])
