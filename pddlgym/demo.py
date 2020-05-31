@@ -20,7 +20,7 @@ def demo_ff_planning(env_name, num_problems, render=True, test=False, verbose=Tr
         run_planning_demo(env, 'ff', verbose=verbose)
 
 def run_all(render=True, verbose=True):
-    # demo_random("sokoban", render=render, verbose=verbose)
+    demo_random("sokoban", render=render, verbose=verbose)
     # demo_random("rearrangement", render=render, problem_index=6, verbose=verbose)
     # demo_random("minecraft", render=render, verbose=verbose)
     # demo_ff_planning("rearrangement", 1, render=render, verbose=verbose)
@@ -31,7 +31,7 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("depot", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("baking", 4, render=render, verbose=verbose)
     # demo_ff_planning("baking", 4, render=render, test=True, verbose=verbose)
-    # demo_ff_planning("blocks", 5, render=render, verbose=verbose)
+    demo_ff_planning("blocks", 5, render=render, verbose=verbose)
     # demo_ff_planning("blocks", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, test=True, verbose=verbose)

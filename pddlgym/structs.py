@@ -1,4 +1,5 @@
 """Python classes for common PDDL structures"""
+from collections import namedtuple
 import itertools
 
 
@@ -351,6 +352,11 @@ class Exists:
         body_str = self.body.pddl_str()
         var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
         return "(exists ({}) {})".format(var_str, body_str)
+
+### States ###
+
+# A State is a frozenset of ground literals and a frozenset of objects
+State = namedtuple("State", ["literals", "objects"])
 
 
 ### Helpers ###
