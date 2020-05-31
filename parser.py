@@ -437,11 +437,12 @@ class PDDLDomainParser(PDDLParser):
 class PDDLProblemParser(PDDLParser):
     """PDDL problem parsing class.
     """
-    def __init__(self, problem_fname, domain_name, types, predicates):
+    def __init__(self, problem_fname, domain_name, types, predicates, action_names):
         self.problem_fname = problem_fname
         self.domain_name = domain_name
         self.types = types
         self.predicates = predicates
+        self.action_names = action_names
         self.uses_typing = not ("default" in self.types)
 
         self.problem_name = None
@@ -481,10 +482,14 @@ class PDDLProblemParser(PDDLParser):
         start_ind = re.search(r"\(:init", self.problem).start()
         init = self._find_balanced_expression(self.problem, start_ind)
         fluents = self._find_all_balanced_expressions(init[6:-1].strip())
-        self.initial_state = set()
+        initial_lits = set()
         params = {obj.name: obj.var_type for obj in self.objects}
         for fluent in fluents:
-            self.initial_state.add(self._parse_into_literal(fluent, params))
+            lit = self._parse_into_literal(fluent, params)
+            if lit.predicate.name in self.action_names:
+                continue
+            initial_lits.add(lit)
+        self.initial_state = frozenset(initial_lits)
 
     def _parse_problem_goal(self):
         start_ind = re.search(r"\(:goal", self.problem).start()

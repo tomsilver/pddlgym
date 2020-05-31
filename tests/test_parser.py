@@ -3,13 +3,13 @@ from pddlgym.structs import Predicate, Literal, Type, Not, Anti, LiteralConjunct
 
 import os
 
-def integration_test():
+def test_parser():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     domain_file = os.path.join(dir_path, 'pddl', 'test_domain.pddl')
     problem_file = os.path.join(dir_path, 'pddl', 'test_domain', 'test_problem.pddl')
     domain = PDDLDomainParser(domain_file)
     problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
-        domain.predicates)
+        domain.predicates, domain.actions)
 
     ## Check domain
     type1 = Type('type1')
@@ -41,11 +41,11 @@ def integration_test():
     # Operator preconditions (set of Literals)
     assert len(operator.preconds.literals) == 4
     assert set(operator.preconds.literals) == { action_pred('?b'), pred1('?b'), 
-        pred3('?a', '?c', '?d'), Not(pred2('?c')) }
+        pred3('?a', '?c', '?d'), pred2('?c') }
 
     # Operator effects (set of Literals)
-    assert len(operator.effects.literals) == 3
-    assert set(operator.effects.literals) == { Anti(pred2('?d')), pred2('?c'), 
+    assert len(operator.effects.literals) == 2
+    assert set(operator.effects.literals) == { Anti(pred2('?c')), 
         pred3('?b', '?d', '?c')}
 
     ## Check problem
@@ -60,9 +60,8 @@ def integration_test():
     assert set(problem.goal.literals) == {pred2('c2'), pred3('b1', 'c1', 'd1')}
 
     # Init
-    assert problem.initial_state == { pred1('b2'), pred2('c1'),
-        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), action_pred('a1'), 
-        action_pred('a2'), action_pred('b1'), action_pred('b2')}
+    assert problem.initial_state == frozenset({ pred1('b2'), pred2('c1'),
+        pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') })
 
     print("Test passed.")
 
@@ -73,7 +72,7 @@ def test_hierarchical_types():
         'hierarchical_type_test_problem.pddl')
     domain = PDDLDomainParser(domain_file)
     problem = PDDLProblemParser(problem_file, domain.domain_name, domain.types,
-        domain.predicates)
+        domain.predicates, domain.actions)
 
     assert set(domain.types.keys()) == {Type("dog"), Type("cat"), Type("animal"), 
         Type("block"), Type("cylinder"), Type("jindo"), Type("corgi"), 
@@ -101,5 +100,5 @@ def test_hierarchical_types():
     print("Test passed.")
 
 if __name__ == "__main__":
-    integration_test()
+    test_parser()
     test_hierarchical_types()
