@@ -81,9 +81,10 @@ def _make_heuristic(domain_file, problem_file, mode, cache_maxsize=10000):
     heuristic = pyperplan.HEURISTICS[mode](task)
 
     @functools.lru_cache(cache_maxsize)
-    @functools.wraps(heuristic.__call__)
     def _call_heuristic(state):
-        return heuristic(state)
+        state = frozenset({lit.pddl_str() for lit in state})
+        node = pyperplan.search.searchspace.make_root_node(state)
+        return heuristic(node)
 
     return _call_heuristic
 
@@ -143,6 +144,8 @@ class PDDLEnv(gym.Env):
         self.operators_as_actions = operators_as_actions
         self._compute_approx_reachable_set = compute_approx_reachable_set
 
+        if shape_reward_mode == "none":
+            shape_reward_mode = None
         self._shape_reward_mode = shape_reward_mode
         self._shaping_discount = shaping_discount
         self._current_heuristic = None
@@ -271,11 +274,7 @@ class PDDLEnv(gym.Env):
         if (self._shape_reward_mode is not None
                 and self._shape_reward_mode != "optimal"
                 and (not self._problem_index_fixed or self._heuristic is None)):
-            self._heuristic = _make_heuristic(
-                self._domain_file,
-                self._problem.problem_fname,
-                mode=self._shape_reward_mode,
-            )
+            self._heuristic = self.make_heuristic_function(self._shape_reward_mode)
 
         # reset the current heuristic
         self._current_heuristic = None
@@ -289,6 +288,13 @@ class PDDLEnv(gym.Env):
         debug_info = self._get_debug_info()
 
         return self.get_state(), debug_info
+
+    def make_heuristic_function(self, mode):
+        return _make_heuristic(
+                self._domain_file,
+                self._problem.problem_fname,
+                mode=mode,
+            )
 
     def _get_debug_info(self):
         """
@@ -430,7 +436,7 @@ class PDDLEnv(gym.Env):
             # import ipdb; ipdb.set_trace()
             raise InvalidAction()
 
-        obs = set(self._state)
+        obs = frozenset(self._state)
         done = self._is_goal_reached(self._state)
         debug_info = self._get_debug_info()
 
@@ -461,7 +467,7 @@ class PDDLEnv(gym.Env):
         elif self._raise_error_on_invalid_action:
             raise InvalidAction()
 
-        obs = set(state)
+        obs = frozenset(state)
         done = self._is_goal_reached(state)
 
         reward = self.extrinsic_reward(state, done)
@@ -504,9 +510,7 @@ class PDDLEnv(gym.Env):
                 except FileNotFoundError:
                     pass
         else:
-            state = frozenset({lit.pddl_str() for lit in state})
-            node = pyperplan.search.searchspace.make_root_node(state)
-            return self._heuristic(node)
+            return self._heuristic(state)
 
     def _is_goal_reached(self, state):
         """
