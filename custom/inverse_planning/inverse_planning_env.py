@@ -42,10 +42,13 @@ class InversePlanningMixIn:
         demo_fname_split = list(os.path.normpath(problem_fname).split(os.path.sep))
         demo_fname_split.insert(-2, "demos" + "_" + DEMOS)
         demo_fname = os.path.join(os.path.sep, os.path.join(*demo_fname_split))
-        demo_fname = demo_fname.replace(".pddl", "_*.dat")
+        if DEMOS == "optimal":
+            demo_fname = demo_fname.replace(".pddl", ".dat")
+        else:
+            demo_fname = demo_fname.replace(".pddl", "_*.dat")
         matches = glob.glob(demo_fname)
-        if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
-            import ipdb; ipdb.set_trace()
+        # if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
+            # import ipdb; ipdb.set_trace()
         plans = []
         for filename in matches:
             with open(filename, 'r') as f:

@@ -11,7 +11,7 @@ def infer_goal(demonstration, problem_qvals, env, beta=1.):
     for i, qvals in enumerate(problem_qvals):
         # if i > 1:
             # break
-        print("Running goal inference: considering possible goal {}/{}".format(i, len(problem_qvals)), end='\r')
+        # print("Running goal inference: considering possible goal {}/{}".format(i, len(problem_qvals)), end='\r')
         # for enormous qvals
         if isinstance(qvals, str):
             load_time_start = time.time()
@@ -75,13 +75,13 @@ def infer_goal(demonstration, problem_qvals, env, beta=1.):
             del qvals
             time_to_ignore += time.time() - before_time
         # print("check 6")
-    print()
+    # print()
     # import ipdb; ipdb.set_trace()
     # print("Total time 0:", time.time() - start_time)
     goal_distribution = np.array(goal_distribution)
     z_goal = logsumexp(goal_distribution)
     goal_distribution = np.exp(goal_distribution - z_goal)
-    print("Total elapsed:", time.time() - start_time - time_to_ignore)
+    # print("Total elapsed:", time.time() - start_time - time_to_ignore)
     # print("Time to ignore:", time_to_ignore)
     # import sys; sys.exit(0)
     return goal_distribution, time_to_ignore

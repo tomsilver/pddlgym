@@ -1,4 +1,5 @@
 from goal_inference import infer_goal
+from inverse_planning_env import DEMOS
 from pddlgym.planning import run_async_value_iteration, vi_finish_helper
 from collections import OrderedDict, defaultdict
 import gym
@@ -11,7 +12,7 @@ import sys
 
 # Hyperparameters
 outdir = 'results'
-do_precomputation = True #"if not exists"
+do_precomputation = "if not exists"
 test_qvals = True
 do_goal_inference = True #"if not exists"
 test_goal_inference = True
@@ -106,6 +107,9 @@ def create_env(env_name, initial_state, goal):
 
 def compute_qvals(env_name, initial_state, goal, biased):
     env = create_env(env_name, initial_state, goal)
+    if DEMOS == "nonoptimal" and len(env._state_buffer) == 0:
+        print("Skipping env", env_name, initial_state, goal)
+        return {}
     qvals = next(run_async_value_iteration(env, iter_plans=False, use_cache=False,
                 gamma=gamma, epsilon=0., vi_maxiters=vi_maxiters[biased], biased=biased, ret_qvals=True))
     env.close()
@@ -127,7 +131,7 @@ def get_demonstrations(env_name, initial_state, goal):
     demonstrations = []
     env = create_env(env_name, initial_state, goal)
     plans = env.load_demonstrations_for_problem()
-    assert len(plans) == 2
+    # assert len(plans) == 2
     for plan in plans:
         states = env.run_demo(plan)
         assert len(states) == len(plan) + 1

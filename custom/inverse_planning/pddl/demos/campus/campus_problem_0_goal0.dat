@@ -1,8 +1,0 @@
-(activity-breakfast-2 angazi-cafe)
-(move angazi-cafe watson-theater)
-(activity-take-lecture-1 watson-theater)
-(move watson-theater hayman-theater)
-(activity-take-lecture-2 hayman-theater)
-(move hayman-theater bookmark-cafe)
-(activity-group-meeting-1-1 bookmark-cafe)
-(activity-coffee-3 bookmark-cafe)
