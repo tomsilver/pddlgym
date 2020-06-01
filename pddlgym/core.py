@@ -83,12 +83,28 @@ def _apply_effects(state, lifted_effects, assignments):
     return state.with_literals(new_literals)
 
 
-def _make_heuristic(domain_file, problem_file, mode, cache_maxsize=10000):
-    parser = pyperplan.Parser(domain_file, problem_file)
-    domain = parser.parse_domain()
-    problem = parser.parse_problem(domain)
+def _make_heuristic(action_space, domain_file, problem, mode, cache_maxsize=10000):
+    try:
+        # generate a temporary file to hand over to pyperplan
+        pyp, problem_file = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
+        initial_state = problem.initial_state
+        # Add action literals to initial state so pyperplan works
+        action_lits = set(
+            action_space.all_ground_literals(problem, valid_only=False))
+        initial_state |= action_lits
+        with os.fdopen(pyp, "w") as f:
+            problem.write(f, initial_state=initial_state,
+                          fast_downward_order=True)
+        parser = pyperplan.Parser(domain_file, problem_file)
+        pyperplan_domain = parser.parse_domain()
+        pyperplan_problem = parser.parse_problem(pyperplan_domain)
+    finally:
+        try:
+            os.remove(problem_file)
+        except FileNotFoundError:
+            pass
 
-    task = pyperplan.grounding.ground(problem)
+    task = pyperplan.grounding.ground(pyperplan_problem)
     heuristic = pyperplan.HEURISTICS[mode](task)
 
     @functools.lru_cache(cache_maxsize)
@@ -284,8 +300,9 @@ class PDDLEnv(gym.Env):
 
     def make_heuristic_function(self, mode):
         return _make_heuristic(
+                self.action_space,
                 self._domain_file,
-                self._problem.problem_fname,
+                self._problem,
                 mode=mode,
             )
 
@@ -423,9 +440,9 @@ class PDDLEnv(gym.Env):
     def compute_heuristic(self, state):
         """Compute the heuristic for a given state in the current problem.
         """
-        problem = self.problems[self._problem_idx]
-
         if self._shape_reward_mode == "optimal":
+            problem = self.problems[self._problem_idx]
+
             # Add action literals to state to enable planning
             state_lits = set(state.literals)
             action_lits = set(
