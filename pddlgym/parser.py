@@ -312,6 +312,7 @@ class PDDLDomainParser(PDDLParser):
         match = re.search(r"\(:types", self.domain)
         if not match:
             self.types = {"default": Type("default")}
+            self.type_hierarchy = {}
             self.uses_typing = False
             return
         self.uses_typing = True
