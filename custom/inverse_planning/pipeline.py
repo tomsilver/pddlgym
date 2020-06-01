@@ -21,14 +21,14 @@ horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
-    "InversePlanningIntrusionDetection-v0",
     # "InversePlanningBlocks-v0",
     # "InversePlanningGrid-v0",
     # "InversePlanningLogistics-v0",
     # "InversePlanningCampus-v0",
     # "InversePlanningKitchen-v0",
-    # "InversePlanningTaxi-v0"
+    "InversePlanningTaxi-v0",
     # "InversePlanningDoorsKeysGems-v0",
+    # "InversePlanningIntrusionDetection-v0",
 ]
 
 def create_headers(verbose=False):
@@ -73,7 +73,9 @@ def get_qval_run_id(env_name, initial_state, goal, biased):
     return "qval_run_{}_{}_{}_{}".format(env_name, initial_state, goal, biased)
 
 def get_goal_inference_run_id(env_name, initial_state, goal, biased, demonstration_idx):
-    return "goal_inference_run_{}_{}_{}_{}_{}".format(env_name, initial_state, goal, biased, demonstration_idx)
+    if DEMOS == "nonoptimal":
+        return "goal_inference_run_{}_{}_{}_{}_{}".format(env_name, initial_state, goal, biased, demonstration_idx)
+    return "goal_inference_run_{}_{}_{}_{}".format(env_name, initial_state, goal, biased)
 
 def save_results(run_id, results):
     outfile = os.path.join(outdir, run_id + '.pkl')
@@ -164,7 +166,7 @@ def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name
 
 def run_test_goal_inference(goals, goal, posteriors):
     goal_idx = goals.index(goal)
-    half_posterior = np.array(posteriors[len(posteriors)//2])
+    half_posterior = np.array(posteriors[int(0.75*len(posteriors))])
     last_posterior = np.array(posteriors[-1])
     half_result = goal_idx in np.argwhere(half_posterior == max(half_posterior))
     end_result = (goal_idx in np.argwhere(last_posterior == max(last_posterior)))
@@ -174,15 +176,15 @@ def run_test_goal_inference(goals, goal, posteriors):
 
 def get_posterior_for_true_goal(goal_idx, gi_results):
     posteriors = gi_results["posteriors"]
-    return posteriors[len(posteriors)//2][goal_idx]
+    return posteriors[int(0.75*len(posteriors))][goal_idx]
 
 def get_true_goal_top_ranked(goal_idx, gi_results):
     posteriors = gi_results["posteriors"]
-    posterior = posteriors[len(posteriors)//2]
+    posterior = posteriors[int(0.75*len(posteriors))]
     return goal_idx in np.argwhere(posterior == max(posterior))
 
 def report_results():
-    for biased in [False]: #[True, False]:
+    for biased in [False]:
         print("### Results for biased={}".format(biased))
 
         headers = create_headers()
@@ -228,7 +230,7 @@ def report_results():
                         del gi_results
                     del qval_results
 
-            print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
+            # print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
 
             print("**** {} ****".format(env_name))
             print("\nPosterior true goal")

@@ -47,8 +47,8 @@ class InversePlanningMixIn:
         else:
             demo_fname = demo_fname.replace(".pddl", "_*.dat")
         matches = glob.glob(demo_fname)
-        # if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
-            # import ipdb; ipdb.set_trace()
+        if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
+            import ipdb; ipdb.set_trace()
         plans = []
         for filename in matches:
             with open(filename, 'r') as f:
