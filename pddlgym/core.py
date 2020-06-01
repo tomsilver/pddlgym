@@ -110,6 +110,13 @@ def _make_heuristic(action_space, domain_file, problem, mode, cache_maxsize=1000
     @functools.lru_cache(cache_maxsize)
     def _call_heuristic(state):
         state = frozenset({lit.pddl_str() for lit in state.literals})
+        # Rohan: task.facts is basically all the literals that could
+        # ever change in the domain, unioned with the goal literals.
+        # (I guess this handles the case where you ever have a static
+        # literal in the goal...but that would be sort of silly anyway.)
+        # So, the following line removes static literals from the state.
+        # Also, I verified that this doesn't change the heuristics in blocks.
+        state &= task.facts
         node = pyperplan.search.searchspace.make_root_node(state)
         return heuristic(node)
 
