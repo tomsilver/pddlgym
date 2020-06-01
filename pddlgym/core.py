@@ -83,7 +83,8 @@ def _apply_effects(state, lifted_effects, assignments):
     return state.with_literals(new_literals)
 
 
-def _make_heuristic(action_space, domain_file, problem, mode, cache_maxsize=10000):
+def _make_heuristic(domain_file, problem, mode, action_space,
+                    cache_maxsize=10000):
     try:
         # generate a temporary file to hand over to pyperplan
         pyp, problem_file = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
@@ -314,10 +315,10 @@ class PDDLEnv(gym.Env):
 
     def make_heuristic_function(self, mode):
         return _make_heuristic(
-                self.action_space,
                 self._domain_file,
                 self._problem,
                 mode=mode,
+                action_space=self.action_space,
             )
 
     def _get_debug_info(self):
