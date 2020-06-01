@@ -176,6 +176,8 @@ class PDDLEnv(gym.Env):
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
 
+        self._problem_idx = None
+
         # Parse the PDDL files
         self.domain, self.problems = self.load_pddl(domain_file, problem_dir,
             operators_as_actions=self.operators_as_actions)
@@ -259,6 +261,9 @@ class PDDLEnv(gym.Env):
         ----------
         problem_idx : int
         """
+        if problem_idx != self._problem_idx:
+            # Problem is changing, force ourselves to recompute heuristic
+            self._heuristic = None
         self._problem_idx = problem_idx
         self._problem_index_fixed = True
 
@@ -276,6 +281,8 @@ class PDDLEnv(gym.Env):
             See self._get_debug_info()
         """
         if not self._problem_index_fixed:
+            # Problem is changing, force ourselves to recompute heuristic
+            self._heuristic = None
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
 
@@ -283,7 +290,7 @@ class PDDLEnv(gym.Env):
         # isn't fixed or no heuristic has been created yet.
         if (self._shape_reward_mode is not None
                 and self._shape_reward_mode != "optimal"
-                and (not self._problem_index_fixed or self._heuristic is None)):
+                and self._heuristic is None):
             self._heuristic = self.make_heuristic_function(self._shape_reward_mode)
 
         # reset the current heuristic
