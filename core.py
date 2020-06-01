@@ -71,17 +71,40 @@ def _apply_effects(state, lifted_effects, assignments):
     return new_state
 
 
-def _make_heuristic(domain_file, problem_file, mode, cache_maxsize=10000):
-    parser = pyperplan.Parser(domain_file, problem_file)
-    domain = parser.parse_domain()
-    problem = parser.parse_problem(domain)
+def _make_heuristic(action_space, domain_file, problem, mode, cache_maxsize=10000):
+    try:
+        # generate a temporary file to hand over to pyperplan
+        pyp, problem_file = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
+        initial_state = problem.initial_state
+        # Add action literals to initial state so pyperplan works
+        action_lits = set(
+            action_space.all_ground_literals(problem, valid_only=False))
+        initial_state |= action_lits
+        with os.fdopen(pyp, "w") as f:
+            problem.write(f, initial_state=initial_state,
+                          fast_downward_order=True)
+        parser = pyperplan.Parser(domain_file, problem_file)
+        pyperplan_domain = parser.parse_domain()
+        pyperplan_problem = parser.parse_problem(pyperplan_domain)
+    finally:
+        try:
+            os.remove(problem_file)
+        except FileNotFoundError:
+            pass
 
-    task = pyperplan.grounding.ground(problem)
+    task = pyperplan.grounding.ground(pyperplan_problem)
     heuristic = pyperplan.HEURISTICS[mode](task)
 
     @functools.lru_cache(cache_maxsize)
     def _call_heuristic(state):
         state = frozenset({lit.pddl_str() for lit in state.literals})
+        # Rohan: task.facts is basically all the literals that could
+        # ever change in the domain, unioned with the goal literals.
+        # (I guess this handles the case where you ever have a static
+        # literal in the goal...but that would be sort of silly anyway.)
+        # So, the following line removes static literals from the state.
+        # Also, I verified that this doesn't change the heuristics in blocks.
+        state &= task.facts
         node = pyperplan.search.searchspace.make_root_node(state)
         return heuristic(node)
 
@@ -147,6 +170,8 @@ class PDDLEnv(gym.Env):
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
+
+        self._problem_idx = None
 
         # Parse the PDDL files
         self.domain, self.problems = self.load_pddl(domain_file, problem_dir,
@@ -231,6 +256,9 @@ class PDDLEnv(gym.Env):
         ----------
         problem_idx : int
         """
+        if problem_idx != self._problem_idx:
+            # Problem is changing, force ourselves to recompute heuristic
+            self._heuristic = None
         self._problem_idx = problem_idx
         self._problem_index_fixed = True
 
@@ -248,6 +276,8 @@ class PDDLEnv(gym.Env):
             See self._get_debug_info()
         """
         if not self._problem_index_fixed:
+            # Problem is changing, force ourselves to recompute heuristic
+            self._heuristic = None
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
 
@@ -255,7 +285,7 @@ class PDDLEnv(gym.Env):
         # isn't fixed or no heuristic has been created yet.
         if (self._shape_reward_mode is not None
                 and self._shape_reward_mode != "optimal"
-                and (not self._problem_index_fixed or self._heuristic is None)):
+                and self._heuristic is None):
             self._heuristic = self.make_heuristic_function(self._shape_reward_mode)
 
         # reset the current heuristic
@@ -271,8 +301,9 @@ class PDDLEnv(gym.Env):
 
     def make_heuristic_function(self, mode):
         return _make_heuristic(
+                self.action_space,
                 self._domain_file,
-                self._problem.problem_fname,
+                self._problem,
                 mode=mode,
             )
 
@@ -410,9 +441,9 @@ class PDDLEnv(gym.Env):
     def compute_heuristic(self, state):
         """Compute the heuristic for a given state in the current problem.
         """
-        problem = self.problems[self._problem_idx]
-
         if self._shape_reward_mode == "optimal":
+            problem = self.problems[self._problem_idx]
+
             # Add action literals to state to enable planning
             state_lits = set(state.literals)
             action_lits = set(
