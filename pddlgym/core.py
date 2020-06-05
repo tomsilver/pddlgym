@@ -39,6 +39,14 @@ class InvalidAction(Exception):
     pass
 
 
+def update_state(state, new_literals):
+    """
+    Return a new state that has the same objects and goal as the given one,
+    but has the given set of literals instead of state.literals.
+    """
+    return State(frozenset(new_literals), state.objects, state.goal)
+
+
 def _apply_effects(state, lifted_effects, assignments):
     """
     Update a state given lifted operator effects and
@@ -65,8 +73,7 @@ def _apply_effects(state, lifted_effects, assignments):
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
             new_literals.add(effect)
-    new_state = State(frozenset(new_literals), state.objects, state.goal)
-    return new_state
+    return update_state(state, new_literals)
 
 
 class PDDLEnv(gym.Env):
