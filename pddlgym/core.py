@@ -21,7 +21,6 @@ from pddlgym.structs import ground_literal, Literal, State
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
-import copy
 import glob
 import os
 import tempfile
@@ -33,18 +32,9 @@ import numpy as np
 TMP_PDDL_DIR = "/dev/shm" if os.path.exists("/dev/shm") else None
 
 
-
 class InvalidAction(Exception):
     """See PDDLEnv docstring"""
     pass
-
-
-def update_state(state, new_literals):
-    """
-    Return a new state that has the same objects and goal as the given one,
-    but has the given set of literals instead of state.literals.
-    """
-    return State(frozenset(new_literals), state.objects, state.goal)
 
 
 def _apply_effects(state, lifted_effects, assignments):
@@ -73,7 +63,7 @@ def _apply_effects(state, lifted_effects, assignments):
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
             new_literals.add(effect)
-    return update_state(state, new_literals)
+    return state.with_literals(new_literals)
 
 
 class PDDLEnv(gym.Env):

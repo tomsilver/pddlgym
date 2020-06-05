@@ -356,7 +356,29 @@ class Exists:
 ### States ###
 
 # A State is a frozenset of ground literals and a frozenset of objects
-State = namedtuple("State", ["literals", "objects", "goal"])
+class State(namedtuple("State", ["literals", "objects", "goal"])):
+    __slots__ = ()
+
+    def with_literals(self, literals):
+        """
+        Return a new state that has the same objects and goal as the given one,
+        but has the given set of literals instead of state.literals.
+        """
+        return self._replace(literals=frozenset(literals))
+
+    def with_objects(self, objects):
+        """
+        Return a new state that has the same literals and goal as the given one,
+        but has the given set of objects instead of state.objects.
+        """
+        return self._replace(objects=frozenset(objects))
+
+    def with_goal(self, goal):
+        """
+        Return a new state that has the same literals and objects as the given
+        one, but has the given goal instead of state.goal.
+        """
+        return self._replace(goal=frozenset(goal))
 
 
 ### Helpers ###
