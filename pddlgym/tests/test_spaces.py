@@ -19,7 +19,7 @@ def test_hierarchical_spaces():
     space = LiteralSpace(set(domain.predicates.values()) - set(action_predicates),
         type_to_parent_types=domain.type_to_parent_types)
     all_ground_literals = space.all_ground_literals(State(problem.initial_state, 
-        problem.objects))
+        problem.objects, problem.goal))
 
     ispresent = Predicate("ispresent", 1, [Type("entity")])
     islight = Predicate("islight", 1, [Type("object")])
