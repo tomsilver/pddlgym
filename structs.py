@@ -356,7 +356,7 @@ class Exists:
 ### States ###
 
 # A State is a frozenset of ground literals and a frozenset of objects
-State = namedtuple("State", ["literals", "objects"])
+State = namedtuple("State", ["literals", "objects", "goal"])
 
 
 ### Helpers ###

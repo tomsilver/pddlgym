@@ -3,7 +3,7 @@
 One PDDLEnv corresponds to one PDDL domain. Each episode corresponds to
 one one PDDL problem; calling env.reset() sets up a new problem.
 
-Observations are namedtuples with attributes `literals` and `objects`.
+Observations are namedtuples with attributes `literals`, `objects`, `goal`.
 Actions are single ground literals (not operators -- see README).
 
 The debug_info returned by reset and step contains the domain PDDL file
@@ -65,7 +65,7 @@ def _apply_effects(state, lifted_effects, assignments):
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
             new_literals.add(effect)
-    new_state = State(frozenset(new_literals), state.objects)
+    new_state = State(frozenset(new_literals), state.objects, state.goal)
     return new_state
 
 
@@ -230,7 +230,8 @@ class PDDLEnv(gym.Env):
         # reset the current heuristic
         self._current_heuristic = None
         initial_state = State(frozenset(self._problem.initial_state),
-                              frozenset(self._problem.objects))
+                              frozenset(self._problem.objects),
+                              self._problem.goal)
         self.set_state(initial_state)
 
         self._goal = self._problem.goal
