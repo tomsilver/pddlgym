@@ -172,6 +172,12 @@ class Literal:
         self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
         self._hash = hash(self._str)
 
+    def set_variables(self, variables):
+        self.variables = variables
+        # Recompute cache
+        self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
+        self._hash = hash(self._str)
+
     def __str__(self):
         return self._str
 
