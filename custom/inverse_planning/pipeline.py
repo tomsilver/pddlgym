@@ -11,8 +11,9 @@ import numpy as np
 import sys
 
 # Hyperparameters
+QUARTILE = 0.25
 outdir = 'results'
-do_precomputation = "if not exists"
+do_precomputation = True #"if not exists"
 test_qvals = True
 do_goal_inference = True #"if not exists"
 test_goal_inference = True
@@ -21,14 +22,12 @@ horizon = 100
 gamma = 0.9 # todo optimize
 beta = 1. # todo optimize
 env_names = [
+    "InversePlanningDoorsKeysGems-v0",
     # "InversePlanningBlocks-v0",
-    # "InversePlanningGrid-v0",
+    # "InversePlanningIntrusionDetection-v0",
     # "InversePlanningLogistics-v0",
     # "InversePlanningCampus-v0",
-    # "InversePlanningKitchen-v0",
-    "InversePlanningTaxi-v0",
-    # "InversePlanningDoorsKeysGems-v0",
-    # "InversePlanningIntrusionDetection-v0",
+    # "InversePlanningTaxi-v0",
 ]
 
 def create_headers(verbose=False):
@@ -166,7 +165,7 @@ def compute_goal_inference_posteriors(demonstration, goals, goal_qvals, env_name
 
 def run_test_goal_inference(goals, goal, posteriors):
     goal_idx = goals.index(goal)
-    half_posterior = np.array(posteriors[int(0.75*len(posteriors))])
+    half_posterior = np.array(posteriors[int(QUARTILE*len(posteriors))])
     last_posterior = np.array(posteriors[-1])
     half_result = goal_idx in np.argwhere(half_posterior == max(half_posterior))
     end_result = (goal_idx in np.argwhere(last_posterior == max(last_posterior)))
@@ -176,15 +175,15 @@ def run_test_goal_inference(goals, goal, posteriors):
 
 def get_posterior_for_true_goal(goal_idx, gi_results):
     posteriors = gi_results["posteriors"]
-    return posteriors[int(0.75*len(posteriors))][goal_idx]
+    return posteriors[int(QUARTILE*len(posteriors))][goal_idx]
 
 def get_true_goal_top_ranked(goal_idx, gi_results):
     posteriors = gi_results["posteriors"]
-    posterior = posteriors[int(0.75*len(posteriors))]
+    posterior = posteriors[int(QUARTILE*len(posteriors))]
     return goal_idx in np.argwhere(posterior == max(posterior))
 
 def report_results():
-    for biased in [False]:
+    for biased in [True]:
         print("### Results for biased={}".format(biased))
 
         headers = create_headers()
@@ -199,8 +198,8 @@ def report_results():
 
             for initial_state in headers[env_name]:
                 for goal_idx, goal in enumerate(headers[env_name][initial_state]):
-                    qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
-                    qval_results = load_results(qval_run_id)
+                    # qval_run_id = get_qval_run_id(env_name, initial_state, goal, biased=biased)
+                    # qval_results = load_results(qval_run_id)
                     
                     demonstrations = get_demonstrations(env_name, initial_state, goal)
                     for demonstration_idx, demonstration in enumerate(demonstrations):
@@ -214,21 +213,21 @@ def report_results():
                         true_goal_top_ranked = get_true_goal_top_ranked(goal_idx, gi_results)
 
                         # Speed
-                        initial_time_cost = qval_results['time_elapsed']
-                        num_steps = len(gi_results['posteriors'])
-                        marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
-                        average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
-                        states_visited = vi_maxiters[biased]
+                        # initial_time_cost = qval_results['time_elapsed']
+                        # num_steps = len(gi_results['posteriors'])
+                        # marginal_time_cost_per_step = gi_results['time_elapsed'] / num_steps
+                        # average_cost_per_step = (marginal_time_cost_per_step * num_steps + initial_time_cost) / num_steps
+                        # states_visited = vi_maxiters[biased]
 
                         all_posterior_true_goal.append(posterior_true_goal)
                         all_true_goal_top_ranked.append(true_goal_top_ranked)
-                        all_initial_time_cost.append(initial_time_cost)
-                        all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
-                        all_average_cost_per_step.append(average_cost_per_step)
-                        all_states_visited.append(states_visited)
+                        # all_initial_time_cost.append(initial_time_cost)
+                        # all_marginal_time_cost_per_step.append(marginal_time_cost_per_step)
+                        # all_average_cost_per_step.append(average_cost_per_step)
+                        # all_states_visited.append(states_visited)
 
                         del gi_results
-                    del qval_results
+                    # del qval_results
 
             # print("all_marginal_time_cost_per_step:", all_marginal_time_cost_per_step)
 
@@ -241,21 +240,21 @@ def report_results():
             print("mean: ", np.mean(all_true_goal_top_ranked))
             print("std: ", np.std(all_true_goal_top_ranked))
 
-            print("\nInitial time cost")
-            print("mean: ", np.mean(all_initial_time_cost))
-            print("std: ", np.std(all_initial_time_cost))
+            # print("\nInitial time cost")
+            # print("mean: ", np.mean(all_initial_time_cost))
+            # print("std: ", np.std(all_initial_time_cost))
 
-            print("\nMarginal time cost per step")
-            print("mean: ", np.mean(all_marginal_time_cost_per_step))
-            print("std: ", np.std(all_marginal_time_cost_per_step))
+            # print("\nMarginal time cost per step")
+            # print("mean: ", np.mean(all_marginal_time_cost_per_step))
+            # print("std: ", np.std(all_marginal_time_cost_per_step))
 
-            print("\nAverage cost per step")
-            print("mean: ", np.mean(all_average_cost_per_step))
-            print("std: ", np.std(all_average_cost_per_step))
+            # print("\nAverage cost per step")
+            # print("mean: ", np.mean(all_average_cost_per_step))
+            # print("std: ", np.std(all_average_cost_per_step))
 
-            print("\nStates visited")
-            print("mean: ", np.mean(all_states_visited))
-            print("std: ", np.std(all_states_visited))
+            # print("\nStates visited")
+            # print("mean: ", np.mean(all_states_visited))
+            # print("std: ", np.std(all_states_visited))
 
 def run_pipeline(indices, mode, biased):
     """
