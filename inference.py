@@ -6,8 +6,11 @@ from copy import deepcopy
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
-                                max_assignment_count=2, type_to_parent_types=None):
-    return ProofSearchTree(kb, type_to_parent_types=type_to_parent_types).prove(list(conds), 
+                                max_assignment_count=2, type_to_parent_types=None,
+                                allow_redundant_variables=True):
+    return ProofSearchTree(kb,
+        allow_redundant_variables=allow_redundant_variables,
+        type_to_parent_types=type_to_parent_types).prove(list(conds), 
         max_assignment_count=max_assignment_count, 
         variable_sort_fn=variable_sort_fn,
         verbose=verbose)
