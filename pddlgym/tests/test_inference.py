@@ -1,5 +1,5 @@
 from pddlgym.inference import find_satisfying_assignments
-from pddlgym.structs import Predicate, Type
+from pddlgym.structs import Predicate, Type, Not
 
 
 def test_prover():
@@ -71,6 +71,25 @@ def test_prover():
     assert len(assignments) == 0
 
     print("Pass.")
+
+def test_negative_preconditions():
+    MoveableType = Type('moveable')
+    Holding = Predicate('Holding', 1, var_types=[MoveableType])
+    IsPawn = Predicate('IsPawn', 1, var_types=[MoveableType])
+    PutOn = Predicate('PutOn', 1, var_types=[MoveableType])
+    On = Predicate('On', 2, var_types=[MoveableType, MoveableType])
+
+    # ?x0 must bind to o0 and ?x1 must bind to o1, so ?x2 must bind to o2
+    conds = [ PutOn("?x0"), Holding("?x1"), IsPawn("?x2"), Not(On("?x2", "?x0")) ]
+    kb = { PutOn('o0'), IsPawn('o0'), IsPawn('o1'), IsPawn('o2'), Holding('o1'), }
+    assignments = find_satisfying_assignments(kb, conds, allow_redundant_variables=False)
+    assert len(assignments) == 1
+
+    # should be the same, even though IsPawn("?x2") is removed
+    conds = [ PutOn("?x0"), Holding("?x1"), Not(On("?x2", "?x0")) ]
+    kb = { PutOn('o0'), IsPawn('o0'), IsPawn('o1'), IsPawn('o2'), Holding('o1'), }
+    assignments = find_satisfying_assignments(kb, conds, allow_redundant_variables=False)
+    assert len(assignments) == 1
 
 if __name__ == "__main__":
     test_prover()
