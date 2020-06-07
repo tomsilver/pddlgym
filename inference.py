@@ -135,9 +135,14 @@ class ProofSearchTree(object):
 
         already_assigned_atoms = set([v for k, v in established_assignments.items()])
 
+        variable_involved_in_positive_goal = False
+
         for goal_literal in goal_literals:
             if variable not in goal_literal.variables:
                 continue
+
+            if not goal_literal.is_negative:
+                variable_involved_in_positive_goal = True
 
             possible_atoms = set()
             inevitable_atoms = set()
@@ -201,12 +206,20 @@ class ProofSearchTree(object):
             else:
                 possible_assignments = set()
 
+        if not variable_involved_in_positive_goal:
+            assert len(possible_assignments) == 0
+            possible_assignments = self.get_atoms_of_type(variable.var_type)
+            possible_assignments -= already_assigned_atoms
+
         return possible_assignments - impossible_assignments
 
     def type_is_of_type(self, type1, type2):
         if self.type_to_parent_types is None:
             return type1 == type2
         return type2 in self.type_to_parent_types[type1]
+
+    def get_atoms_of_type(self, var_type):
+        return { o for o in self.all_atoms if self.type_is_of_type(o.var_type, var_type) }
 
     def create_child_node(self, variable, assignment, parent_node, goal_literals):
         variable_assignments = parent_node['variable_assignments'].copy()
