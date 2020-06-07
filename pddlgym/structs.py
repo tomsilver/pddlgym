@@ -174,6 +174,13 @@ class Literal:
 
     def set_variables(self, variables):
         self.variables = variables
+        self._update_variable_caches()
+
+    def update_variable(self, var_idx, new_value):
+        self.variables[var_idx] = new_value
+        self._update_variable_caches()
+
+    def _update_variable_caches(self):
         # Recompute cache
         self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
         self._hash = hash(self._str)
