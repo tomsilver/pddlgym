@@ -384,7 +384,7 @@ class State(namedtuple("State", ["literals", "objects", "goal"])):
         Return a new state that has the same literals and objects as the given
         one, but has the given goal instead of state.goal.
         """
-        return self._replace(goal=frozenset(goal))
+        return self._replace(goal=goal)
 
 
 ### Helpers ###
