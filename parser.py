@@ -121,6 +121,10 @@ class PDDLParser:
         if string.startswith("(exists") and string[7] in (" ", "\n", "("):
             new_binding, clause = self._find_all_balanced_expressions(
                 string[7:-1].strip())
+            if new_binding[1:-1] == "":
+                # Handle existential goal with no arguments.
+                body = self._parse_into_literal(clause, params, is_effect=is_effect)
+                return body
             variables = self._parse_objects(new_binding[1:-1])
             for v in variables:
                 params[v.name] = v.var_type
