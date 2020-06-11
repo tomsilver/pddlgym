@@ -50,6 +50,7 @@ for env_name, kwargs in [
         ("glibdoors", {'render' : doors_render}),
         ("tireworld", {}),
         ("river", {}),
+        ("explodingblocks", {}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
