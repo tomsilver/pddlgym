@@ -63,7 +63,7 @@ class ProofSearchTree(object):
         # Handle zero-arity goals first, separately
         for goal in goal_literals:
             if goal.predicate.arity == 0:
-                if goal.is_negative and len(self.knowledge_base[goal.predicate]) > 0:
+                if goal.is_negative and len(self.knowledge_base[goal.positive.predicate]) > 0:
                     return []
                 if not goal.is_negative and len(self.knowledge_base[goal.predicate]) == 0:
                     return []
