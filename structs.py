@@ -1,6 +1,7 @@
 """Python classes for common PDDL structures"""
 from collections import namedtuple
 import itertools
+import numpy as np
 
 
 ### PDDL Types, Objects, Variables ###
@@ -365,6 +366,38 @@ class Exists:
         body_str = self.body.pddl_str()
         var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
         return "(exists ({}) {})".format(var_str, body_str)
+
+
+class ProbabilisticEffect:
+    """Represents a probabilistic effect over a set of possibilities.
+    """
+    def __init__(self, literals, probabilities):
+        self.literals = literals
+        self.probabilities = probabilities
+        assert sum(self.probabilities) <= 1.0
+        self.literals.append("NOCHANGE")
+        self.probabilities.append(1-sum(self.probabilities))
+
+    def __str__(self):
+        return "PROBABILISTIC{}".format(list(zip(self.literals, self.probabilities)))
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def pddl_str(self):
+        raise NotImplementedError("Can't PDDL-ify a probabilistic effect")
+
+    def sample(self):
+        return np.random.choice(self.literals, p=self.probabilities)
+
+    def max(self):
+        return self.literals[np.argmax(self.probabilities)]
 
 ### States ###
 

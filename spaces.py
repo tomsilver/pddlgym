@@ -17,7 +17,7 @@ class LiteralSpace(Space):
                  type_to_parent_types=None):
         self.predicates = sorted(predicates)
         self.num_predicates = len(predicates)
-        self._objects = set()
+        self._objects = None
         self._lit_valid_test = lit_valid_test
         self._type_to_parent_types = type_to_parent_types
         super().__init__()

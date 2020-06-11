@@ -48,6 +48,8 @@ for env_name, kwargs in [
         ("glibblocks", {'render' : blocks_render}),
         ("glibrearrangement", {'render' : rearrangement_render}),
         ("glibdoors", {'render' : doors_render}),
+        ("tireworld", {}),
+        ("river", {}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,

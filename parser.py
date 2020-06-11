@@ -1,7 +1,8 @@
 """PDDL parsing.
 """
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
-                     Not, Anti, ForAll, Exists, TypedEntity, ground_literal)
+                             Not, Anti, ForAll, Exists, ProbabilisticEffect,
+                             TypedEntity, ground_literal)
 
 import re
 
@@ -133,6 +134,18 @@ class PDDLParser:
             for v in variables:
                 del params[v.name]
             return result
+        if string.startswith("(probabilistic") and string[14] in (" ", "\n", "("):
+            assert is_effect, "We only support probabilistic effects"
+            lits = []
+            probs = []
+            expr = string[14:-1].strip()
+            for match in re.finditer("(\d*\.?\d+)", expr):
+                prob = float(match.group())
+                subexpr = self._find_balanced_expression(expr[match.end():].strip(), 0)
+                lit = self._parse_into_literal(subexpr, params, is_effect=is_effect)
+                lits.append(lit)
+                probs.append(prob)
+            return ProbabilisticEffect(lits, probs)
         if string.startswith("(not") and string[4] in (" ", "\n", "("):
             clause = string[4:-1].strip()
             if is_effect:
@@ -269,6 +282,9 @@ class PDDLDomainParser(PDDLParser):
         with open(domain_fname, "r") as f:
             self.domain = f.read().lower()
 
+        # Is this domain probabilistic?
+        self.is_probabilistic = ("probabilistic" in self.domain)
+
         # Get action predicate names (not part of standard PDDL)
         if expect_action_preds:
             self.actions = self._parse_actions()
@@ -288,6 +304,22 @@ class PDDLDomainParser(PDDLParser):
 
         # For convenience, create map of subtype to all parent types
         self.type_to_parent_types = self._organize_parent_types()
+
+    def determinize(self):
+        """Determinize this operator by assuming max-probability effects.
+        """
+        assert self.is_probabilistic
+        for op in self.operators.values():
+            toremove = set()
+            for i, lit in enumerate(op.effects.literals):
+                if isinstance(lit, ProbabilisticEffect):
+                    chosen_effect = lit.max()
+                    if chosen_effect == "NOCHANGE":
+                        toremove.add(lit)
+                    else:
+                        op.effects.literals[i] = chosen_effect
+            for rem in toremove:  # remove effects where NOCHANGE is max-probability
+                op.effects.literals.remove(rem)
 
     def _parse_actions(self):
         start_ind = re.search(r"\(:actions", self.domain).start()
