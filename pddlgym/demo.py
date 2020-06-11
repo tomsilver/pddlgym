@@ -58,7 +58,12 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("conditionalferry", 4, render=render, verbose=verbose)
     # demo_ff_planning("conditionalferry", 4, render=render, test=True, verbose=verbose)
     # demo_ff_planning("blocks_operator_actions", 1, render=render, verbose=verbose)
-    demo_random("blocks_operator_actions", render=render, verbose=verbose)
+    # demo_random("blocks_operator_actions", render=render, verbose=verbose)
+    # demo_ff_planning("glibblocks", 5, render=render, verbose=verbose, test=True)
+    # demo_ff_planning("glibrearrangement", 20, render=render, verbose=verbose)
+    # demo_ff_planning("glibrearrangement", 100, render=render, verbose=verbose, test=True)
+    # demo_ff_planning("glibdoors", 5, render=render, verbose=verbose)
+    # demo_ff_planning("glibdoors", 10, render=render, verbose=verbose, test=True)
 
 
 if __name__ == '__main__':

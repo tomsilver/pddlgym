@@ -45,6 +45,9 @@ for env_name, kwargs in [
         ("blocks_operator_actions", {'render' : blocks_render, 
                                      'operators_as_actions' : True,
                                      'dynamic_action_space' : True}),
+        ("glibblocks", {'render' : blocks_render}),
+        ("glibrearrangement", {'render' : rearrangement_render}),
+        ("glibdoors", {'render' : doors_render}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
