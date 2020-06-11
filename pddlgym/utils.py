@@ -1,7 +1,7 @@
 """Utilities
 """
 from pddlgym.planning import run_planner
-from pddlgym.parser import parse_plan_step
+from pddlgym.parser import parse_plan_step, PDDLDomainParser, PDDLProblemParser
 from PIL import Image
 
 from collections import defaultdict
@@ -111,6 +111,59 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     env.close()
     if check_reward:
         assert tot_reward > 0
+    return tot_reward
+
+
+def run_probabilistic_planning_demo(env, planner_name, verbose=False, num_epi=20):
+    """Probabilistic planning via simple determinization.
+    """
+    avg_reward = 0
+    for _ in range(num_epi):
+        obs, debug_info = env.reset()
+        domain = PDDLDomainParser(debug_info["domain_file"])
+        domain.determinize()
+        domain.write("/tmp/domain.pddl")
+
+        plan = run_planner("/tmp/domain.pddl", debug_info['problem_file'], planner_name)
+
+        actions = []
+        for s in plan:
+            a = parse_plan_step(
+                    s, 
+                    env.domain.operators.values(), 
+                    env.action_predicates,
+                    obs.objects, 
+                    operators_as_actions=env.operators_as_actions
+                )
+            actions.append(a)
+
+        tot_reward = 0.
+        for action in actions:
+            if verbose:
+                print("Obs:", obs)
+
+            if verbose:
+                print("Act:", action)
+
+            obs, reward, done, _ = env.step(action)
+            env.render()
+            tot_reward += reward
+            if verbose:
+                print("Rew:", reward)
+
+            if done:
+                break
+
+        if verbose:
+            print("Final obs:", obs)
+            print("Got total reward:", tot_reward)
+            print()
+
+        avg_reward += tot_reward/num_epi
+
+    print("Average reward over {} episodes was {}".format(num_epi, avg_reward))
+    env.close()
+    input("press enter to continue to next problem")
     return tot_reward
 
 
