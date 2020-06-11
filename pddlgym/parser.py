@@ -513,7 +513,10 @@ class PDDLProblemParser(PDDLParser):
         start_ind = re.search(r"\(:objects", self.problem).start()
         objects = self._find_balanced_expression(self.problem, start_ind)
         objects = objects[9:-1].strip()
-        self.objects = self._parse_objects(objects)
+        if objects == "":
+            self.objects = []
+        else:
+            self.objects = self._parse_objects(objects)
 
     def _parse_problem_initial_state(self):
         start_ind = re.search(r"\(:init", self.problem).start()

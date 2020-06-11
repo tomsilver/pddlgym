@@ -204,6 +204,9 @@ class Literal:
     def __gt__(self, other):
         return repr(self) > repr(other)
 
+    def holds(self, state):
+        raise NotImplementedError("Goals can only be LiteralConjunctions")
+
     @property
     def positive(self):
         return self.__class__(self.predicate.positive, [v for v in self.variables])
@@ -260,7 +263,7 @@ class LiteralConjunction:
 
     def pddl_str(self):
         return "(and\n\t{})".format("\n\t".join(
-            lit.pddl_str()for lit in self.literals))
+            lit.pddl_str() for lit in self.literals))
 
     def holds(self, state):
         for lit in self.literals:
@@ -302,10 +305,10 @@ class LiteralDisjunction:
 
     def pddl_str(self):
         return "(or\n\t{})".format("\n\t".join(
-            lit.pddl_str()for lit in self.literals))
+            lit.pddl_str() for lit in self.literals))
 
     def holds(self, state):
-        return any(lit in state for lit in self.literals)
+        raise NotImplementedError("Goals can only be LiteralConjunctions")
 
     def __str__(self):
         return "OR{}".format(self.literals)
