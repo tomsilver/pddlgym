@@ -91,5 +91,22 @@ def test_negative_preconditions():
     assignments = find_satisfying_assignments(kb, conds, allow_redundant_variables=False)
     assert len(assignments) == 1
 
+    print("Pass.")
+
+def test_zero_arity_negative_preconditions():
+    MoveableType = Type('moveable')
+    Holding = Predicate('Holding', 1, var_types=[MoveableType])
+    HandEmpty = Predicate('HandEmpty', 0, var_types=[])
+
+    conds = [ Holding("?x1"), Not(HandEmpty()) ]
+    kb = { Holding("a"), HandEmpty() }
+    assignments = find_satisfying_assignments(kb, conds, allow_redundant_variables=False)
+    assert len(assignments) == 0
+
+    print("Pass.")
+
 if __name__ == "__main__":
     test_prover()
+    test_negative_preconditions()
+    test_zero_arity_negative_preconditions()
+
