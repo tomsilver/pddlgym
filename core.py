@@ -17,7 +17,7 @@ Usage example:
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
-from pddlgym.structs import ground_literal, Literal, State
+from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
@@ -51,15 +51,25 @@ def _apply_effects(state, lifted_effects, assignments):
         Maps variables to objects.
     """
     new_literals = set(state.literals)
-
+    determinized_lifted_effects = []
+    # Handle probabilistic effects.
     for lifted_effect in lifted_effects:
+        if isinstance(lifted_effect, ProbabilisticEffect):
+            chosen_effect = lifted_effect.sample()
+            if chosen_effect == "NOCHANGE":
+                continue
+            determinized_lifted_effects.append(chosen_effect)
+        else:
+            determinized_lifted_effects.append(lifted_effect)
+
+    for lifted_effect in determinized_lifted_effects:
         effect = ground_literal(lifted_effect, assignments)
         # Negative effect
         if effect.is_anti:
             literal = effect.inverted_anti
             if literal in new_literals:
                 new_literals.remove(literal)
-    for lifted_effect in lifted_effects:
+    for lifted_effect in determinized_lifted_effects:
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
             new_literals.add(effect)
