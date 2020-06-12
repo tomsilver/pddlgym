@@ -85,4 +85,4 @@
   (movecar l-5-1)
   (changetire l-5-1)
   )
-  (:goal (and (vehicle-at l-4-2) (road l-5-1 l-4-2) (road l-4-1 l-5-1))))
+  (:goal (and (vehicle-at l-5-1) (road l-5-1 l-4-2) (road l-4-1 l-5-1))))
