@@ -118,9 +118,24 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     return tot_reward
 
 
-def run_probabilistic_planning_demo(env, planner_name, verbose=False, num_epi=20):
+def run_probabilistic_planning_demo(env, planner_name, verbose=False, num_epi=20, outdir='/tmp', fps=3):
     """Probabilistic planning via simple determinization.
     """
+    if outdir is None:
+        outdir = "/tmp/{}".format(env_cls.__name__)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
+
+    if env._render:
+        if env._problem_index_fixed:
+            problem_idx = env._problem_idx
+            video_path = os.path.join(outdir, 'planning_{}_{}_{}_demo.gif'.format(
+                planner_name, env.spec.id, problem_idx))
+        else:
+            video_path = os.path.join(outdir, 'planning_{}_{}_demo.gif'.format(
+                planner_name, env.spec.id))
+        env = VideoWrapper(env, video_path, fps=fps)
+
     avg_reward = 0
     for _ in range(num_epi):
         obs, debug_info = env.reset()
@@ -180,8 +195,12 @@ class VideoWrapper(gym.Wrapper):
         self.fps = fps
         self.size = size
         self.reset_count = 0
+        self.images = []
 
     def reset(self):
+        if len(self.images) > 0:
+            self._finish_video()
+
         obs = super().reset()
 
         # Handle problem-dependent action spaces
@@ -209,12 +228,16 @@ class VideoWrapper(gym.Wrapper):
         return obs, reward, done, debug_info
 
     def close(self):
-        imageio.mimsave(self.out_path, self.images, fps=self.fps)
-        print("Wrote out video to {}.".format(self.out_path))
+        if len(self.images) > 0:
+            self._finish_video()
         return super().close()
 
     def process_image(self, img):
         if self.size is None:
             return img
         return np.array(Image.fromarray(img).resize(self.size), dtype=img.dtype)
+
+    def _finish_video(self):
+        imageio.mimsave(self.out_path, self.images, fps=self.fps)
+        print("Wrote out video to {}.".format(self.out_path))
 

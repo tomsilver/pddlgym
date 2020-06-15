@@ -49,7 +49,7 @@ for env_name, kwargs in [
         ("glibblocks", {'render' : blocks_render}),
         ("glibrearrangement", {'render' : rearrangement_render}),
         ("glibdoors", {'render' : doors_render}),
-        ("tireworld", {}),
+        ("tireworld", {'render' : tireworld_render}),
         ("river", {}),
         ("explodingblocks", {}),
 ]:
