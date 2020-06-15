@@ -53,7 +53,8 @@ def run_random_agent_demo(env, outdir='/tmp', max_num_steps=10, fps=3,
         print()
 
     env.close()
-    input("press enter to continue to next problem")
+    if verbose:
+        input("press enter to continue to next problem")
 
 def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, seed=None, check_reward=True):
     if outdir is None:
@@ -112,7 +113,8 @@ def run_planning_demo(env, planner_name, outdir='/tmp', fps=3, verbose=False, se
     env.close()
     if check_reward:
         assert tot_reward > 0
-    input("press enter to continue to next problem")
+    if verbose:
+        input("press enter to continue to next problem")
     return tot_reward
 
 
@@ -165,7 +167,8 @@ def run_probabilistic_planning_demo(env, planner_name, verbose=False, num_epi=20
 
     print("Average reward over {} episodes was {}".format(num_epi, avg_reward))
     env.close()
-    input("press enter to continue to next problem")
+    if verbose:
+        input("press enter to continue to next problem")
     return tot_reward
 
 
