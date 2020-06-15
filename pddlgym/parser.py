@@ -160,7 +160,7 @@ class PDDLParser:
         assert self.predicates[pred].arity == len(args), pred
         for i, arg in enumerate(args):
             if arg not in params:
-                import ipdb; ipdb.set_trace()
+                raise Exception("Argument {} not in params {}".format(arg, params))
             assert arg in params, "Argument {} is not in the params".format(arg)
             if isinstance(params, dict):
                 typed_arg = TypedEntity(arg, params[arg])
@@ -654,5 +654,4 @@ def parse_plan_step(plan_step, operators, action_predicates, objects, operators_
             ground_action = ground_literal(cond, assignments)
             return ground_action
 
-    import ipdb; ipdb.set_trace()
     raise Exception("Unrecognized plan step: `{}`".format(str(plan_step)))
