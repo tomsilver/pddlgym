@@ -369,7 +369,11 @@ class PDDLDomainParser(PDDLParser):
                 s = remaining_type_str[dash_index:]
                 super_start_index = dash_index + len(s) - len(s.lstrip()) + 2
                 s = remaining_type_str[super_start_index:]
-                super_end_index = super_start_index + min(s.index(" "), s.index("\n"))
+                try:
+                    end_index_offset = min(s.index(" "), s.index("\n"))
+                except ValueError:
+                    end_index_offset = len(s)
+                super_end_index = super_start_index + end_index_offset
                 super_type_name = remaining_type_str[super_start_index:super_end_index]
                 sub_type_names = remaining_type_str[:dash_index].split()
                 # Add new types
