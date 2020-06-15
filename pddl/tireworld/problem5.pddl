@@ -9,7 +9,7 @@
   l-3-1 - location
   )
   (:init
-  (vehicle-at l-1-2)
+  (vehicle-at l-3-1)
   (road l-1-1 l-1-2)
   (road l-1-2 l-1-3)
   (road l-1-1 l-2-1)
