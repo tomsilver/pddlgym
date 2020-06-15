@@ -179,12 +179,20 @@ class PDDLParser:
         else:
             # Space-separated
             objects = objects.split()
-        to_return = set()
+        obj_names = []
+        obj_type_names = []
         for obj in objects:
             if self.uses_typing:
                 obj_name, obj_type_name = obj.strip().split(" - ")
                 obj_name = obj_name.strip()
                 obj_type_name = obj_type_name.strip()
+                if len(obj_name.split()) > 1:
+                    for single_obj_name in obj_name.split():
+                        obj_names.append(single_obj_name.strip())
+                        obj_type_names.append(obj_type_name)
+                else:
+                    obj_names.append(obj_name)
+                    obj_type_names.append(obj_type_name)
             else:
                 obj_name = obj.strip()
                 if " - " in obj_name:
@@ -192,6 +200,10 @@ class PDDLParser:
                     obj_name = obj_name.strip()
                     assert temp == "default"
                 obj_type_name = "default"
+                obj_names.append(obj_name)
+                obj_type_names.append(obj_type_name)
+        to_return = set()
+        for obj_name, obj_type_name in zip(obj_names, obj_type_names):
             if obj_type_name not in self.types:
                 print("Warning: type not declared for object {}, type {}".format(
                     obj_name, obj_type_name))
