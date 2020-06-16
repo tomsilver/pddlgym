@@ -1,4 +1,4 @@
-(define (problem tireworld-4)
+(define (problem tireworld-8)
   (:domain tireworld)
   (:objects
   l-1-1 - location
