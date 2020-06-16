@@ -1,4 +1,4 @@
-(define (problem tireworld-4)
+(define (problem tireworld-7)
   (:domain tireworld)
   (:objects
   l-1-1 - location
@@ -85,4 +85,4 @@
   (movecar l-5-1)
   (changetire l-5-1)
   )
-  (:goal (and (vehicle-at l-1-5) (road l-5-1 l-4-2) (road l-4-1 l-5-1))))
+  (:goal (and (vehicle-at l-5-1) (road l-5-1 l-4-2) (road l-4-1 l-5-1))))
