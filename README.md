@@ -46,10 +46,10 @@ Coming soon!
 
 ### Installing from source (if you want to make changes to PDDLGym)
 
-First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `demo.py`. You should also be able to `import pddlgym` from any Python shell.
+First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `pddlgym/demo.py`. You should also be able to `import pddlgym` from any Python shell.
 
 ### Planner dependencies (optional)
-To be able to run the planning demos in `demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to the `ff` executable, wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.mit.edu/ronuchit/ff) instead of the previous link.
+To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to the `ff` executable, wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.mit.edu/ronuchit/ff) instead of the previous link.
 
 ## Usage examples
 
@@ -88,24 +88,21 @@ As in OpenAI Gym, calling `env.reset()` or `env.step()` will return an observati
 ## Adding a new domain
 
 ### Step 1: Adding PDDL files
-Create a domain PDDL file and one or more problem PDDL files. (See important notes below.) Put the domain file in `pddl/` and the problem files in `pddl/<domain name>`. Make sure that the name of your new domain is consistent and is used for the domain pddl filename and the problem directory.
+Create a domain PDDL file and one or more problem PDDL files. (Note: Only a certain subset of PDDL is supported right now -- see "Status" above.) Put the domain file in `pddl/` and the problem files in `pddl/<domain name>`. Make sure that the name of your new domain is consistent and is used for the domain pddl filename and the problem directory.
 
-**Note 1:** Only a certain subset of PDDL is supported right now -- see "Status" above.
+### Step 2 (optional): Implement rendering
+* Implement a render function in a new file in `rendering/`. For an example, see `pddlgym/rendering/rearrangement.py`. See the Observation representation section for a description of the representation of the argument `obs` passed into the render function. Update `pddlgym/rendering/__init__.py` to import your new function.
 
-**Note 2:** PDDLGym requires that certain predicates are special "predicate actions". For example, in Sokoban, we add a `(Move ?dir - direction)` predicate. Action predicates must be incorporated in four places:
+### Step 3: Register Gym environment
+* Update the list in `pddlgym/__init__.py` to register your new environment. There are several methods for doing so.
+    * **Simple** (recommended if you want to spin up quickly with off-the-shelf PDDL files): Let's say your domain name is "mypddlgymenv" and your render function is mypddlgymenv_render. Then you would add to the list the following entry: `('mypddlgymenv', {'render': mypddlgymenv_render, 'operators_as_actions': True, 'dynamic_action_space': True})`. You can leave out the "render" entry if you don't have a render function.
+        * What these arguments mean: by default, PDDLGym requires modifying the PDDL files to make a distinction between "actions" and "operators", related to the boundary between agent and environment. The rationale is described in Section 2.2 of [our paper](https://arxiv.org/abs/2002.06432). Setting "operators_as_actions" to True eliminates this distinction, and makes it so you can use off-the-shelf PDDL files without modification. Setting "dynamic_action_space" to True causes `env.action_space` to change on each iteration to include only valid actions (those that match the operator preconditions), which can be useful in, for example, policy learning.
+    * **More complex** (recommended for more serious research): If you plan to use PDDLGym for non-trivial domains, you will almost certainly need to make the distinction between operators and actions. Actions are the things passed from the agent to the environment, like motor commands on a robot. Operators describe the environmental consequences of the agent's actions. For instance, a `moveto` command may only be parameterized by a target pose from the perspective of the agent, but internally to the environment, it must also be parameterized by the current pose because a literal must be created specifying that the agent is no longer at this current pose. In order to have "operators_as_actions" be False (the default) in pddlgym/__init__.py, you will need to update your PDDL files by including special predicates called "action predicate". Action predicates must be incorporated in four places:
 1. Alongside the typical predicate declarations in the domain file.
 2. In a space-separated list of format `; (:actions <action predicate name 1> <action predicate name 2> ...)` in the domain file. (Note the semicolon at the beginning!)
 3. One variable-grounded action predicate should appear in the preconditions of every operator in the domain file.
 4. In each problem file, all possible ground actions should be listed alongside the other :init declarations.
-See `pddl/sokoban.pddl` and `pddl/sokoban/problem1.pddl` for an example to follow.
-
-The rationale for distinguishing actions from operators is related to the boundary between agent and environment. This project views PDDL operators as collectively implementing a transition model, which is part of the environment and unknown to the agent. Actions are the things passed from the agent to the environment, like motor commands on a robot. Operators describe the environmental consequences of the agent's actions. For instance, a `moveto` command may only be parameterized by a target pose from the perspective of the agent, but internally to the environment, it must also be parameterized by the current pose because a literal must be created specifying that the agent is no longer at this current pose.
-
-### Step 2 (optional): Implement rendering
-* Implement a render function in a new file in `rendering/`. For example, in `rendering/rearrangement.py`, implement `render(obs, *args, **kwargs)`, where `obs` is a set of literals. Update `rendering/__init__.py` to import your new function.
-
-### Step 3: Register Gym environment
-* Update `__init__.py` to register your new environment. For example, `register_pddl_env("rearrangement", rearrangement_render)`.
+See `pddlgym/pddl/blocks.pddl` and `pddlgym/pddl/blocks/problem1.pddl` for an example to follow, where there are four action predicates: pickup, putdown, stack, and unstack.
 
 ## Citation
 
