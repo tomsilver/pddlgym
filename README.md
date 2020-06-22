@@ -94,7 +94,7 @@ Create a domain PDDL file and one or more problem PDDL files. (Note: Only a cert
 * Implement a render function in a new file in `rendering/`. For an example, see `pddlgym/rendering/rearrangement.py`. See the Observation representation section for a description of the representation of the argument `obs` passed into the render function. Update `pddlgym/rendering/__init__.py` to import your new function.
 
 ### Step 3: Register Gym environment
-* Update the list in `pddlgym/__init__.py` to register your new environment. There are several methods for doing so.
+* Update the list in `pddlgym/__init__.py` to register your new environment. There are several methods for doing so:
 
 #### **Simple** (recommended if you want to spin up quickly with off-the-shelf PDDL files)
 Let's say your domain name is "mypddlgymenv" and your render function is mypddlgymenv_render. Then you would add to the list the following entry: `('mypddlgymenv', {'render': mypddlgymenv_render, 'operators_as_actions': True, 'dynamic_action_space': True})`. You can leave out the "render" entry if you don't have a render function.
