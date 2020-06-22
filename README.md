@@ -48,7 +48,7 @@ import imageio
 
 env = gym.make("PDDLEnvSokoban-v0")
 obs, debug_info = env.reset()
-action = env.action_space.sample()
+action = env.action_space.sample(obs)
 obs, reward, done, debug_info = env.step(action)
 img = env.render()
 imageio.imsave("frame1.png", img)
@@ -56,10 +56,9 @@ imageio.imsave("frame1.png", img)
 
 ### Plan with FastForward
 ```
-from utils import run_planning_demo
-
 import gym
 import pddlgym
+from pddlgym.utils import run_planning_demo
 
 # See `pddl/sokoban.pddl` and `pddl/sokoban/problem3.pddl`.
 env = gym.make("PDDLEnvSokoban-v0")
