@@ -2,7 +2,7 @@
 
 ![Sokoban example](images/sokoban_example.gif?raw=true "Sokoban example")
 
-**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/).**
+**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@mit.edu>.**
 
 ## Paper
 
@@ -10,11 +10,13 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 
 ## Status
 
-**The following PDDL features are not yet supported:**
-- Equality (blocked by: parsing and inference)
-- Quantifiers (forall, exists) and disjunctions (ors) (blocked by: inference)
+**We support the following subset of PDDL1.2:**
+- STRIPS
+- Typing (including hierarchical)
 
-Several PDDL environments are included, including
+Notable features that we do not currently support include equality (blocked by: parsing and inference), conditional effects (blocked by: inference), disjunction and quantification (blocked by: inference).
+
+Several PDDL environments are included, such as:
 - Sokoban
 - Depot
 - Blocks
@@ -27,16 +29,27 @@ Several PDDL environments are included, including
 
 (Environments in quotes indicate ones that we made up ourselves. Unquoted environments are standard ones whose PDDL files are available online, with light modifications to support our interface.)
 
-Please get in touch if you are interested in contributing! Correspondence: <tslvr@mit.edu> and <ronuchit@mit.edu>.
+We also support probabilistic effects, specified in the PPDDL syntax. Several PPDDL environments are included, such as:
+- River
+- Triangle Tireworld
+- Exploding Blocks
+
+Please get in touch if you are interested in contributing!
+
+Sister packages: [pyperplan](https://github.com/aibasel/pyperplan) and [rddlgym](https://github.com/thiagopbueno/rddlgym).
 
 ## Installation
 
-### Installing From Source
+### Installing via pip
 
-First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run `mkvirtualenv --python=<path to Python 3> pddlgymenv`. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `demo.py`. You should also be able to `import pddlgym` from any Python shell.
+Coming soon!
 
-### (Optional) Planner Dependencies
-To be able to run the planning demos in `demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff.html). Set environment variable `FF_PATH` to the `ff` executable, wherever you install it.
+### Installing from source (if you want to make changes to PDDLGym)
+
+First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `demo.py`. You should also be able to `import pddlgym` from any Python shell.
+
+### Planner dependencies (optional)
+To be able to run the planning demos in `demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to the `ff` executable, wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.mit.edu/ronuchit/ff) instead of the previous link.
 
 ## Usage examples
 
@@ -48,10 +61,12 @@ import imageio
 
 env = gym.make("PDDLEnvSokoban-v0")
 obs, debug_info = env.reset()
+img = env.render()
+imageio.imsave("frame1.png", img)
 action = env.action_space.sample(obs)
 obs, reward, done, debug_info = env.step(action)
 img = env.render()
-imageio.imsave("frame1.png", img)
+imageio.imsave("frame2.png", img)
 ```
 
 ### Plan with FastForward
@@ -65,6 +80,10 @@ env = gym.make("PDDLEnvSokoban-v0")
 env.fix_problem_index(2)
 run_planning_demo(env, 'ff', verbose=True)
 ```
+
+## Observation representation
+
+As in OpenAI Gym, calling `env.reset()` or `env.step()` will return an observation of the environment. This observation is a namedtuple with 3 fields: `obs.literals` gives a frozenset of literals that hold true in the state, `obs.objects` gives a frozenset of objects in the state, and `obs.goal` gives a pddlgym.structs.Literal object representing the goal of the current problem instance.
 
 ## Adding a new domain
 
