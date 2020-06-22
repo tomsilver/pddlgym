@@ -17,7 +17,7 @@ Usage example:
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
-from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect
+from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
@@ -58,7 +58,11 @@ def _apply_effects(state, lifted_effects, assignments):
             chosen_effect = lifted_effect.sample()
             if chosen_effect == "NOCHANGE":
                 continue
-            determinized_lifted_effects.append(chosen_effect)
+            if isinstance(chosen_effect, LiteralConjunction):
+                for lit in chosen_effect.literals:
+                    determinized_lifted_effects.append(lit)
+            else:
+                determinized_lifted_effects.append(chosen_effect)
         else:
             determinized_lifted_effects.append(lifted_effect)
 

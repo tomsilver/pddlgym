@@ -9,7 +9,7 @@ except ImportError:
 
 def render(obs, mode='human', close=False):
     if not IMPORT_SUCCESS:
-        raise Exception("Must install networkx to render in Tireworld.")
+        raise Exception("Must `pip install networkx` to render in Tireworld.")
 
     nodes = set()
     edges = set()

@@ -34,6 +34,7 @@ def run_all(render=True, verbose=True):
     ## Probabilistic environments
     # demo_prob_planning("explodingblocks", 5, render=render, verbose=verbose, test=True)
     # demo_prob_planning("explodingblocks", 5, render=render, verbose=verbose)
+    # demo_random("explodingblocks", render=render, verbose=verbose)
     # demo_prob_planning("tireworld", 3, render=render, verbose=verbose, test=True)
     # demo_prob_planning("tireworld", 3, render=render, verbose=verbose)
     # demo_random("tireworld", render=render, verbose=verbose)

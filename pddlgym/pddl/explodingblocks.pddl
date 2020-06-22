@@ -53,7 +53,7 @@
             (handempty ?robot)
             (not (handfull ?robot))
             (ontable ?x)
-            (probabilistic 0.1 (table-destroyed))
+            (probabilistic 0.1 (and (table-destroyed)))
         )
     )
 
@@ -74,7 +74,7 @@
             (handempty ?robot)
             (not (handfull ?robot))
             (on ?x ?y)
-            (probabilistic 0.1 (destroyed ?y))
+            (probabilistic 0.1 (and (destroyed ?y)))
         )
     )
 
