@@ -6,3 +6,5 @@ __pycache__
 *~
 #*
 _procedural_generation
+build
+dist
