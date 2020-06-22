@@ -1,4 +1,7 @@
 """Gym environment registration"""
+
+from . import tests
+
 import matplotlib
 matplotlib.use("Agg")
 from pddlgym.rendering import *
