@@ -31,7 +31,9 @@ Please get in touch if you are interested in contributing! Correspondence: <tslv
 
 ## Installation
 
-First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run `mkvirtualenv --python=<path to Python 3> pddlgymenv`. Next, run `pip install -r requirements.txt` to install dependencies. Now you should able to run the random agent demos in `demo.py`.
+### Installing From Source
+
+First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run `mkvirtualenv --python=<path to Python 3> pddlgymenv`. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `demo.py`. You should also be able to `import pddlgym` from any Python shell.
 
 ### (Optional) Planner Dependencies
 To be able to run the planning demos in `demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff.html). Set environment variable `FF_PATH` to the `ff` executable, wherever you install it.
