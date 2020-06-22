@@ -4,6 +4,7 @@ __pycache__
 *.egg-info
 *.pkl
 *~
+*.python-version
 #*
 _procedural_generation
 build
