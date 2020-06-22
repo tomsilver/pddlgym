@@ -42,7 +42,7 @@ Sister packages: [pyperplan](https://github.com/aibasel/pyperplan) and [rddlgym]
 
 ### Installing via pip
 
-Coming soon!
+`pip install pddlgym`
 
 ### Installing from source (if you want to make changes to PDDLGym)
 
