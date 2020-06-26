@@ -49,7 +49,7 @@ Sister packages: [pyperplan](https://github.com/aibasel/pyperplan) and [rddlgym]
 First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `pddlgym/demo.py`. You should also be able to `import pddlgym` from any Python shell.
 
 ### Planner dependencies (optional)
-To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to the `ff` executable, wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.com/ronuchit/FF) instead of the previous link.
+To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to point to the `ff` executable (note: the executable itself, not just the directory containing the executable), wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.com/ronuchit/FF) instead of the previous link.
 
 ## Usage examples
 
