@@ -239,5 +239,5 @@ class VideoWrapper(gym.Wrapper):
 
     def _finish_video(self):
         imageio.mimsave(self.out_path, self.images, fps=self.fps)
-        print("Wrote out video to {}.".format(self.out_path))
+        print("Wrote out video to {}".format(self.out_path))
 
