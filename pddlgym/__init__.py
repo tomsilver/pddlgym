@@ -27,6 +27,8 @@ def register_pddl_env(name, is_test_env, other_args):
     )
 
 for env_name, kwargs in [
+        ("gripper", {'operators_as_actions' : True,
+                     'dynamic_action_space' : True}),
         ("rearrangement", {'render' : rearrangement_render}),
         ("sokoban", {'render' : sokoban_render}),
         ("minecraft", {'render' : minecraft_render}),
