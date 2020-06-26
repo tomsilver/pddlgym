@@ -170,14 +170,11 @@ class PDDLParser:
         return self.predicates[pred](*typed_args)
 
     def _parse_objects(self, objects):
-        if objects.find("\n") != -1:
+        if self.uses_typing:
+            # Assume typed objects are new-line separated.
             objects = objects.split("\n")
-        elif self.uses_typing:
-            # Must be one object then; assumes that typed objects are new-line separated
-            assert objects.count(" - ") == 1
-            objects = [objects]
         else:
-            # Space-separated
+            # Untyped objects can be separated by any form of whitespace.
             objects = objects.split()
         obj_names = []
         obj_type_names = []
