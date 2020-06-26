@@ -57,6 +57,7 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("baking", 4, render=render, test=True, verbose=verbose)
     # demo_ff_planning("blocks", 5, render=render, verbose=verbose)
     demo_ff_planning("gripper", 5, render=render, verbose=verbose)
+    demo_ff_planning("gripper", 5, render=render, verbose=verbose, test=True)
     # demo_ff_planning("blocks", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, test=True, verbose=verbose)
