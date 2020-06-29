@@ -4,6 +4,7 @@
         rooma - room 
         roomb - room
         roomc - room
+        ball6 - ball
         ball5 - ball
         ball4 - ball
         ball3 - ball 
@@ -15,6 +16,7 @@
    (:init (room rooma)
           (room roomb)
           (room roomc)
+          (ball ball6)
           (ball ball5)
           (ball ball4)
           (ball ball3)
@@ -23,6 +25,7 @@
           (at-robby rooma)
           (free left)
           (free right)
+          (at ball6 roomc)
           (at ball5 roomc)
           (at ball4 roomc)
           (at ball3 roomb)

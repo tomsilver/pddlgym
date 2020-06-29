@@ -3,6 +3,9 @@
    (:objects 
         rooma - room 
         roomb - room
+        ball8 - ball
+        ball7 - ball
+        ball6 - ball
         ball5 - ball
         ball4 - ball
         ball3 - ball 
@@ -13,6 +16,9 @@
     )
    (:init (room rooma)
           (room roomb)
+          (ball ball8)
+          (ball ball7)
+          (ball ball6)
           (ball ball5)
           (ball ball4)
           (ball ball3)
@@ -21,6 +27,9 @@
           (at-robby rooma)
           (free left)
           (free right)
+          (at ball8 rooma)
+          (at ball7 rooma)
+          (at ball6 rooma)
           (at ball5 rooma)
           (at ball4 rooma)
           (at ball3 roomb)
