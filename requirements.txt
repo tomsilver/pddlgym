@@ -3,3 +3,4 @@ pillow
 gym
 imageio
 pyperplan
+networkx
