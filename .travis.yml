@@ -3,5 +3,9 @@ python:
   - "3.6"
 install:
   - pip install -r requirements.txt
+  - curl https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz --output FF-v2.3.tgz
+  - tar -xzvf FF-v2.3.tgz && cd FF-v2.3 && make && cd ..
+env:
+  - FF_PATH="FF-v2.3/ff"
 script:
   - pytest
