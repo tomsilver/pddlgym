@@ -7,13 +7,14 @@
         c - block
     )
     (:init 
-        (clear a) 
-        (on a b) 
-        (on b c)
-        (on c d)
-        (ontable d) 
+        (clear c) 
+        (clear d)
+        (ontable a) 
+        (ontable d)
+        (on b a)
+        (on c b)
         (handempty)
 
     )
-    (:goal (and (on d c) (on c b) (on b a)))
+    (:goal (and (on c a)))
 )
