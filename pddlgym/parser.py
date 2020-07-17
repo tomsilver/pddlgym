@@ -314,6 +314,8 @@ class PDDLDomainParser(PDDLParser):
         # For convenience, create map of subtype to all parent types
         self.type_to_parent_types = self._organize_parent_types()
 
+        self.operators_as_actions = operators_as_actions
+
     def determinize(self):
         """Determinize this operator by assuming max-probability effects.
         """
