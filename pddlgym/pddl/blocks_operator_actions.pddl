@@ -4,76 +4,76 @@
 
 (define (domain blocks)
     (:requirements :strips :typing)
-    (:types block robot)
+    (:types block)
     (:predicates 
         (on ?x - block ?y - block)
         (ontable ?x - block)
         (clear ?x - block)
-        (handempty ?x - robot)
-        (handfull ?x - robot)
+        (handempty)
+        (handfull)
         (holding ?x - block)
     )
 
     (:action pick-up
-        :parameters (?x - block ?robot - robot)
+        :parameters (?x - block)
         :precondition (and
             (clear ?x) 
             (ontable ?x) 
-            (handempty ?robot)
+            (handempty)
         )
         :effect (and
             (not (ontable ?x))
             (not (clear ?x))
-            (not (handempty ?robot))
-            (handfull ?robot)
+            (not (handempty))
+            (handfull)
             (holding ?x)
         )
     )
 
     (:action put-down
-        :parameters (?x - block ?robot - robot)
+        :parameters (?x - block)
         :precondition (and 
             (holding ?x)
-            (handfull ?robot)
+            (handfull)
         )
         :effect (and 
             (not (holding ?x))
             (clear ?x)
-            (handempty ?robot)
-            (not (handfull ?robot))
+            (handempty)
+            (not (handfull))
             (ontable ?x))
         )
 
     (:action stack
-        :parameters (?x - block ?y - block ?robot - robot)
+        :parameters (?x - block ?y - block)
         :precondition (and
             (holding ?x) 
             (clear ?y)
-            (handfull ?robot)
+            (handfull)
         )
         :effect (and 
             (not (holding ?x))
             (not (clear ?y))
             (clear ?x)
-            (handempty ?robot)
-            (not (handfull ?robot))
+            (handempty)
+            (not (handfull))
             (on ?x ?y)
         )
     )
 
     (:action unstack
-        :parameters (?x - block ?y - block ?robot - robot)
+        :parameters (?x - block ?y - block)
         :precondition (and
             (on ?x ?y)
             (clear ?x)
-            (handempty ?robot)
+            (handempty)
         )
         :effect (and 
             (holding ?x)
             (clear ?y)
             (not (clear ?x))
-            (not (handempty ?robot))
-            (handfull ?robot)
+            (not (handempty))
+            (handfull)
             (not (on ?x ?y))
         )
     )
