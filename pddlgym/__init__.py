@@ -42,6 +42,7 @@ for env_name, kwargs in [
                    'dynamic_action_space' : True}),
         ("baking", {}),
         ("blocks", {'render' : blocks_render}),
+        ("toomanyblocks", {'render' : blocks_render}),
         ("travel", {}),
         ("doors", {'render' : doors_render}),
         ("casino", {}),
