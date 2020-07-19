@@ -268,24 +268,102 @@ class PDDLParser:
         return exprs
 
 
-class PDDLDomainParser(PDDLParser):
+
+class PDDLDomain:
+    """A PDDL domain.
+    """
+    def __init__(self, domain_name=None, types=None, type_hierarchy=None, predicates=None, 
+                 operators=None, actions=None, operators_as_actions=False, is_probabilistic=False):
+        # String of domain name.
+        self.domain_name = domain_name
+        # Dict from type name -> structs.Type object.
+        self.types = types
+        # Dict from supertype -> immediate subtypes.
+        self.type_hierarchy = type_hierarchy
+        # Dict from predicate name -> structs.Predicate object.
+        self.predicates = predicates
+        # Dict from operator name -> Operator object (class defined above).
+        self.operators = operators
+        # Action predicate names (not part of standard PDDL)
+        self.actions = actions
+        self.operators_as_actions = operators_as_actions
+        self.is_probabilistic = is_probabilistic
+
+    @property
+    def type_to_parent_types(self):
+        """For convenience, create map of subtype to all parent types
+        """
+        return self._organize_parent_types()
+
+    def determinize(self):
+        """Determinize this operator by assuming max-probability effects.
+        """
+        assert self.is_probabilistic
+        for op in self.operators.values():
+            toremove = set()
+            for i, lit in enumerate(op.effects.literals):
+                if isinstance(lit, ProbabilisticEffect):
+                    chosen_effect = lit.max()
+                    if chosen_effect == "NOCHANGE":
+                        toremove.add(lit)
+                    else:
+                        op.effects.literals[i] = chosen_effect
+            for rem in toremove:  # remove effects where NOCHANGE is max-probability
+                op.effects.literals.remove(rem)
+
+    def _organize_parent_types(self):
+        """Create dict of type -> parent types from type hierarchy
+        """
+        type_to_parent_types = { t : { t } for t in self.types.values() }
+        for t in self.types.values():
+            parent_types = self._get_parent_types(t)
+            type_to_parent_types[t].update(parent_types)
+        return type_to_parent_types
+
+    def _get_parent_types(self, t):
+        """Helper for organize parent types
+        """
+        parent_types = set()
+        for super_type, sub_types in self.type_hierarchy.items():
+            if t in sub_types:
+                parent_types.add(super_type)
+                parent_types.update(self._get_parent_types(super_type))
+        return parent_types
+
+    def write(self, fname):
+        """Write the domain PDDL string to a file.
+        """
+        predicates = "\n\t".join([lit.pddl_str() for lit in self.predicates.values()])
+        operators = "\n\t".join([op.pddl_str() for op in self.operators.values()])
+
+        domain_str = """
+(define (domain {})
+  (:requirements :typing )
+  (:types {})
+  (:predicates {}
+  )
+
+  ; (:actions {})
+
+  {}
+
+)
+        """.format(self.domain_name, " ".join(self.types),
+            predicates, " ".join(map(str, self.actions)), operators)
+
+        with open(fname, 'w') as f:
+            f.write(domain_str)
+
+
+
+class PDDLDomainParser(PDDLParser, PDDLDomain):
     """PDDL domain parsing class.
     """
     def __init__(self, domain_fname, expect_action_preds=True, operators_as_actions=False):
-        self.domain_fname = domain_fname
+        # Parsing sets all domain fields
+        PDDLDomain.__init__(self, operators_as_actions=operators_as_actions)
 
-        ## These are the things that we will construct.
-        # String of domain name.
-        self.domain_name = None
-        # Dict from type name -> structs.Type object.
-        self.types = None
-        # Dict from supertype -> immediate subtypes.
-        self.type_hierarchy = None
-        self.uses_typing = None
-        # Dict from predicate name -> structs.Predicate object.
-        self.predicates = None
-        # Dict from operator name -> Operator object (class defined above).
-        self.operators = None
+        self.domain_fname = domain_fname
 
         # Read files.
         with open(domain_fname, "r") as f:
@@ -310,27 +388,6 @@ class PDDLDomainParser(PDDLParser):
             self.actions = self._create_actions_from_operators()
         elif not expect_action_preds:
             self.actions = set()
-
-        # For convenience, create map of subtype to all parent types
-        self.type_to_parent_types = self._organize_parent_types()
-
-        self.operators_as_actions = operators_as_actions
-
-    def determinize(self):
-        """Determinize this operator by assuming max-probability effects.
-        """
-        assert self.is_probabilistic
-        for op in self.operators.values():
-            toremove = set()
-            for i, lit in enumerate(op.effects.literals):
-                if isinstance(lit, ProbabilisticEffect):
-                    chosen_effect = lit.max()
-                    if chosen_effect == "NOCHANGE":
-                        toremove.add(lit)
-                    else:
-                        op.effects.literals[i] = chosen_effect
-            for rem in toremove:  # remove effects where NOCHANGE is max-probability
-                op.effects.literals.remove(rem)
 
     def _parse_actions(self):
         start_ind = re.search(r"\(:actions", self.domain).start()
@@ -397,21 +454,6 @@ class PDDLDomainParser(PDDLParser):
                 remaining_type_str = remaining_type_str[super_end_index:]
             assert len(remaining_type_str.strip()) == 0, "Cannot mix hierarchical and non-hierarchical types"
 
-    def _organize_parent_types(self):
-        type_to_parent_types = { t : { t } for t in self.types.values() }
-        for t in self.types.values():
-            parent_types = self._get_parent_types(t)
-            type_to_parent_types[t].update(parent_types)
-        return type_to_parent_types
-
-    def _get_parent_types(self, t):
-        parent_types = set()
-        for super_type, sub_types in self.type_hierarchy.items():
-            if t in sub_types:
-                parent_types.add(super_type)
-                parent_types.update(self._get_parent_types(super_type))
-        return parent_types
-
     def _parse_domain_predicates(self):
         start_ind = re.search(r"\(:predicates", self.domain).start()
         predicates = self._find_balanced_expression(self.domain, start_ind)
@@ -460,30 +502,6 @@ class PDDLDomainParser(PDDLParser):
                 is_effect=True)
             self.operators[op_name] = Operator(
                 op_name, params, preconds, effects)
-
-    def write(self, fname):
-        """Write the domain PDDL string to a file.
-        """
-        predicates = "\n\t".join([lit.pddl_str() for lit in self.predicates.values()])
-        operators = "\n\t".join([op.pddl_str() for op in self.operators.values()])
-
-        domain_str = """
-(define (domain {})
-  (:requirements :typing )
-  (:types {})
-  (:predicates {}
-  )
-
-  ; (:actions {})
-
-  {}
-
-)
-        """.format(self.domain_name, " ".join(self.types),
-            predicates, " ".join(map(str, self.actions)), operators)
-
-        with open(fname, 'w') as f:
-            f.write(domain_str)
 
 
 class PDDLProblemParser(PDDLParser):
