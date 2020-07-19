@@ -64,6 +64,8 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("onearmedgripper", 6, render=render, verbose=verbose, test=True)
     # demo_ff_planning("tinyonearmedgripper", 4, render=render, verbose=verbose)
     # demo_ff_planning("tinyonearmedgripper", 4, render=render, verbose=verbose, test=True)
+    # demo_ff_planning("lifelong_tiny_gripper", 4, render=render, verbose=verbose)
+    # demo_ff_planning("lifelong_tiny_gripper", 4, render=render, verbose=verbose, test=True)
     # demo_ff_planning("blocks", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, verbose=verbose)
     # demo_ff_planning("travel", 5, render=render, test=True, verbose=verbose)

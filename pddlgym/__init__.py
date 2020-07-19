@@ -35,6 +35,8 @@ for env_name, kwargs in [
                              'dynamic_action_space' : False}),
         ("tinyonearmedgripper", {'operators_as_actions' : True,
                                  'dynamic_action_space' : False}),
+        ("lifelong_tiny_gripper", {'operators_as_actions' : True,
+                                   'dynamic_action_space' : False}),
         ("rearrangement", {'render' : rearrangement_render}),
         ("sokoban", {'render' : sokoban_render}),
         ("minecraft", {'render' : minecraft_render}),
