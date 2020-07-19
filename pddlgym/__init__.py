@@ -45,6 +45,7 @@ for env_name, kwargs in [
         ("baking", {}),
         ("blocks", {'render' : blocks_render}),
         ("toomanyblocks", {'render' : blocks_render}),
+        ("lifelong_blocks6", {'render' : blocks_render}),
         ("travel", {}),
         ("doors", {'render' : doors_render}),
         ("casino", {}),
