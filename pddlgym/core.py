@@ -196,6 +196,7 @@ class PDDLEnv(gym.Env):
         if dynamic_action_space:
             self._action_space = LiteralSpace(
                 self.action_predicates, lit_valid_test=self._action_valid_test,
+                type_hierarchy=self.domain.type_hierarchy,
                 type_to_parent_types=self.domain.type_to_parent_types)
         else:
             self._action_space = LiteralSpace(self.action_predicates,
@@ -204,6 +205,7 @@ class PDDLEnv(gym.Env):
         # Initialize observation space with problem-independent components
         self._observation_space = LiteralSetSpace(
             set(self.domain.predicates.values()) - set(self.action_predicates),
+            type_hierarchy=self.domain.type_hierarchy,
             type_to_parent_types=self.domain.type_to_parent_types)
 
     @staticmethod

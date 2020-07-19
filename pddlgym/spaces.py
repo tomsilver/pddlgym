@@ -14,11 +14,13 @@ class LiteralSpace(Space):
 
     def __init__(self, predicates,
                  lit_valid_test=lambda state,lit: True,
+                 type_hierarchy=None,
                  type_to_parent_types=None):
         self.predicates = sorted(predicates)
         self.num_predicates = len(predicates)
         self._objects = None
         self._lit_valid_test = lit_valid_test
+        self.type_hierarchy = type_hierarchy
         self._type_to_parent_types = type_to_parent_types
         super().__init__()
 
