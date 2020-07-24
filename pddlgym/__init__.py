@@ -55,6 +55,8 @@ for env_name, kwargs in [
         ("elevator", {}),
         ("ferry", {}),
         ("meetpass", {}),
+        ("footwear", {'operators_as_actions' : True,
+                      'dynamic_action_space' : True}),
         ("easyblocks", {'render' : blocks_render}),
         ("conditionalblocks", {'render' : blocks_render}),
         ("conditionalferry", {}),
