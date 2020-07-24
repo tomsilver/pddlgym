@@ -3,7 +3,7 @@
 from . import tests
 
 import matplotlib
-matplotlib.use("Agg")
+# matplotlib.use("Agg")
 from pddlgym.rendering import *
 from gym.envs.registration import register
 
