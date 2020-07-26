@@ -8,6 +8,11 @@
 	b12 - block
 	b13 - block
 	b14 - block
+	b15 - block
+	b16 - block
+	b17 - block
+	b18 - block
+	b19 - block
 	b2 - block
 	b3 - block
 	b4 - block
@@ -19,39 +24,39 @@
   )
   (:init 
 	(clear b0)
-	(clear b11)
+	(clear b10)
 	(clear b12)
-	(clear b13)
-	(clear b1)
-	(clear b3)
-	(clear b4)
+	(clear b15)
+	(clear b17)
+	(clear b2)
 	(clear b5)
 	(clear b7)
-	(clear b8)
 	(handempty )
+	(on b0 b1)
+	(on b10 b11)
+	(on b12 b13)
 	(on b13 b14)
-	(on b1 b2)
+	(on b15 b16)
+	(on b17 b18)
+	(on b18 b19)
+	(on b2 b3)
+	(on b3 b4)
 	(on b5 b6)
+	(on b7 b8)
 	(on b8 b9)
-	(on b9 b10)
-	(ontable b0)
-	(ontable b10)
 	(ontable b11)
-	(ontable b12)
 	(ontable b14)
-	(ontable b2)
-	(ontable b3)
+	(ontable b16)
+	(ontable b19)
+	(ontable b1)
 	(ontable b4)
 	(ontable b6)
-	(ontable b7)
+	(ontable b9)
   )
   (:goal (and
-	(on b9 b5)
-	(on b5 b3)
-	(on b3 b4)
-	(ontable b4)
-	(on b0 b13)
-	(on b13 b12)
-	(on b12 b11)
-	(ontable b11)))
+	(on b16 b11)
+	(on b11 b0)
+	(on b0 b4)
+	(on b4 b9)
+	(ontable b9)))
 )
