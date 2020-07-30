@@ -3,9 +3,6 @@
   (:objects
         beach0 - place
 	beach1 - place
-	beach10 - place
-	beach11 - place
-	beach12 - place
 	beach2 - place
 	beach3 - place
 	beach4 - place
@@ -18,9 +15,6 @@
 	foot2 - foot
 	forest0 - place
 	forest1 - place
-	forest10 - place
-	forest11 - place
-	forest12 - place
 	forest2 - place
 	forest3 - place
 	forest4 - place
@@ -31,9 +25,6 @@
 	forest9 - place
 	gym0 - place
 	gym1 - place
-	gym10 - place
-	gym11 - place
-	gym12 - place
 	gym2 - place
 	gym3 - place
 	gym4 - place
@@ -45,9 +36,6 @@
 	home - place
 	office0 - place
 	office1 - place
-	office10 - place
-	office11 - place
-	office12 - place
 	office2 - place
 	office3 - place
 	office4 - place
@@ -82,7 +70,25 @@
 	shoe3 - shoe
 	shoe30 - shoe
 	shoe31 - shoe
+	shoe32 - shoe
+	shoe33 - shoe
+	shoe34 - shoe
+	shoe35 - shoe
+	shoe36 - shoe
+	shoe37 - shoe
+	shoe38 - shoe
+	shoe39 - shoe
 	shoe4 - shoe
+	shoe40 - shoe
+	shoe41 - shoe
+	shoe42 - shoe
+	shoe43 - shoe
+	shoe44 - shoe
+	shoe45 - shoe
+	shoe46 - shoe
+	shoe47 - shoe
+	shoe48 - shoe
+	shoe49 - shoe
 	shoe5 - shoe
 	shoe6 - shoe
 	shoe7 - shoe
@@ -112,27 +118,7 @@
 	sock28 - sock
 	sock29 - sock
 	sock3 - sock
-	sock30 - sock
-	sock31 - sock
-	sock32 - sock
-	sock33 - sock
-	sock34 - sock
-	sock35 - sock
-	sock36 - sock
-	sock37 - sock
-	sock38 - sock
-	sock39 - sock
 	sock4 - sock
-	sock40 - sock
-	sock41 - sock
-	sock42 - sock
-	sock43 - sock
-	sock44 - sock
-	sock45 - sock
-	sock46 - sock
-	sock47 - sock
-	sock48 - sock
-	sock49 - sock
 	sock5 - sock
 	sock6 - sock
 	sock7 - sock
@@ -142,9 +128,6 @@
   (:init 
 	(at home)
 	(beach beach0)
-	(beach beach10)
-	(beach beach11)
-	(beach beach12)
 	(beach beach1)
 	(beach beach2)
 	(beach beach3)
@@ -155,9 +138,6 @@
 	(beach beach8)
 	(beach beach9)
 	(forest forest0)
-	(forest forest10)
-	(forest forest11)
-	(forest forest12)
 	(forest forest1)
 	(forest forest2)
 	(forest forest3)
@@ -168,9 +148,6 @@
 	(forest forest8)
 	(forest forest9)
 	(gym gym0)
-	(gym gym10)
-	(gym gym11)
-	(gym gym12)
 	(gym gym1)
 	(gym gym2)
 	(gym gym3)
@@ -186,139 +163,114 @@
 	(isblue sock0)
 	(isblue sock10)
 	(isblue sock11)
-	(isblue sock12)
-	(isblue sock13)
+	(isblue sock16)
+	(isblue sock17)
+	(isblue sock18)
+	(isblue sock19)
 	(isblue sock1)
-	(isblue sock28)
-	(isblue sock29)
-	(isblue sock32)
-	(isblue sock33)
-	(isblue sock44)
-	(isblue sock45)
-	(isblue sock48)
-	(isblue sock49)
+	(isblue sock20)
+	(isblue sock21)
+	(isblue sock26)
+	(isblue sock27)
+	(isblue sock2)
+	(isblue sock3)
 	(isblue sock4)
 	(isblue sock5)
 	(isblue sock6)
 	(isblue sock7)
-	(isblue sock8)
-	(isblue sock9)
-	(isboot shoe0)
-	(isboot shoe10)
-	(isboot shoe11)
-	(isboot shoe18)
-	(isboot shoe19)
-	(isboot shoe1)
+	(isboot shoe12)
+	(isboot shoe13)
+	(isboot shoe14)
+	(isboot shoe15)
 	(isboot shoe20)
 	(isboot shoe21)
-	(isboot shoe26)
-	(isboot shoe27)
+	(isboot shoe28)
+	(isboot shoe29)
 	(isboot shoe2)
 	(isboot shoe30)
 	(isboot shoe31)
+	(isboot shoe34)
+	(isboot shoe35)
 	(isboot shoe3)
-	(isdressshoe shoe6)
-	(isdressshoe shoe7)
+	(isboot shoe46)
+	(isboot shoe47)
+	(isboot shoe4)
+	(isboot shoe5)
+	(isboot shoe6)
+	(isboot shoe7)
+	(isdressshoe shoe26)
+	(isdressshoe shoe27)
+	(isdressshoe shoe32)
+	(isdressshoe shoe33)
+	(isdressshoe shoe44)
+	(isdressshoe shoe45)
+	(isdressshoe shoe8)
+	(isdressshoe shoe9)
 	(isplain sock0)
+	(isplain sock14)
+	(isplain sock15)
 	(isplain sock16)
 	(isplain sock17)
-	(isplain sock18)
-	(isplain sock19)
 	(isplain sock1)
-	(isplain sock24)
-	(isplain sock25)
-	(isplain sock26)
-	(isplain sock27)
-	(isplain sock2)
-	(isplain sock3)
-	(isplain sock42)
-	(isplain sock43)
-	(isplain sock44)
-	(isplain sock45)
+	(isplain sock22)
+	(isplain sock23)
 	(isplain sock6)
 	(isplain sock7)
 	(isplain sock8)
 	(isplain sock9)
+	(isred sock12)
+	(isred sock13)
 	(isred sock14)
 	(isred sock15)
-	(isred sock16)
-	(isred sock17)
-	(isred sock18)
-	(isred sock19)
-	(isred sock20)
-	(isred sock21)
 	(isred sock22)
 	(isred sock23)
 	(isred sock24)
 	(isred sock25)
-	(isred sock26)
-	(isred sock27)
-	(isred sock2)
-	(isred sock30)
-	(isred sock31)
-	(isred sock34)
-	(isred sock35)
-	(isred sock36)
-	(isred sock37)
-	(isred sock38)
-	(isred sock39)
-	(isred sock3)
-	(isred sock40)
-	(isred sock41)
-	(isred sock42)
-	(isred sock43)
-	(isred sock46)
-	(isred sock47)
-	(issandle shoe12)
-	(issandle shoe13)
-	(issandle shoe24)
-	(issandle shoe25)
-	(issandle shoe8)
-	(issandle shoe9)
-	(issneaker shoe14)
-	(issneaker shoe15)
-	(issneaker shoe16)
-	(issneaker shoe17)
+	(isred sock28)
+	(isred sock29)
+	(isred sock8)
+	(isred sock9)
+	(issandle shoe0)
+	(issandle shoe10)
+	(issandle shoe11)
+	(issandle shoe16)
+	(issandle shoe17)
+	(issandle shoe1)
+	(issandle shoe36)
+	(issandle shoe37)
+	(issandle shoe38)
+	(issandle shoe39)
+	(issandle shoe40)
+	(issandle shoe41)
+	(issandle shoe42)
+	(issandle shoe43)
+	(issandle shoe48)
+	(issandle shoe49)
+	(issneaker shoe18)
+	(issneaker shoe19)
 	(issneaker shoe22)
 	(issneaker shoe23)
-	(issneaker shoe28)
-	(issneaker shoe29)
-	(issneaker shoe4)
-	(issneaker shoe5)
+	(issneaker shoe24)
+	(issneaker shoe25)
 	(isstriped sock10)
 	(isstriped sock11)
 	(isstriped sock12)
 	(isstriped sock13)
-	(isstriped sock14)
-	(isstriped sock15)
+	(isstriped sock18)
+	(isstriped sock19)
 	(isstriped sock20)
 	(isstriped sock21)
-	(isstriped sock22)
-	(isstriped sock23)
+	(isstriped sock24)
+	(isstriped sock25)
+	(isstriped sock26)
+	(isstriped sock27)
 	(isstriped sock28)
 	(isstriped sock29)
-	(isstriped sock30)
-	(isstriped sock31)
-	(isstriped sock32)
-	(isstriped sock33)
-	(isstriped sock34)
-	(isstriped sock35)
-	(isstriped sock36)
-	(isstriped sock37)
-	(isstriped sock38)
-	(isstriped sock39)
-	(isstriped sock40)
-	(isstriped sock41)
-	(isstriped sock46)
-	(isstriped sock47)
-	(isstriped sock48)
-	(isstriped sock49)
+	(isstriped sock2)
+	(isstriped sock3)
 	(isstriped sock4)
 	(isstriped sock5)
 	(office office0)
-	(office office10)
-	(office office11)
-	(office office12)
 	(office office1)
 	(office office2)
 	(office office3)
@@ -353,7 +305,25 @@
 	(shoefree shoe2)
 	(shoefree shoe30)
 	(shoefree shoe31)
+	(shoefree shoe32)
+	(shoefree shoe33)
+	(shoefree shoe34)
+	(shoefree shoe35)
+	(shoefree shoe36)
+	(shoefree shoe37)
+	(shoefree shoe38)
+	(shoefree shoe39)
 	(shoefree shoe3)
+	(shoefree shoe40)
+	(shoefree shoe41)
+	(shoefree shoe42)
+	(shoefree shoe43)
+	(shoefree shoe44)
+	(shoefree shoe45)
+	(shoefree shoe46)
+	(shoefree shoe47)
+	(shoefree shoe48)
+	(shoefree shoe49)
 	(shoefree shoe4)
 	(shoefree shoe5)
 	(shoefree shoe6)
@@ -383,27 +353,7 @@
 	(sockfree sock28)
 	(sockfree sock29)
 	(sockfree sock2)
-	(sockfree sock30)
-	(sockfree sock31)
-	(sockfree sock32)
-	(sockfree sock33)
-	(sockfree sock34)
-	(sockfree sock35)
-	(sockfree sock36)
-	(sockfree sock37)
-	(sockfree sock38)
-	(sockfree sock39)
 	(sockfree sock3)
-	(sockfree sock40)
-	(sockfree sock41)
-	(sockfree sock42)
-	(sockfree sock43)
-	(sockfree sock44)
-	(sockfree sock45)
-	(sockfree sock46)
-	(sockfree sock47)
-	(sockfree sock48)
-	(sockfree sock49)
 	(sockfree sock4)
 	(sockfree sock5)
 	(sockfree sock6)
@@ -433,27 +383,7 @@
 	(socksmatch sock28 sock29)
 	(socksmatch sock29 sock28)
 	(socksmatch sock2 sock3)
-	(socksmatch sock30 sock31)
-	(socksmatch sock31 sock30)
-	(socksmatch sock32 sock33)
-	(socksmatch sock33 sock32)
-	(socksmatch sock34 sock35)
-	(socksmatch sock35 sock34)
-	(socksmatch sock36 sock37)
-	(socksmatch sock37 sock36)
-	(socksmatch sock38 sock39)
-	(socksmatch sock39 sock38)
 	(socksmatch sock3 sock2)
-	(socksmatch sock40 sock41)
-	(socksmatch sock41 sock40)
-	(socksmatch sock42 sock43)
-	(socksmatch sock43 sock42)
-	(socksmatch sock44 sock45)
-	(socksmatch sock45 sock44)
-	(socksmatch sock46 sock47)
-	(socksmatch sock47 sock46)
-	(socksmatch sock48 sock49)
-	(socksmatch sock49 sock48)
 	(socksmatch sock4 sock5)
 	(socksmatch sock5 sock4)
 	(socksmatch sock6 sock7)
@@ -462,18 +392,5 @@
 	(socksmatch sock9 sock8)
   )
   (:goal (and
-	(hikedat forest4)
-	(swamat beach7)
-	(presentationdoneat office1)
-	(presentationdoneat office5)
-	(presentationdoneat office6)
-	(presentationdoneat office9)
-	(presentationdoneat office0)
-	(workedoutat gym3)
-	(swamat beach3)
-	(presentationdoneat office11)
-	(workedoutat gym7)
-	(presentationdoneat office8)
-	(workedoutat gym9)
-	(workedoutat gym6)))
+	(presentationdoneat office7)))
 )
