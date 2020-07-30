@@ -75,6 +75,8 @@ for env_name, kwargs in [
                            'dynamic_action_space' : True}),
         ("manymiconic", {'operators_as_actions' : True,
                          'dynamic_action_space' : True}),
+        ("manygripper", {'operators_as_actions' : True,
+                         'dynamic_action_space' : True}),
         ("glibblocks", {'render' : blocks_render}),
         ("glibrearrangement", {'render' : rearrangement_render}),
         ("glibdoors", {'render' : doors_render}),
