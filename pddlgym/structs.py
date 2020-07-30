@@ -204,7 +204,7 @@ class Literal:
     def __gt__(self, other):
         return repr(self) > repr(other)
 
-    def holds(self, state):
+    def holds(self, state_literals):
         raise NotImplementedError("Goals can only be LiteralConjunctions")
 
     @property
@@ -265,12 +265,13 @@ class LiteralConjunction:
         return "(and\n\t{})".format("\n\t".join(
             lit.pddl_str() for lit in self.literals))
 
-    def holds(self, state):
+    def holds(self, state_literals):
+        assert isinstance(state_literals, (set, frozenset))
         for lit in self.literals:
             assert not lit.is_anti
-            if lit in state and lit.is_negative:
+            if lit in state_literals and lit.is_negative:
                 return False
-            if lit not in state and not lit.is_negative:
+            if lit not in state_literals and not lit.is_negative:
                 return False
         return True
 
@@ -307,7 +308,7 @@ class LiteralDisjunction:
         return "(or\n\t{})".format("\n\t".join(
             lit.pddl_str() for lit in self.literals))
 
-    def holds(self, state):
+    def holds(self, state_literals):
         raise NotImplementedError("Goals can only be LiteralConjunctions")
 
     def __str__(self):
