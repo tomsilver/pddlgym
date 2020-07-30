@@ -22,6 +22,7 @@
         (wearingshoe ?shoe - shoe)
         (sockon ?sock - sock ?foot - foot)
         (shoeon ?shoe - shoe ?foot - foot)
+        (shoeseq ?shoe1 - shoe ?shoe2 - shoe)
 
         (home ?place - place)
         (office ?place - place)
@@ -129,6 +130,7 @@
             (isdressshoe ?sh2)
             (wearingshoe ?sh1)
             (wearingshoe ?sh2)
+            (not (shoeseq ?sh1 ?sh2))
         )
         :effect (and
             (not (at ?from))
@@ -146,6 +148,7 @@
             (issneaker ?sh2)
             (wearingshoe ?sh1)
             (wearingshoe ?sh2)
+            (not (shoeseq ?sh1 ?sh2))
         )
         :effect (and
             (not (at ?from))
@@ -163,6 +166,7 @@
             (isboot ?sh2)
             (wearingshoe ?sh1)
             (wearingshoe ?sh2)
+            (not (shoeseq ?sh1 ?sh2))
         )
         :effect (and
             (not (at ?from))
@@ -180,6 +184,7 @@
             (issandle ?sh2)
             (wearingshoe ?sh1)
             (wearingshoe ?sh2)
+            (not (shoeseq ?sh1 ?sh2))
         )
         :effect (and
             (not (at ?from))
