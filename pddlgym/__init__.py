@@ -69,6 +69,8 @@ for env_name, kwargs in [
         ("manyblockssmallpiles", {'render' : blocks_render, 
                                   'operators_as_actions' : True,
                                   'dynamic_action_space' : True}),
+        ("manygrid", {'operators_as_actions' : True,
+                      'dynamic_action_space' : True}),
         ("glibblocks", {'render' : blocks_render}),
         ("glibrearrangement", {'render' : rearrangement_render}),
         ("glibdoors", {'render' : doors_render}),
