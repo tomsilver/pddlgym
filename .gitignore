@@ -5,7 +5,5 @@ __pycache__
 *.pkl
 *~
 *.python-version
-#*
-_procedural_generation
 build
 dist
