@@ -46,7 +46,7 @@ def create_goal(domain, objects, pile_heights):
 
     return LiteralConjunction(goal_lits)
 
-def sample_problem(domain, problem_outfile):
+def sample_problem(domain, problem_dir, problem_outfile):
     
 
     blocks, block_state = sample_blocks(domain,
@@ -59,7 +59,7 @@ def sample_problem(domain, problem_outfile):
     objects = blocks
     initial_state = block_state
 
-    filepath = os.path.join(PDDLDIR, "manyblocksnopiles", problem_outfile)
+    filepath = os.path.join(PDDLDIR, problem_dir, problem_outfile)
 
     PDDLProblemParser.create_pddl_file(
         filepath,
@@ -78,8 +78,13 @@ def generate_problems():
         operators_as_actions=True)
 
     for problem_idx in range(50):
+        if problem_idx < 40:
+            problem_dir = "manyblocksnopiles"
+        else:
+            problem_dir = "manyblocksnopiles_test"
         problem_outfile = "problem{}.pddl".format(problem_idx)
-        sample_problem(domain, problem_outfile)
+        sample_problem(domain, problem_dir, problem_outfile)
+
 
 if __name__ == "__main__":
     generate_problems()
