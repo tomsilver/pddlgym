@@ -57,16 +57,18 @@ def create_goal(domain, objects, pile_heights):
 
     return LiteralConjunction(goal_lits)
 
-def sample_problem(domain, problem_dir, problem_outfile):
+def sample_problem(domain, problem_dir, problem_outfile, 
+                   min_num_piles=30, max_num_piles=50,
+                   min_num_piles_goal=1, max_num_piles_goal=2):
     
     blocks, block_state = sample_blocks(domain, 
         pile_heights=np.random.randint(1, 3, 
-            size=np.random.randint(30, 51)),
+            size=np.random.randint(min_num_piles, max_num_piles+1)),
     )
 
     goal = create_goal(domain, blocks, 
         pile_heights=np.random.randint(2, 4, 
-            size=np.random.randint(1, 3)))
+            size=np.random.randint(min_num_piles_goal, max_num_piles_goal+1)))
 
     objects = blocks
     initial_state = block_state
@@ -95,7 +97,15 @@ def generate_problems():
         else:
             problem_dir = "manyblockssmallpiles_test"
         problem_outfile = "problem{}.pddl".format(problem_idx)
-        sample_problem(domain, problem_dir, problem_outfile)
+
+        if problem_idx < 40:
+            sample_problem(domain, problem_dir, problem_outfile, 
+                   min_num_piles=10, max_num_piles=20,
+                   min_num_piles_goal=1, max_num_piles_goal=2)
+        else:
+            sample_problem(domain, problem_dir, problem_outfile, 
+                   min_num_piles=80, max_num_piles=100,
+                   min_num_piles_goal=5, max_num_piles_goal=10)
 
 if __name__ == "__main__":
     generate_problems()
