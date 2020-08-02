@@ -1,7 +1,7 @@
 #!/bin/bash
 for i in {0..39}
 do
-   ./miconic -f 250 -p 80 > ../../pddl/manymiconic/problem$i.pddl
+   ./miconic -f 20 -p 5 > ../../pddl/manymiconic/problem$i.pddl
 done
 
 for i in {40..49}
