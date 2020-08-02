@@ -62,13 +62,17 @@ def create_goal(domain, balls, rooms, num_balls):
 
     return LiteralConjunction(goal_lits)
 
-def sample_problem(domain, problem_dir, problem_outfile):
+def sample_problem(domain, problem_dir, problem_outfile, 
+                   min_num_balls=201, max_num_balls=300,
+                   min_num_rooms=101, max_num_rooms=200,
+                   min_num_balls_goal=5, max_num_balls_goal=20):
     
     all_objects, balls, rooms, initial_state = sample_state(domain, 
-        num_balls=np.random.randint(201, 301),
-        num_rooms=np.random.randint(101, 201),
+        num_balls=np.random.randint(min_num_balls, max_num_balls+1),
+        num_rooms=np.random.randint(min_num_rooms, max_num_rooms+1),
     )
-    goal = create_goal(domain, balls, rooms, num_balls=np.random.randint(5, 21))
+    goal = create_goal(domain, balls, rooms, 
+        num_balls=np.random.randint(min_num_balls_goal, max_num_balls_goal+1))
 
     filepath = os.path.join(PDDLDIR, problem_dir, problem_outfile)
 
@@ -88,13 +92,26 @@ def generate_problems():
         expect_action_preds=False,
         operators_as_actions=True)
 
-    for problem_idx in range(50):
+    for problem_idx in range(40): #50):
+
         if problem_idx < 40:
             problem_dir = "manygripper"
         else:
             problem_dir = "manygripper_test"
         problem_outfile = "problem{}.pddl".format(problem_idx)
-        sample_problem(domain, problem_dir, problem_outfile)
+
+        if problem_idx < 40:
+            sample_problem(domain, problem_dir, problem_outfile, 
+               min_num_balls=20, max_num_balls=30,
+               min_num_rooms=10, max_num_rooms=20,
+               min_num_balls_goal=2, max_num_balls_goal=5,
+            )
+        else:
+            sample_problem(domain, problem_dir, problem_outfile, 
+               min_num_balls=201, max_num_balls=300,
+               min_num_rooms=101, max_num_rooms=200,
+               min_num_balls_goal=5, max_num_balls_goal=20,
+            )
 
 if __name__ == "__main__":
     generate_problems()
