@@ -47,7 +47,7 @@
             (handempty)
             (not (handfull))
             (ontable ?x)
-            (probabilistic 0.1 (and (table-destroyed)))
+            (probabilistic 0.03 (and (table-destroyed)))
         )
     )
 
@@ -67,7 +67,7 @@
             (handempty)
             (not (handfull))
             (on ?x ?y)
-            (probabilistic 0.1 (and (destroyed ?y)))
+            (probabilistic 0.03 (and (destroyed ?y)))
         )
     )
 
