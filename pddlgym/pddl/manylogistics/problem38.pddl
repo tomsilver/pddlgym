@@ -1,9 +1,9 @@
 
 
 
-(define (problem logistics-c2-s1-p2-a4)
+(define (problem logistics-c2-s1-p2-a5)
 (:domain logistics-strips)
-(:objects a0 a1 a2 a3 
+(:objects a0 a1 a2 a3 a4 
           c0 c1 
           t0 t1 
           l00 l10 
@@ -14,6 +14,7 @@
 (AIRPLANE a1)
 (AIRPLANE a2)
 (AIRPLANE a3)
+(AIRPLANE a4)
 (CITY c0)
 (CITY c1)
 (TRUCK t0)
@@ -28,16 +29,17 @@
 (OBJ p1)
 (at t0 l00)
 (at t1 l10)
-(at p0 l10)
+(at p0 l00)
 (at p1 l00)
 (at a0 l00)
-(at a1 l10)
+(at a1 l00)
 (at a2 l00)
 (at a3 l10)
+(at a4 l10)
 )
 (:goal
 (and
-(at p0 l00)
+(at p0 l10)
 (at p1 l10)
 )
 )
