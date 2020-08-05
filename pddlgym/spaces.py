@@ -79,6 +79,85 @@ class LiteralSpace(Space):
         return all_ground_literals
 
 
+class StripsDynamicLiteralActionSpace(LiteralSpace):
+    """Literal space with more efficient valid action generation
+    when operators are STRIPS
+    """
+    def __init__(self, operators, predicates,
+                 type_hierarchy=None,
+                 type_to_parent_types=None):
+
+        # Validate and organize operators
+        action_predicate_to_operators = {}
+        for operator_name, operator in operators.items():
+            assert len([p for p in predicates if p.name == operator_name]) == 1
+            action_predicate = [p for p in predicates if p.name == operator_name][0]
+            action_predicate_to_operators[action_predicate] = operator
+            assert isinstance(operator.preconds, LiteralConjunction)
+            assert all([isinstance(l, Literal) for l in operator.preconds.literals])
+
+        self._operators = operators # used for successor generation
+        self._action_predicate_to_operators = action_predicate_to_operators
+        super().__init__(predicates, 
+            type_hierarchy=type_hierarchy,
+            type_to_parent_types=type_to_parent_types)
+
+    def _update_objects_from_state(self, state):
+        """
+        """
+        # Check whether the objects have changed
+        # If so, we need to recompute things
+        if state.objects == self._objects:
+            return
+        
+        # Parent class update
+        super()._update_objects_from_state(state)
+
+        # Recompute all ground operators
+        self._update_ground_operators(state)
+
+    def _update_ground_operators(self, state):
+        """
+        """
+        # Associate each ground action literal with ground preconditions
+        self._ground_action_to_pos_preconds = {}
+        self._ground_action_to_neg_preconds = {}
+        for ground_action in self._all_ground_literals:
+            operator = self._action_predicate_to_operators[ground_action.predicate]
+            lifted_preconds = operator.preconds.literals
+            subs = dict(zip(operator.params, ground_action.variables))
+            preconds = [ground_literal(lit, subs) for lit in lifted_preconds]
+            pos_preconds, neg_preconds = set(), set()
+            for p in preconds:
+                if p.is_negative:
+                    neg_preconds.add(p.positive)
+                else:
+                    pos_preconds.add(p)
+            self._ground_action_to_pos_preconds[ground_action] = pos_preconds
+            self._ground_action_to_neg_preconds[ground_action] = neg_preconds
+
+    def sample_literal(self, state):
+        """
+        """
+        valid_literals = self.all_ground_literals(state)
+        return valid_literals[self.np_random.choice(len(valid_literals))]
+
+    def all_ground_literals(self, state, valid_only=True):
+        self._update_objects_from_state(state)
+        if not valid_only:
+            return set(self._all_ground_literals)
+        valid_literals = set()
+        for ground_action in self._all_ground_literals:
+            pos_preconds = self._ground_action_to_pos_preconds[ground_action]
+            if not pos_preconds.issubset(state.literals):
+                continue
+            neg_preconds = self._ground_action_to_neg_preconds[ground_action]
+            if len(neg_preconds & state.literals) > 0:
+                continue
+            valid_literals.add(ground_action)
+        return valid_literals
+
+
 class TreeBasedDynamicLiteralActionSpace(LiteralSpace):
     """A literal space where the literals are actions
     and valid actions are computed using tree-based

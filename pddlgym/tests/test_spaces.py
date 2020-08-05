@@ -120,6 +120,62 @@ def test_dynamic_literal_action_space(verbose=False):
     print("Test passed.")
 
 
+def test_dynamic_strips_action_space(verbose=False):
+    """
+    """
+    dir_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "pddl")
+
+    for name in [
+        "Blocks_operator_actions", 
+        "Hanoi_operator_actions",
+        # "Gripper", 
+        ]:
+        domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
+        problem_dir = os.path.join(dir_path, name.lower())
+
+        env1 = PDDLEnv(domain_file, problem_dir,
+            operators_as_actions=True,
+            dynamic_action_space=True,
+            strips_successor_generation=False,
+        )
+
+        env2 = PDDLEnv(domain_file, problem_dir,
+            operators_as_actions=True,
+            dynamic_action_space=True,
+            strips_successor_generation=True,
+        )
+
+        env1.action_space.seed(0)
+        env2.action_space.seed(0)
+        state1, _ = env1.reset()
+        state2, _ = env2.reset()
+        assert state1 == state2
+
+        for _ in range(25):
+            start_time = time.time()
+            valid_actions1 = env1.action_space.all_ground_literals(state1)
+            if verbose:
+                print("Computing valid action spaces without strips took {} seconds".format(
+                    time.time() - start_time))
+            start_time = time.time()
+            valid_actions2 = env2.action_space.all_ground_literals(state2)
+            if verbose:
+                print("Computing valid action spaces *with* strips took {} seconds".format(
+                    time.time() - start_time))
+                # import sys; sys.exit(0)
+            assert valid_actions1 == valid_actions2
+            action = env1.action_space.sample(state1)
+            state1, _, _, _ = env1.step(action)
+            state2, _, _, _ = env2.step(action)
+
+        if verbose:
+            print("Test passed for environment {}.".format(name))
+
+    print("Test passed.")
+
+
 if __name__ == "__main__":
     # test_hierarchical_spaces()
-    test_dynamic_literal_action_space(verbose=False)
+    # test_dynamic_literal_action_space(verbose=False)
+    test_dynamic_strips_action_space(verbose=False)
