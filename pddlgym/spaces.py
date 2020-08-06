@@ -45,7 +45,7 @@ class LiteralSpace(Space):
                     self._type_to_objs[t].append(obj)
 
         self._objects = state.objects
-        self._all_ground_literals = sorted(self._compute_all_ground_literals())
+        self._all_ground_literals = sorted(self._compute_all_ground_literals(state))
 
     def sample_literal(self, state):
         while True:
@@ -67,7 +67,7 @@ class LiteralSpace(Space):
         return set(l for l in self._all_ground_literals \
                    if self._lit_valid_test(state, l))
 
-    def _compute_all_ground_literals(self):
+    def _compute_all_ground_literals(self, state):
         all_ground_literals = set()
         for predicate in self.predicates:
             choices = [self._type_to_objs[vt] for vt in predicate.var_types]
@@ -137,15 +137,16 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
             self._ground_action_to_neg_preconds[ground_action] = neg_preconds
 
     def sample_literal(self, state):
-        """
-        """
         valid_literals = self.all_ground_literals(state)
+        valid_literals = list(sorted(valid_literals))
         return valid_literals[self.np_random.choice(len(valid_literals))]
+
+    def sample(self, state):
+        return self.sample_literal(state)
 
     def all_ground_literals(self, state, valid_only=True):
         self._update_objects_from_state(state)
-        if not valid_only:
-            return set(self._all_ground_literals)
+        assert valid_only, "The point of this class is to avoid the cross product!"
         valid_literals = set()
         for ground_action in self._all_ground_literals:
             pos_preconds = self._ground_action_to_pos_preconds[ground_action]
@@ -156,6 +157,67 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
                 continue
             valid_literals.add(ground_action)
         return valid_literals
+
+    def _compute_all_ground_literals(self, state):
+        """Implement Algorithm 1 from
+        https://ai.dmi.unibas.ch/research/reading_group/gnad-et-al-aaai2019.pdf
+        which computes all ground literals for the fixed-point
+        delete-relaxed-reachable state.
+        """
+        queue = list(sorted(state.literals))
+        facts = set()
+        ground_actions = set()
+        while queue:
+            fact_or_op = queue.pop(0)
+            if fact_or_op.predicate in self.predicates:  # a ground action
+                if fact_or_op in ground_actions:
+                    continue  # we've already processed this element
+                ground_actions.add(fact_or_op)
+                op = self._action_predicate_to_operators[fact_or_op.predicate]
+                for eff in op.effects.literals:
+                    if eff.is_anti:  # ignore negative effects
+                        continue
+                    subs = dict(zip(op.params, fact_or_op.variables))
+                    ground_eff = ground_literal(eff, subs)
+                    if ground_eff in facts:
+                        continue
+                    queue.append(ground_eff)
+            else:  # a state literal
+                if fact_or_op in facts:
+                    continue  # we've already processed this element
+                facts.add(fact_or_op)
+                for predicate in self.predicates:
+                    op = self._action_predicate_to_operators[predicate]
+                    # Filter out objects that don't satisfy the unary preconds.
+                    unary_preconds = [lit for lit in op.preconds.literals
+                                      if lit.predicate.arity == 1]
+                    params_to_possible_objects = {
+                        param: set(self._type_to_objs[param.var_type])
+                        for param in op.params}
+                    for precond in unary_preconds:
+                        if precond.is_negative:  # ignore negative preconditions
+                            continue
+                        assert len(precond.variables) == 1
+                        param = precond.variables[0]
+                        for possible_obj in self._type_to_objs[param.var_type]:
+                            if precond.predicate(possible_obj) not in facts:
+                                params_to_possible_objects[param].discard(possible_obj)
+                    # Now take the cross product and check remaining preconds.
+                    choices = [sorted(params_to_possible_objects[param])
+                               for param in op.params]
+                    for choice in itertools.product(*choices):
+                        if len(set(choice)) != len(choice):
+                            continue
+                        possible_action = predicate(*choice)
+                        if possible_action in ground_actions:
+                            continue
+                        subs = dict(zip(op.params, possible_action.variables))
+                        preconds = [ground_literal(lit, subs)
+                                    for lit in op.preconds.literals]
+                        pos_preconds = {p for p in preconds if not p.is_negative}
+                        if pos_preconds.issubset(facts):
+                            queue.append(possible_action)
+        return ground_actions
 
 
 class TreeBasedDynamicLiteralActionSpace(LiteralSpace):

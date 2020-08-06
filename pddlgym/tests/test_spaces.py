@@ -127,12 +127,14 @@ def test_dynamic_strips_action_space(verbose=False):
         os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "pddl")
 
     for name in [
-        "Blocks_operator_actions", 
-        "Hanoi_operator_actions",
-        # "Gripper", 
+            # "Manymiconic",
+            # "Manygripper",
+            "Blocks_operator_actions",
+            "Hanoi_operator_actions",
         ]:
         domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
         problem_dir = os.path.join(dir_path, name.lower())
+        # problem_dir = os.path.join(dir_path, name.lower()+"_test")
 
         env1 = PDDLEnv(domain_file, problem_dir,
             operators_as_actions=True,
@@ -163,7 +165,6 @@ def test_dynamic_strips_action_space(verbose=False):
             if verbose:
                 print("Computing valid action spaces *with* strips took {} seconds".format(
                     time.time() - start_time))
-                # import sys; sys.exit(0)
             assert valid_actions1 == valid_actions2
             action = env1.action_space.sample(state1)
             state1, _, _, _ = env1.step(action)
