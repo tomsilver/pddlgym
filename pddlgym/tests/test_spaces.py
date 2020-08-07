@@ -65,62 +65,8 @@ def test_hierarchical_spaces():
 
     print("Test passed.")
 
-def test_dynamic_literal_action_space(verbose=False):
-    """
-    """
-    dir_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "pddl")
 
-    for name in [
-        "Blocks_operator_actions", 
-        "Hanoi_operator_actions",
-        # "Gripper", 
-        ]:
-        domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
-        problem_dir = os.path.join(dir_path, name.lower())
-
-        env1 = PDDLEnv(domain_file, problem_dir,
-            operators_as_actions=True,
-            dynamic_action_space=True,
-            tree_based_successor_generation=False,
-        )
-
-        env2 = PDDLEnv(domain_file, problem_dir,
-            operators_as_actions=True,
-            dynamic_action_space=True,
-            tree_based_successor_generation=True,
-        )
-
-        env1.action_space.seed(0)
-        env2.action_space.seed(0)
-        state1, _ = env1.reset()
-        state2, _ = env2.reset()
-        assert state1 == state2
-
-        for _ in range(25):
-            start_time = time.time()
-            valid_actions1 = env1.action_space.all_ground_literals(state1)
-            if verbose:
-                print("Computing valid action spaces without trees took {} seconds".format(
-                    time.time() - start_time))
-            start_time = time.time()
-            valid_actions2 = env2.action_space.all_ground_literals(state2, verbose=verbose)
-            if verbose:
-                print("Computing valid action spaces *with* trees took {} seconds".format(
-                    time.time() - start_time))
-                # import sys; sys.exit(0)
-            assert valid_actions1 == valid_actions2
-            action = env1.action_space.sample(state1)
-            state1, _, _, _ = env1.step(action)
-            state2, _, _, _ = env2.step(action)
-
-        if verbose:
-            print("Test passed for environment {}.".format(name))
-
-    print("Test passed.")
-
-
-def test_dynamic_strips_action_space(verbose=False):
+def test_dynamic_action_space(verbose=False):
     """
     """
     dir_path = os.path.join(
@@ -138,14 +84,12 @@ def test_dynamic_strips_action_space(verbose=False):
 
         env1 = PDDLEnv(domain_file, problem_dir,
             operators_as_actions=True,
-            dynamic_action_space=True,
-            strips_successor_generation=False,
+            dynamic_action_space=False,
         )
 
         env2 = PDDLEnv(domain_file, problem_dir,
             operators_as_actions=True,
             dynamic_action_space=True,
-            strips_successor_generation=True,
         )
 
         env1.action_space.seed(0)
@@ -158,15 +102,15 @@ def test_dynamic_strips_action_space(verbose=False):
             start_time = time.time()
             valid_actions1 = env1.action_space.all_ground_literals(state1)
             if verbose:
-                print("Computing valid action spaces without strips took {} seconds".format(
+                print("Computing valid action spaces without instantiator took {} seconds".format(
                     time.time() - start_time))
             start_time = time.time()
             valid_actions2 = env2.action_space.all_ground_literals(state2)
             if verbose:
-                print("Computing valid action spaces *with* strips took {} seconds".format(
+                print("Computing valid action spaces *with* instantiator took {} seconds".format(
                     time.time() - start_time))
-            assert valid_actions1 == valid_actions2
-            action = env1.action_space.sample(state1)
+            assert valid_actions2.issubset(valid_actions1)
+            action = env2.action_space.sample(state2)
             state1, _, _, _ = env1.step(action)
             state2, _, _, _ = env2.step(action)
 
@@ -176,58 +120,7 @@ def test_dynamic_strips_action_space(verbose=False):
     print("Test passed.")
 
 
-def test_dynamic_strips_action_space_incremental(verbose=False):
-    dir_path = os.path.join(
-        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "pddl")
-
-    for name in [
-            "Blocks_operator_actions",
-            "Hanoi_operator_actions",
-            # "Gripper",
-        ]:
-        domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
-        problem_dir = os.path.join(dir_path, name.lower())
-        # problem_dir = os.path.join(dir_path, name.lower()+"_test")
-
-        env = PDDLEnv(domain_file, problem_dir,
-            operators_as_actions=True,
-            dynamic_action_space=True,
-            strips_successor_generation=True,
-        )
-
-        env.action_space.seed(0)
-        state, _ = env.reset()
-        all_poss = set(env.action_space.incremental_reachable_actions(state))
-
-        # Test continuing
-        i = 0
-        while True:
-            multiplier = 3
-            reachable_actions = env.action_space.incremental_reachable_actions(
-                state, max_num=i*multiplier, do_continue=(i>0))
-            assert set(reachable_actions).issubset(all_poss)
-            if len(reachable_actions) != i*multiplier:
-                assert len(reachable_actions) == len(all_poss)
-                break
-            i += 1
-
-        # Test NOT continuing
-        i = 0
-        while True:
-            multiplier = 10
-            reachable_actions = env.action_space.incremental_reachable_actions(
-                state, max_num=i*multiplier, do_continue=False)
-            assert set(reachable_actions).issubset(all_poss)
-            if len(reachable_actions) != i*multiplier:
-                assert len(reachable_actions) == len(all_poss)
-                break
-            i += 1
-
-    print("Test passed.")
-
-
 if __name__ == "__main__":
     # test_hierarchical_spaces()
     # test_dynamic_literal_action_space(verbose=False)
-    test_dynamic_strips_action_space(verbose=False)
-    test_dynamic_strips_action_space_incremental(verbose=False)
+    test_dynamic_action_space(verbose=False)
