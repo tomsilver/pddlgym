@@ -18,8 +18,7 @@ Usage example:
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
-from pddlgym.spaces import LiteralSpace, LiteralSetSpace, StripsDynamicLiteralActionSpace, \
-    TreeBasedDynamicLiteralActionSpace
+from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
 import pyperplan
@@ -165,8 +164,6 @@ class PDDLEnv(gym.Env):
                  raise_error_on_invalid_action=False,
                  operators_as_actions=False,
                  dynamic_action_space=False,
-                 tree_based_successor_generation=False,
-                 strips_successor_generation=False,
                  shape_reward_mode=None,
                  shaping_discount=1.):
         self._state = None
@@ -197,25 +194,11 @@ class PDDLEnv(gym.Env):
         actions = list(self.domain.actions)
         self.action_predicates = [self.domain.predicates[a] for a in actions]
         if dynamic_action_space:
-            if strips_successor_generation:
-                assert not tree_based_successor_generation
-                assert operators_as_actions, "STRIPS successor generation" + \
-                    "only supported for operators_as_actions environments"
-                self._action_space = StripsDynamicLiteralActionSpace(
-                    self.domain.operators,
-                    self.action_predicates,
+            if self.domain.operators_as_actions:
+                self._action_space = LiteralActionSpace(
+                    self.domain, self.action_predicates,
                     type_hierarchy=self.domain.type_hierarchy,
                     type_to_parent_types=self.domain.type_to_parent_types)
-
-            elif tree_based_successor_generation:
-                assert operators_as_actions, "Dynamic literal action space not yet" + \
-                    "implemented/tested for non-operators-as-actions environments"
-                self._action_space = TreeBasedDynamicLiteralActionSpace(
-                    self.domain.operators,
-                    self.action_predicates,
-                    type_hierarchy=self.domain.type_hierarchy,
-                    type_to_parent_types=self.domain.type_to_parent_types)
-
             else:
                 self._action_space = LiteralSpace(
                     self.action_predicates, lit_valid_test=self._action_valid_test,

@@ -5,7 +5,8 @@ from pddlgym.parser import parse_plan_step, PDDLDomainParser, PDDLProblemParser
 from PIL import Image
 
 from collections import defaultdict
-
+import contextlib
+import sys
 import itertools
 import numpy as np
 import os
@@ -241,3 +242,18 @@ class VideoWrapper(gym.Wrapper):
         imageio.mimsave(self.out_path, self.images, fps=self.fps)
         print("Wrote out video to {}".format(self.out_path))
 
+
+class DummyFile:
+    def write(self, x):
+        pass
+
+    def flush(self):
+        pass
+
+
+@contextlib.contextmanager
+def nostdout():
+    save_stdout = sys.stdout
+    sys.stdout = DummyFile()
+    yield
+    sys.stdout = save_stdout
