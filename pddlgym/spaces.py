@@ -102,6 +102,11 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
             type_hierarchy=type_hierarchy,
             type_to_parent_types=type_to_parent_types)
 
+        # Save this stuff for incremental partial grounding.
+        self._queue = None
+        self._facts = None
+        self._ground_actions = None
+
     def _update_objects_from_state(self, state):
         """
         """
@@ -109,7 +114,7 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
         # If so, we need to recompute things
         if state.objects == self._objects:
             return
-        
+
         # Parent class update
         super()._update_objects_from_state(state)
 
@@ -158,16 +163,47 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
             valid_literals.add(ground_action)
         return valid_literals
 
-    def _compute_all_ground_literals(self, state):
+    def incremental_reachable_actions(self, state, max_num=float("inf"),
+                                      do_continue=False):
+        if do_continue:
+            return sorted(self._compute_all_ground_literals(
+                state, max_num=max_num, do_continue=True))
+        else:
+            # Note: Replicating this code from above because we need to call
+            # _compute_all_ground_literals() with different arguments, but
+            # I don't want to change the whole API...
+            self._type_to_objs = defaultdict(list)
+
+            for obj in sorted(state.objects):
+                if self._type_to_parent_types is None:
+                    self._type_to_objs[obj.var_type].append(obj)
+                else:
+                    for t in self._type_to_parent_types[obj.var_type]:
+                        self._type_to_objs[t].append(obj)
+
+            self._objects = state.objects
+            return sorted(self._compute_all_ground_literals(
+                state, max_num=max_num, do_continue=False))
+
+    def _compute_all_ground_literals(self, state, max_num=float("inf"),
+                                     do_continue=False):
         """Implement Algorithm 1 from
         https://ai.dmi.unibas.ch/research/reading_group/gnad-et-al-aaai2019.pdf
         which computes all ground literals for the fixed-point
         delete-relaxed-reachable state.
         """
-        queue = list(sorted(state.literals))
-        facts = set()
-        ground_actions = set()
+        if do_continue:
+            assert state.objects == self._objects, "Continuing, but object set changed?!"
+            queue = self._queue
+            facts = self._facts
+            ground_actions = self._ground_actions
+        else:
+            queue = list(sorted(state.literals))
+            facts = set()
+            ground_actions = set()
         while queue:
+            if len(ground_actions) >= max_num:
+                break
             fact_or_op = queue.pop(0)
             if fact_or_op.predicate in self.predicates:  # a ground action
                 if fact_or_op in ground_actions:
@@ -217,6 +253,9 @@ class StripsDynamicLiteralActionSpace(LiteralSpace):
                         pos_preconds = {p for p in preconds if not p.is_negative}
                         if pos_preconds.issubset(facts):
                             queue.append(possible_action)
+        self._queue = queue
+        self._facts = facts
+        self._ground_actions = ground_actions
         return ground_actions
 
 

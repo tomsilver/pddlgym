@@ -176,7 +176,58 @@ def test_dynamic_strips_action_space(verbose=False):
     print("Test passed.")
 
 
+def test_dynamic_strips_action_space_incremental(verbose=False):
+    dir_path = os.path.join(
+        os.path.dirname(os.path.dirname(os.path.realpath(__file__))), "pddl")
+
+    for name in [
+            "Blocks_operator_actions",
+            "Hanoi_operator_actions",
+            # "Gripper",
+        ]:
+        domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
+        problem_dir = os.path.join(dir_path, name.lower())
+        # problem_dir = os.path.join(dir_path, name.lower()+"_test")
+
+        env = PDDLEnv(domain_file, problem_dir,
+            operators_as_actions=True,
+            dynamic_action_space=True,
+            strips_successor_generation=True,
+        )
+
+        env.action_space.seed(0)
+        state, _ = env.reset()
+        all_poss = set(env.action_space.incremental_reachable_actions(state))
+
+        # Test continuing
+        i = 0
+        while True:
+            multiplier = 3
+            reachable_actions = env.action_space.incremental_reachable_actions(
+                state, max_num=i*multiplier, do_continue=(i>0))
+            assert set(reachable_actions).issubset(all_poss)
+            if len(reachable_actions) != i*multiplier:
+                assert len(reachable_actions) == len(all_poss)
+                break
+            i += 1
+
+        # Test NOT continuing
+        i = 0
+        while True:
+            multiplier = 10
+            reachable_actions = env.action_space.incremental_reachable_actions(
+                state, max_num=i*multiplier, do_continue=False)
+            assert set(reachable_actions).issubset(all_poss)
+            if len(reachable_actions) != i*multiplier:
+                assert len(reachable_actions) == len(all_poss)
+                break
+            i += 1
+
+    print("Test passed.")
+
+
 if __name__ == "__main__":
     # test_hierarchical_spaces()
     # test_dynamic_literal_action_space(verbose=False)
     test_dynamic_strips_action_space(verbose=False)
+    test_dynamic_strips_action_space_incremental(verbose=False)
