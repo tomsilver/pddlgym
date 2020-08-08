@@ -7,7 +7,7 @@ import glob
 import os
 from collections import defaultdict
 
-DEMOS = "nonoptimal"
+DEMOS = "optimal"
 
 class InversePlanningMixIn:
 
@@ -47,8 +47,8 @@ class InversePlanningMixIn:
         else:
             demo_fname = demo_fname.replace(".pddl", "_*.dat")
         matches = glob.glob(demo_fname)
-        # if not (len(matches) == 1 if DEMOS == "optimal" else len(matches) == 2):
-            # import ipdb; ipdb.set_trace()
+        if DEMOS == "optimal" and (len(matches) != 1):
+            import ipdb; ipdb.set_trace()
         plans = []
         for filename in matches:
             with open(filename, 'r') as f:
@@ -67,11 +67,11 @@ class InversePlanningMixIn:
         return parse_plan_step(plan_step, self.domain.operators, self.action_predicates, 
             problem_objects, operators_as_actions=self.operators_as_actions)
 
-    def step(self, action, update_state_buffer=True):
+    def step(self, action, update_state_buffer=False):
         out = super().step(action)
-        # if update_state_buffer:
-            # if self._state not in self._state_buffer:
-                # self._state_buffer.append(self._state.copy())
+        if update_state_buffer and self._rng.uniform() < 0.1:
+            if self._state not in self._state_buffer:
+                self._state_buffer.append(self._state.copy())
         return out 
 
     def run_demo(self, plan):

@@ -1,0 +1,7 @@
+(pickup place_0_0 key_0)
+(move place_0_0 place_1_0)
+(unlock place_1_0 place_1_1 key_0 shape_0)
+(move place_1_0 place_1_1)
+(move place_1_1 place_1_2)
+(move place_1_2 place_1_3)
+(move place_1_3 place_1_4)

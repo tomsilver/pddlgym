@@ -1,5 +1,6 @@
 from gym.envs.toy_text.taxi import TaxiEnv
 from .inverse_planning_env import InversePlanningMixIn
+from pddlgym.structs import Predicate, Type
 import numpy as np
 import os
 from collections import defaultdict
@@ -22,6 +23,9 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         self._problem_index_to_state, self._problem_index_to_problem_file, \
             self._problem_prefix_to_group = self._create_problem_indices()
         self._rng = np.random.RandomState(seed=seed)
+        self._move = Predicate("move", 3, [Type("loc"), Type("loc"), Type("dir")])
+        self._pickup = Predicate("pickup", 2, [Type("loc"), Type("pasloc")])
+        self._dropoff = Predicate("dropoff", 2, [Type("loc"), Type("pasloc")])
 
     def reset(self):
         if self._problem_index_fixed:
@@ -35,7 +39,7 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         problems = self._get_problems_with_current_initial_state()
         for idx in problems:
             problem_fname = self._problem_index_to_problem_file[idx]
-            print("Loading demo for problem", problem_fname)
+            # print("Loading demo for problem", problem_fname)
             self.s = self._problem_index_to_state[idx]
             for plan in self.load_demonstrations_for_problem(problem_fname):
                 states = self.run_demo(plan)
@@ -43,10 +47,16 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
 
         self.s = initial_state
         
-        return obs, {
+        return {obs}, {
             'domain_file' : self.domain_file,
             'problem_file' : self._get_problem_file()
         }
+
+    def step(self, a, update_state_buffer=False):
+        s, r, d, db = super().step(a, update_state_buffer=False)
+        if update_state_buffer and self._rng.uniform() < 0.1 and {s} not in self._state_buffer:
+            self._state_buffer.append({s})
+        return {s}, r, d, db
 
     def render(self, *args, **kwargs):
         if self._render:
@@ -72,8 +82,20 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         state[-1] = current_goal
         self.s = self.encode(*state)
 
-    def get_actions_for_state(self, state):
-        return list(range(6))
+    def get_actions_for_state(self, s_set, valid_only=False):
+        if not valid_only:
+            return list(range(6))
+        # only valid action
+        state = next(iter(s_set))
+        original_state = self.s
+        valid_actions = []
+        for a in range(6):
+            self.s = state
+            next_s = self.step(a)[0]
+            if state != next_s:
+                valid_actions.append(a)
+        self.s = original_state
+        return valid_actions
 
     def _sample_state(self):
         return { self._rng.randint(500) }
@@ -88,6 +110,61 @@ class InversePlanningTaxiPDDLEnv(InversePlanningMixIn, TaxiEnv):
         if action_str.startswith("dropoff"):
             return 5
         import ipdb; ipdb.set_trace()
+
+    def action_to_pddl(self, s_set, action):
+        state = next(iter(s_set))
+        dir_order = ['south', 'north', 'east', 'west']
+        pasloc_order = ['red', 'green', 'yellow', 'blue', 'intaxi']
+
+        original_state = self.s
+        self.s = state
+        next_state_set, _, _, _ = self.step(action)
+        next_state = next(iter(next_state_set))
+        self.s = original_state
+
+        taxi_row, taxi_col, pass_idx, dest_idx = self.decode(state)
+        taxi_loc = taxi_row*5 + taxi_col
+
+        next_taxi_row, next_taxi_col, next_pass_idx, _ = self.decode(next_state)
+        next_taxi_loc = next_taxi_row*5 + next_taxi_col
+
+        # move
+        if action < 4:
+            direction = dir_order[action]
+            act = self._move("loc{}".format(taxi_loc), "loc{}".format(next_taxi_loc), direction)
+            return act
+
+        assert taxi_loc == next_taxi_loc
+
+        # pickup
+        if action == 4:
+            # check whether we are at a pasloc
+            pasloc = None
+            for i, color in enumerate(pasloc_order[:-1]):
+                row, col = self.locs[i]
+                loc = row*5 + col
+                if loc == taxi_loc:
+                    pasloc = color
+            if pasloc is None:
+                # sample one
+                pasloc = self._rng.choice(pasloc_order[:-1])
+            act = self._pickup("loc{}".format(taxi_loc), pasloc)
+            return act
+
+        # dropoff
+        assert action == 5
+        # check whether we are at a pasloc
+        pasloc = None
+        for i, color in enumerate(pasloc_order[:-1]):
+            row, col = self.locs[i]
+            loc = row*5 + col
+            if loc == taxi_loc:
+                pasloc = color
+        if pasloc is None:
+            # sample one
+            pasloc = self._rng.choice(pasloc_order[:-1])
+        act = self._dropoff("loc{}".format(taxi_loc), pasloc)
+        return act
 
     def _create_problem_indices(self):
         problem_index_to_state = []

@@ -192,7 +192,7 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
         actions_for_state = get_actions_for_state(state, actions_for_state_cache, env, use_cache=use_cache)
         for act in actions_for_state:
             env.set_state(state)
-            _, rew, done, _ = env.step(act)
+            _, rew, done, _ = env.step(act, update_state_buffer=True)
             next_state = env.get_state()
             frozen_next_state = hash(frozenset(next_state))
             actions_for_next_state = get_actions_for_state(next_state, actions_for_state_cache, env, use_cache=use_cache)
@@ -214,9 +214,9 @@ def run_async_value_iteration(env, timeout=np.inf, gamma=0.99, epsilon=1e-5, vi_
             return
         itr += 1
 
-def get_actions_for_state(state, cache, env, use_cache=False):
+def get_actions_for_state(state, cache, env, use_cache=False, **kwargs):
     if hasattr(env, "get_actions_for_state"):
-        return env.get_actions_for_state(state)
+        return env.get_actions_for_state(state, **kwargs)
     assert env.dynamic_action_space
         # if "all" not in cache:
             # cache["all"] = list(env.action_space.all_ground_literals())
@@ -233,11 +233,14 @@ def get_actions_for_state(state, cache, env, use_cache=False):
         result = cache[frozen_state]
     return result
 
-def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100):
+def vi_finish_helper(env, initial_state, qvals, actions_for_state, horizon=100, 
+                     debug=False):
     env.set_state(initial_state)
     plan = []
 
     for _ in range(horizon):
+        if debug:
+            import ipdb; ipdb.set_trace()
         state = env.get_state()
         frozen_state = hash(frozenset(state))
         best_act = None
