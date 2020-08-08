@@ -21,7 +21,7 @@ import fact_groups
 import instantiate
 import normalize
 import options
-import pddl_utils as pddl
+import pddl
 import pddl_parser
 import sas_tasks
 import signal
