@@ -348,11 +348,18 @@ class PDDLDomain:
   {}
 
 )
-        """.format(self.domain_name, " ".join(self.types),
+        """.format(self.domain_name, self._types_pddl_str(),
             predicates, " ".join(map(str, self.actions)), operators)
 
         with open(fname, 'w') as f:
             f.write(domain_str)
+
+    def _types_pddl_str(self):
+        if self.type_hierarchy:
+            return "\n".join(["{} - {}".format(" ".join(
+                self.type_hierarchy[k]), k) for k in self.type_hierarchy])
+        else:
+            return " ".join(self.types)
 
 
 
