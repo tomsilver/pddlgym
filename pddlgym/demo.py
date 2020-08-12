@@ -55,7 +55,7 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("depot", 12, render=render, test=True, verbose=verbose)
     # demo_ff_planning("baking", 4, render=render, verbose=verbose)
     # demo_ff_planning("baking", 4, render=render, test=True, verbose=verbose)
-    demo_ff_planning("blocks", 5, render=render, verbose=verbose)
+    # demo_ff_planning("blocks", 5, render=render, verbose=verbose)
     # demo_ff_planning("gripper", 5, render=render, verbose=verbose)
     # demo_ff_planning("gripper", 5, render=render, verbose=verbose, test=True)
     # demo_ff_planning("easygripper", 1, render=render, verbose=verbose)
@@ -93,15 +93,20 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("conditionalblocks", 5, render=render, test=True, verbose=verbose)
     # demo_ff_planning("conditionalferry", 4, render=render, verbose=verbose)
     # demo_ff_planning("conditionalferry", 4, render=render, test=True, verbose=verbose)
-    demo_ff_planning("blocks_operator_actions", 1, render=render, verbose=verbose)
-    demo_ff_planning("blocks_operator_actions", 6, render=render, test=True, verbose=verbose)
-    demo_random("blocks_operator_actions", render=render, verbose=verbose)
+    # demo_ff_planning("blocks_operator_actions", 1, render=render, verbose=verbose)
+    # demo_ff_planning("blocks_operator_actions", 6, render=render, test=True, verbose=verbose)
+    # demo_random("blocks_operator_actions", render=render, verbose=verbose)
     # demo_ff_planning("glibblocks", 5, render=render, verbose=verbose, test=True)
     # demo_ff_planning("glibrearrangement", 20, render=render, verbose=verbose)
     # demo_ff_planning("glibrearrangement", 100, render=render, verbose=verbose, test=True)
     # demo_ff_planning("glibdoors", 5, render=render, verbose=verbose)
     # demo_ff_planning("glibdoors", 10, render=render, verbose=verbose, test=True)
+    demo_random("rubiks", render=render, problem_index=0, verbose=verbose)
+    demo_random("rubiks", render=render, problem_index=1, verbose=verbose)
+    demo_random("rubiks", render=render, problem_index=2, verbose=verbose)
+
+
 
 
 if __name__ == '__main__':
-    run_all()
+    run_all(verbose=False, render=True)
