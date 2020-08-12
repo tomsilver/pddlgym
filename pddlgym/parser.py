@@ -457,7 +457,10 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
                         self.types[new_type] = Type(new_type)
                 # Add to hierarchy
                 super_type = self.types[super_type_name]
-                self.type_hierarchy[super_type] = { self.types[t] for t in sub_type_names} 
+                if super_type in self.type_hierarchy:
+                    self.type_hierarchy[super_type].update({self.types[t] for t in sub_type_names})
+                else:
+                    self.type_hierarchy[super_type] = {self.types[t] for t in sub_type_names}
                 remaining_type_str = remaining_type_str[super_end_index:]
             assert len(remaining_type_str.strip()) == 0, "Cannot mix hierarchical and non-hierarchical types"
 
