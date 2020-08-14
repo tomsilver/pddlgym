@@ -113,9 +113,8 @@ def generate_problems():
                    max_num_blocks=5)
         else:
             sample_problem(domain, problem_dir, problem_outfile, 
-                   min_num_piles=2, max_num_piles=3,
-                   min_num_piles_goal=1, max_num_piles_goal=1,
-                   max_num_blocks=5)
+                   min_num_piles=5, max_num_piles=8,
+                   min_num_piles_goal=1, max_num_piles_goal=1)
 
 if __name__ == "__main__":
     generate_problems()
