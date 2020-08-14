@@ -61,7 +61,7 @@ class Operator:
         precond_strs = []
         for term in preconds.literals:
             params = set(map(str, term.variables))
-            if term.negated_as_failure:
+            if hasattr(term, 'negated_as_failure') and term.negated_as_failure:
                 # Negative term. The variables to universally
                 # quantify over are those which we have not
                 # encountered yet in this clause.
@@ -114,10 +114,11 @@ class PDDLParser:
             new_name = new_name.strip()
             new_type_name = new_type_name.strip()
             assert new_name not in params, "ForAll variable {} already exists".format(new_name)
-            params[new_name] = self.types[new_type_name]
-            result = ForAll(self._parse_into_literal(clause, params, is_effect=is_effect),
-                            TypedEntity(new_name, params[new_name]))
-            del params[new_name]
+            assert isinstance(params, list)
+            new_entity_type = self.types[new_type_name]
+            new_entity = TypedEntity(new_name, new_entity_type)
+            result = ForAll(self._parse_into_literal(clause, params + [new_entity], is_effect=is_effect),
+                            new_entity)
             return result
         if string.startswith("(exists") and string[7] in (" ", "\n", "("):
             new_binding, clause = self._find_all_balanced_expressions(
@@ -127,12 +128,13 @@ class PDDLParser:
                 body = self._parse_into_literal(clause, params, is_effect=is_effect)
                 return body
             variables = self._parse_objects(new_binding[1:-1])
+            assert isinstance(params, list)
             for v in variables:
-                params[v.name] = v.var_type
+                params.append(v.var_type(v.name))
             body = self._parse_into_literal(clause, params, is_effect=is_effect)
             result = Exists(variables, body)
             for v in variables:
-                del params[v.name]
+                params.remove(v)
             return result
         if string.startswith("(probabilistic") and string[14] in (" ", "\n", "("):
             assert is_effect, "We only support probabilistic effects"

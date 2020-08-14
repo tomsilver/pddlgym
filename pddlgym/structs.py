@@ -347,6 +347,11 @@ class ForAll:
     def __eq__(self, other):
         return str(self) == str(other)
 
+    def pddl_str(self):
+        body_str = self.literal.pddl_str()
+        var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
+        return "(forall ({}) {})".format(var_str, body_str)
+
 class Exists:
     """
     """
