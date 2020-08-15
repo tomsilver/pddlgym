@@ -192,7 +192,7 @@ class PDDLEnv(gym.Env):
 
         # Determine if the domain is STRIPS
         self._domain_is_strips = self._check_domain_for_strips(self.domain)
-        self._inference_mode = "prolog" #"csp" if self._domain_is_strips else "prolog"
+        self._inference_mode = "csp" if self._domain_is_strips else "prolog"
 
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
@@ -503,6 +503,8 @@ class PDDLEnv(gym.Env):
 
     def _check_domain_for_strips(self, domain):
         for operator in domain.operators.values():
+            if isinstance(operator.preconds, Literal):
+                continue
             if not isinstance(operator.preconds, LiteralConjunction):
                 return False
             if not all([isinstance(l, Literal) for l in operator.preconds.literals]):
