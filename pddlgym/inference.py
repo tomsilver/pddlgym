@@ -3,17 +3,26 @@
 
 from collections import defaultdict
 from copy import deepcopy
+from pddlgym.prolog_interface import PrologInterface
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
                                 max_assignment_count=2, type_to_parent_types=None,
-                                allow_redundant_variables=True):
-    return ProofSearchTree(kb,
-        allow_redundant_variables=allow_redundant_variables,
-        type_to_parent_types=type_to_parent_types).prove(list(conds), 
-        max_assignment_count=max_assignment_count, 
-        variable_sort_fn=variable_sort_fn,
-        verbose=verbose)
+                                allow_redundant_variables=True, mode="csp"):
+    if mode == "csp":
+        return ProofSearchTree(kb,
+            allow_redundant_variables=allow_redundant_variables,
+            type_to_parent_types=type_to_parent_types).prove(list(conds), 
+            max_assignment_count=max_assignment_count, 
+            variable_sort_fn=variable_sort_fn,
+            verbose=verbose)
+    assert mode == "prolog"
+    assert all(len(v) == 1 for v in type_to_parent_types.values()), \
+        "TODO: implement support for hierarchical types in prolog inference"
+    prolog_interface = PrologInterface(kb, conds,
+        max_assignment_count=max_assignment_count,
+        allow_redundant_variables=allow_redundant_variables)
+    return prolog_interface.run()
 
 
 class CommitGoalError(Exception):

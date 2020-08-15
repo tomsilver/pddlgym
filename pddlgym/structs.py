@@ -328,15 +328,19 @@ class ForAll:
     """Represents a ForAll over the given variable in the given literal.
     variable is a structs.TypedEntity.
     """
-    def __init__(self, literal, variables):
+    def __init__(self, literal, variables, is_negative=False):
         if isinstance(variables, str): 
             variables = [variables]
 
         self.literal = literal
         self.variables = variables
+        self.is_negative = is_negative
 
     def __str__(self):
-        return "FORALL ({}) : {}".format(self.variables, self.literal)
+        forall_str = "FORALL ({}) : {}".format(self.variables, self.literal)
+        if self.is_negative:
+            return "NOT-"+forall_str
+        return forall_str
 
     def __repr__(self):
         return str(self)
@@ -346,21 +350,32 @@ class ForAll:
 
     def __eq__(self, other):
         return str(self) == str(other)
+
+    @property
+    def positive(self):
+        return ForAll(self.literal, self.variables)
 
     def pddl_str(self):
         body_str = self.literal.pddl_str()
         var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
-        return "(forall ({}) {})".format(var_str, body_str)
+        forall_str = "(forall ({}) {})".format(var_str, body_str)
+        if self.is_negative:
+            return "(not {})".format(forall_str)
+        return forall_str
 
 class Exists:
     """
     """
-    def __init__(self, variables, literal):
+    def __init__(self, variables, literal, is_negative=False):
         self.variables = variables
         self.body = literal
+        self.is_negative = is_negative
 
     def __str__(self):
-        return "EXISTS ({}) : {}".format(self.variables, str(self.body))
+        exists_str = "EXISTS ({}) : {}".format(self.variables, str(self.body))
+        if self.is_negative:
+            return "NOT-"+exists_str
+        return exists_str
 
     def __repr__(self):
         return str(self)
@@ -371,10 +386,17 @@ class Exists:
     def __eq__(self, other):
         return str(self) == str(other)
 
+    @property
+    def positive(self):
+        return Exists(self.variables, self.body)
+
     def pddl_str(self):
         body_str = self.body.pddl_str()
         var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
-        return "(exists ({}) {})".format(var_str, body_str)
+        exists_str = "(exists ({}) {})".format(var_str, body_str)
+        if self.is_negative:
+            return "(not {})".format(exists_str)
+        return exists_str
 
 
 class ProbabilisticEffect:
@@ -442,6 +464,12 @@ def Not(x):  # pylint:disable=invalid-name
     if isinstance(x, Predicate):
         return Predicate(x.name, x.arity, var_types=x.var_types, 
             is_negative=(not x.is_negative), is_anti=(x.is_anti))
+
+    if isinstance(x, ForAll):
+        return ForAll(x.literal, x.variables, is_negative=(not x.is_negative))
+
+    if isinstance(x, Exists):
+        return Exists(x.variables, x.body, is_negative=(not x.is_negative))
 
     assert isinstance(x, Literal)
     new_predicate = Not(x.predicate)
