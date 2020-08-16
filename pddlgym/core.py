@@ -435,9 +435,16 @@ class PDDLEnv(gym.Env):
 
         # A ground operator was found; execute the ground effects
         if assignment is not None:
+            # Get operator effects
+            if isinstance(selected_operator.effects, LiteralConjunction):
+                effects = selected_operator.effects.literals
+            else:
+                assert isinstance(selected_operator.effects, Literal)
+                effects = [selected_operator.effects]
+
             state = _apply_effects(
                 self._state,
-                selected_operator.effects.literals,
+                effects,
                 assignment,
             )
 

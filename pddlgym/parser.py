@@ -107,6 +107,13 @@ class PDDLParser:
             clauses = self._find_all_balanced_expressions(string[3:-1].strip())
             return LiteralDisjunction([self._parse_into_literal(clause, params,
                                        is_effect=is_effect) for clause in clauses])
+        if string.startswith("(imply") and string[6] in (" ", "\n", "("):
+            clauses = self._find_all_balanced_expressions(string[6:-1].strip())
+            assert len(clauses) == 2
+            assert not is_effect, "Imply is only allowed in preconditions"
+            premise = self._parse_into_literal(clauses[0], params, is_effect=is_effect)
+            implic = self._parse_into_literal(clauses[1], params, is_effect=is_effect)
+            return LiteralDisjunction([Not(premise), implic])
         if string.startswith("(forall") and string[7] in (" ", "\n", "("):
             new_binding, clause = self._find_all_balanced_expressions(
                 string[7:-1].strip())
@@ -184,10 +191,18 @@ class PDDLParser:
 
     def _parse_objects(self, objects):
         if self.uses_typing:
-            # Assume typed objects are new-line separated.
-            objects = objects.split("\n")
+            split_objects = []
+            remaining_str = objects
+            while "-" in remaining_str:
+                obj, remaining_str = re.split(r"\s-\s|\n-\s", remaining_str, 1)
+                if " " in remaining_str:
+                    object_type, remaining_str = re.split(r"[\s]+|[\n]+", remaining_str, 1)
+                else:
+                    object_type = remaining_str
+                    remaining_str = ""
+                split_objects.append(obj + " - " + object_type)
+            objects = split_objects
         else:
-            # Untyped objects can be separated by any form of whitespace.
             objects = objects.split()
         obj_names = []
         obj_type_names = []
@@ -224,6 +239,8 @@ class PDDLParser:
         return sorted(to_return)
 
     def _purge_comments(self, pddl_str):
+        # Remove commas
+        pddl_str = pddl_str.replace(",", "")
         # Purge comments from the given string.
         while True:
             match = re.search(r";(.*)\n", pddl_str)
