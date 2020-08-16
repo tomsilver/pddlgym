@@ -4,7 +4,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pddlgym.prolog_interface import PrologInterface
-from pddlgym.structs import Literal, LiteralConjunction, Exists
+from pddlgym.structs import Literal, LiteralConjunction, Exists, ForAll
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
@@ -34,7 +34,7 @@ def check_goal(state, goal):
         return True
     if isinstance(goal, LiteralConjunction):
         return all(check_goal(state, lit) for lit in goal.literals)
-    if isinstance(goal, Exists):
+    if isinstance(goal, Exists) or isinstance(goal, ForAll):
         prolog_interface = PrologInterface(state.literals, goal,
             max_assignment_count=2,
             allow_redundant_variables=True)

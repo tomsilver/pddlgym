@@ -101,10 +101,11 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("glibrearrangement", 100, render=render, verbose=verbose, test=True)
     # demo_ff_planning("glibdoors", 5, render=render, verbose=verbose)
     # demo_ff_planning("glibdoors", 10, render=render, verbose=verbose, test=True)
-    # demo_ff_planning("manyquantifiedblocks", 1, render=render, verbose=verbose)
-    # demo_ff_planning("manyquantifiedblocks2", 1, render=render, verbose=verbose)
-    # demo_random("manyquantifiedblocks", render=render, verbose=verbose)
-    # demo_random("manyquantifiedblocks2", render=render, verbose=verbose)
+    # demo_ff_planning("quantifiedblocks", 1, render=render, verbose=verbose)
+    # demo_ff_planning("quantifiedblocks2", 1, render=render, verbose=verbose)
+    # demo_ff_planning("quantifiedblocks3", 3, render=render, verbose=verbose)
+    # demo_random("quantifiedblocks", render=render, verbose=verbose)
+    # demo_random("quantifiedblocks2", render=render, verbose=verbose)
 
 
 if __name__ == '__main__':

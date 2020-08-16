@@ -114,9 +114,9 @@ class PDDLParser:
             new_name = new_name.strip()
             new_type_name = new_type_name.strip()
             assert new_name not in params, "ForAll variable {} already exists".format(new_name)
+            new_entity_type = self.types[new_type_name]
+            new_entity = TypedEntity(new_name, new_entity_type)
             if isinstance(params, list):
-                new_entity_type = self.types[new_type_name]
-                new_entity = TypedEntity(new_name, new_entity_type)
                 new_params = params + [new_entity]
             else:
                 new_params = params.copy()
