@@ -4,7 +4,7 @@
 from collections import defaultdict
 from copy import deepcopy
 from pddlgym.prolog_interface import PrologInterface
-from pddlgym.structs import Literal, LiteralConjunction, Exists, ForAll
+from pddlgym.structs import Literal, LiteralConjunction
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
@@ -34,13 +34,11 @@ def check_goal(state, goal):
         return True
     if isinstance(goal, LiteralConjunction):
         return all(check_goal(state, lit) for lit in goal.literals)
-    if isinstance(goal, Exists) or isinstance(goal, ForAll):
-        prolog_interface = PrologInterface(state.literals, goal,
-            max_assignment_count=2,
-            allow_redundant_variables=True)
-        assignments = prolog_interface.run()
-        return len(assignments) > 0
-    raise NotImplementedError()
+    prolog_interface = PrologInterface(state.literals, goal,
+        max_assignment_count=2,
+        allow_redundant_variables=True)
+    assignments = prolog_interface.run()
+    return len(assignments) > 0
 
 class CommitGoalError(Exception):
     pass
