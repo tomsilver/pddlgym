@@ -18,8 +18,9 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 - Quantifiers (forall, exists)
 - Disjunctions (or)
 - Equality
+- Constants
 
-Notable features that we do not currently support include constants, conditional effects, action costs.
+Notable features that we do not currently support: conditional effects, action costs, derived predicates.
 
 Several PDDL environments are included, such as:
 - Sokoban
@@ -27,6 +28,12 @@ Several PDDL environments are included, such as:
 - Blocks
 - Keys and Doors
 - Towers of Hanoi
+- Snake
+- Fridge
+- Gripper
+- Ferry
+- Elevator
+- TSP
 - "Minecraft"
 - "Rearrangement"
 - "Travel"

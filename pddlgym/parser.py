@@ -117,7 +117,7 @@ class PDDLParser:
         if string.startswith("(forall") and string[7] in (" ", "\n", "("):
             new_binding, clause = self._find_all_balanced_expressions(
                 string[7:-1].strip())
-            new_name, new_type_name = new_binding.strip()[1:-1].split("-")
+            new_name, new_type_name = new_binding.strip()[1:-1].split("-", 1)
             new_name = new_name.strip()
             new_type_name = new_type_name.strip()
             assert new_name not in params, "ForAll variable {} already exists".format(new_name)
@@ -138,7 +138,8 @@ class PDDLParser:
                 # Handle existential goal with no arguments.
                 body = self._parse_into_literal(clause, params, is_effect=is_effect)
                 return body
-            variables = self._parse_objects(new_binding[1:-1])
+            variables = self.parse_objects(new_binding[1:-1], self.types, 
+                uses_typing=self.uses_typing)
             if isinstance(params, list):
                 for v in variables:
                     params.append(v.var_type(v.name))
@@ -189,12 +190,16 @@ class PDDLParser:
             typed_args.append(typed_arg)
         return self.predicates[pred](*typed_args)
 
-    def _parse_objects(self, objects):
-        if self.uses_typing:
+    @staticmethod
+    def parse_objects(objects, types, uses_typing=False):
+        if uses_typing:
             split_objects = []
             remaining_str = objects
-            while "-" in remaining_str:
-                obj, remaining_str = re.split(r"\s-\s|\n-\s", remaining_str, 1)
+            while True:
+                try:
+                    obj, remaining_str = re.split(r"\s-\s|\n-\s", remaining_str, 1)
+                except ValueError:
+                    break
                 if " " in remaining_str:
                     object_type, remaining_str = re.split(r"[\s]+|[\n]+", remaining_str, 1)
                 else:
@@ -207,7 +212,7 @@ class PDDLParser:
         obj_names = []
         obj_type_names = []
         for obj in objects:
-            if self.uses_typing:
+            if uses_typing:
                 obj_name, obj_type_name = obj.strip().split(" - ")
                 obj_name = obj_name.strip()
                 obj_type_name = obj_type_name.strip()
@@ -229,12 +234,12 @@ class PDDLParser:
                 obj_type_names.append(obj_type_name)
         to_return = set()
         for obj_name, obj_type_name in zip(obj_names, obj_type_names):
-            if obj_type_name not in self.types:
+            if obj_type_name not in types:
                 print("Warning: type not declared for object {}, type {}".format(
                     obj_name, obj_type_name))
                 obj_type = Type(obj_type_name)
             else:
-                obj_type = self.types[obj_type_name]
+                obj_type = types[obj_type_name]
             to_return.add(TypedEntity(obj_name, obj_type))
         return sorted(to_return)
 
@@ -450,6 +455,7 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
         self.domain_name = re.search(patt, self.domain).groups()[0].strip()
         self._parse_domain_types()
         self._parse_domain_predicates()
+        self._parse_constants()
         self._parse_domain_operators()
 
     def _parse_domain_types(self):
@@ -497,6 +503,19 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
                 remaining_type_str = remaining_type_str[super_end_index:]
             assert len(remaining_type_str.strip()) == 0, "Cannot mix hierarchical and non-hierarchical types"
 
+    def _parse_constants(self):
+        if ":constants" not in self.domain:
+            self.constants = []
+            return
+        start_ind = re.search(r"\(:constants", self.domain).start()
+        constants = self._find_balanced_expression(self.domain, start_ind)
+        constants = constants[11:-1].strip()
+        if constants == "":
+            self.constants = []
+        else:
+            self.constants = PDDLProblemParser.parse_objects(constants, self.types, 
+                uses_typing=self.uses_typing)
+
     def _parse_domain_predicates(self):
         start_ind = re.search(r"\(:predicates", self.domain).start()
         predicates = self._find_balanced_expression(self.domain, start_ind)
@@ -513,7 +532,7 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
                 if ' - ' in arg:
                     assert arg_types is not None, "Mixing of typed and untyped args not allowed"
                     assert self.uses_typing
-                    arg_type = self.types[arg.strip().split("-")[1].strip()]
+                    arg_type = self.types[arg.strip().split("-", 1)[1].strip()]
                     arg_types.append(arg_type)
                 else:
                     assert not self.uses_typing
@@ -536,13 +555,15 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
             op_name = op_name.strip()
             params = params.strip()[1:-1].split("?")
             if self.uses_typing:
-                params = [(param.strip().split("-")[0].strip(),
-                           param.strip().split("-")[1].strip())
+                params = [(param.strip().split("-", 1)[0].strip(),
+                           param.strip().split("-", 1)[1].strip())
                           for param in params[1:]]
                 params = [self.types[v]("?"+k) for k, v in params]
             else:
                 params = [param.strip() for param in params[1:]]
                 params = [self.types["default"]("?"+k) for k in params]
+            # Always add constants
+            params += self.constants
             preconds = self._parse_into_literal(preconds.strip(), params)
             effects = self._parse_into_literal(effects.strip(), params,
                 is_effect=True)
@@ -553,13 +574,14 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
 class PDDLProblemParser(PDDLParser):
     """PDDL problem parsing class.
     """
-    def __init__(self, problem_fname, domain_name, types, predicates, action_names):
+    def __init__(self, problem_fname, domain_name, types, predicates, action_names, constants=None):
         self.problem_fname = problem_fname
         self.domain_name = domain_name
         self.types = types
         self.predicates = predicates
         self.action_names = action_names
         self.uses_typing = not ("default" in self.types)
+        self.constants = constants or []
 
         self.problem_name = None
         # Set of objects, each is a structs.TypedEntity object.
@@ -595,7 +617,10 @@ class PDDLProblemParser(PDDLParser):
         if objects == "":
             self.objects = []
         else:
-            self.objects = self._parse_objects(objects)
+            self.objects = self.parse_objects(objects, self.types, 
+                uses_typing=self.uses_typing)
+        # Add constants to objects
+        self.objects += self.constants
 
     def _parse_problem_initial_state(self):
         start_ind = re.search(r"\(:init", self.problem).start()

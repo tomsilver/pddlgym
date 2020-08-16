@@ -9,7 +9,7 @@ class PrologInterface:
     """
     """
     def __init__(self, kb, conds, max_assignment_count=2, timeout=2, 
-                 allow_redundant_variables=True):
+                 allow_redundant_variables=True, constants=None):
         if not isinstance(conds, list):
             conds = [conds]
         self._kb = kb
@@ -25,6 +25,7 @@ class PrologInterface:
         for atom_name, atom in self._atomname_to_atom.items():
             self._type_to_atomnames[atom.var_type].append(atom_name)
         self._prolog_str = self._create_prolog_str()
+        self._constants = constants # unused now because variables begin with ? by convention
         # print(self._prolog_str)
         # import ipdb; ipdb.set_trace()
 

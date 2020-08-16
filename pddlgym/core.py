@@ -245,7 +245,7 @@ class PDDLEnv(gym.Env):
         problem_files = [f for f in glob.glob(os.path.join(problem_dir, "*.pddl"))]
         for problem_file in sorted(problem_files):
             problem = PDDLProblemParser(problem_file, domain.domain_name, 
-                domain.types, domain.predicates, domain.actions)
+                domain.types, domain.predicates, domain.actions, domain.constants)
             problems.append(problem)
         return domain, problems
 
@@ -385,6 +385,7 @@ class PDDLEnv(gym.Env):
             assignments = find_satisfying_assignments(kb, conds,
                 variable_sort_fn=variable_sort_fn,
                 type_to_parent_types=self.domain.type_to_parent_types,
+                constants=self.domain.constants,
                 mode=self._inference_mode)
             num_assignments = len(assignments)
             if num_assignments > 0:
