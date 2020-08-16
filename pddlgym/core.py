@@ -16,7 +16,7 @@ Usage example:
 >>> obs, reward, done, debug_info = env.step(action)
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
-from pddlgym.inference import find_satisfying_assignments
+from pddlgym.inference import find_satisfying_assignments, check_goal
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
@@ -190,11 +190,15 @@ class PDDLEnv(gym.Env):
         self.domain, self.problems = self.load_pddl(domain_file, problem_dir,
             operators_as_actions=self.operators_as_actions)
 
+        # Determine if the domain is STRIPS
+        self._domain_is_strips = self._check_domain_for_strips(self.domain)
+        self._inference_mode = "csp" if self._domain_is_strips else "prolog"
+
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
         self.action_predicates = [self.domain.predicates[a] for a in actions]
         if dynamic_action_space:
-            if self.domain.operators_as_actions:
+            if self.domain.operators_as_actions and self._domain_is_strips:
                 self._action_space = LiteralActionSpace(
                     self.domain, self.action_predicates,
                     type_hierarchy=self.domain.type_hierarchy,
@@ -380,7 +384,8 @@ class PDDLEnv(gym.Env):
             variable_sort_fn = lambda v : (not v in action_variables, v)
             assignments = find_satisfying_assignments(kb, conds,
                 variable_sort_fn=variable_sort_fn,
-                type_to_parent_types=self.domain.type_to_parent_types)
+                type_to_parent_types=self.domain.type_to_parent_types,
+                mode=self._inference_mode)
             num_assignments = len(assignments)
             if num_assignments > 0:
                 assert num_assignments == 1, "Nondeterministic envs not supported"
@@ -494,7 +499,20 @@ class PDDLEnv(gym.Env):
         """
         Check if the terminal condition is met, i.e., the goal is reached.
         """
-        return self._goal.holds(state.literals)
+        return check_goal(state, self._goal)
+
+    def _check_domain_for_strips(self, domain):
+        for operator in domain.operators.values():
+            if not self._check_struct_for_strips(operator.preconds):
+                return False
+        return True
+
+    def _check_struct_for_strips(self, struct):
+        if isinstance(struct, Literal):
+            return True
+        if isinstance(struct, LiteralConjunction):
+            return all(self._check_struct_for_strips(l) for l in struct.literals)
+        return False
 
     def _action_valid_test(self, state, action):
         _, assignment = self._select_operator(state, action)
