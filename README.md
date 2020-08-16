@@ -17,8 +17,9 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 - Typing (including hierarchical)
 - Quantifiers (forall, exists)
 - Disjunctions (or)
+- Equality
 
-Notable features that we do not currently support include equality (blocked by: parsing and inference), conditional effects (blocked by: inference).
+Notable features that we do not currently support include constants, conditional effects, action costs.
 
 Several PDDL environments are included, such as:
 - Sokoban

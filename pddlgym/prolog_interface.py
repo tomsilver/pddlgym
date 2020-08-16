@@ -54,6 +54,8 @@ class PrologInterface:
 
     @classmethod
     def _clean_predicate_name(cls, predicate_name):
+        if predicate_name == "=":
+            return "predeq"
         return "pred"+predicate_name.lower().replace("-", "_")
 
     @staticmethod

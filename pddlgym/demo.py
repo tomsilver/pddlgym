@@ -108,6 +108,8 @@ def run_all(render=True, verbose=True):
     # demo_random("quantifiedblocks2", render=render, verbose=verbose)
     # demo_ff_planning("fridge", 1, render=render, verbose=verbose)
     # demo_random("fridge", render=render, verbose=verbose)
+    # demo_ff_planning("equalityblocks", 4, render=render, verbose=verbose)
+    demo_ff_planning("equalityblocks2", 4, render=render, verbose=verbose)
 
 
 if __name__ == '__main__':

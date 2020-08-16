@@ -365,10 +365,13 @@ class PDDLDomain:
         """
         predicates = "\n\t".join([lit.pddl_str() for lit in self.predicates.values()])
         operators = "\n\t".join([op.pddl_str() for op in self.operators.values()])
+        requirements = ":typing"
+        if "=" in self.predicates:
+            requirements += " :equality"
 
         domain_str = """
 (define (domain {})
-  (:requirements :typing )
+  (:requirements {})
   (:types {})
   (:predicates {}
   )
@@ -378,7 +381,7 @@ class PDDLDomain:
   {}
 
 )
-        """.format(self.domain_name, self._types_pddl_str(),
+        """.format(self.domain_name, requirements, self._types_pddl_str(),
             predicates, " ".join(map(str, self.actions)), operators)
 
         with open(fname, 'w') as f:
@@ -517,6 +520,9 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
                     arg_types.append(self.types["default"])
             self.predicates[pred_name] = Predicate(
                 pred_name, len(pred[1:]), arg_types)
+        # Handle equality
+        if "=" in self.domain:
+            self.predicates["="] = Predicate("=", 2)
 
     def _parse_domain_operators(self):
         matches = re.finditer(r"\(:action", self.domain)
@@ -602,6 +608,11 @@ class PDDLProblemParser(PDDLParser):
             if lit.predicate.name in self.action_names:
                 continue
             initial_lits.add(lit)
+        # Handle equality
+        if "=" in self.predicates:
+            eq = self.predicates["="]
+            for obj in self.objects:
+                initial_lits.add(eq(obj, obj))
         self.initial_state = frozenset(initial_lits)
 
     def _parse_problem_goal(self):
