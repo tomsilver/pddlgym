@@ -15,8 +15,9 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 **We support the following subset of PDDL1.2:**
 - STRIPS
 - Typing (including hierarchical)
+- Quantifiers (forall, exists)
 
-Notable features that we do not currently support include equality (blocked by: parsing and inference), conditional effects (blocked by: inference), disjunction and quantification (blocked by: inference).
+Notable features that we do not currently support include equality (blocked by: parsing and inference), conditional effects (blocked by: inference), and disjunction (blocked by: inference).
 
 Several PDDL environments are included, such as:
 - Sokoban

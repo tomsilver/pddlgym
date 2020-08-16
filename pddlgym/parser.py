@@ -114,10 +114,14 @@ class PDDLParser:
             new_name = new_name.strip()
             new_type_name = new_type_name.strip()
             assert new_name not in params, "ForAll variable {} already exists".format(new_name)
-            assert isinstance(params, list)
-            new_entity_type = self.types[new_type_name]
-            new_entity = TypedEntity(new_name, new_entity_type)
-            result = ForAll(self._parse_into_literal(clause, params + [new_entity], is_effect=is_effect),
+            if isinstance(params, list):
+                new_entity_type = self.types[new_type_name]
+                new_entity = TypedEntity(new_name, new_entity_type)
+                new_params = params + [new_entity]
+            else:
+                new_params = params.copy()
+                new_params[new_name] = self.types[new_type_name]
+            result = ForAll(self._parse_into_literal(clause, new_params, is_effect=is_effect),
                             new_entity)
             return result
         if string.startswith("(exists") and string[7] in (" ", "\n", "("):
@@ -128,13 +132,20 @@ class PDDLParser:
                 body = self._parse_into_literal(clause, params, is_effect=is_effect)
                 return body
             variables = self._parse_objects(new_binding[1:-1])
-            assert isinstance(params, list)
-            for v in variables:
-                params.append(v.var_type(v.name))
+            if isinstance(params, list):
+                for v in variables:
+                    params.append(v.var_type(v.name))
+            else:
+                for v in variables:
+                    params[v.name] = v.var_type
             body = self._parse_into_literal(clause, params, is_effect=is_effect)
             result = Exists(variables, body)
-            for v in variables:
-                params.remove(v)
+            if isinstance(params, list):
+                for v in variables:
+                    params.remove(v)
+            else:
+                for v in variables:
+                    del params[v.name]
             return result
         if string.startswith("(probabilistic") and string[14] in (" ", "\n", "("):
             assert is_effect, "We only support probabilistic effects"

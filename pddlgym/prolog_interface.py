@@ -1,4 +1,4 @@
-from pddlgym.structs import Literal, LiteralConjunction, ForAll, Exists
+from pddlgym.structs import Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists, Not
 from collections import defaultdict
 import subprocess
 import sys
@@ -10,12 +10,15 @@ class PrologInterface:
     """
     def __init__(self, kb, conds, max_assignment_count=2, timeout=2, 
                  allow_redundant_variables=True):
+        if not isinstance(conds, list):
+            conds = [conds]
         self._kb = kb
         self._conds = conds
+        self._cond_lits = self._get_lits_from_conds(conds)
         self._max_assignment_count = max_assignment_count
         self._allow_redundant_variables = allow_redundant_variables
         self._timeout = timeout
-        self._varnames_to_var = self._create_varname_to_var(self._conds, 
+        self._varnames_to_var = self._create_varname_to_var(self._cond_lits, 
             lambda x : self._clean_variable_name(x).lower())
         self._atomname_to_atom = self._create_varname_to_var(self._kb, self._clean_atom_name)
         self._type_to_atomnames = defaultdict(list)
@@ -25,13 +28,29 @@ class PrologInterface:
         # print(self._prolog_str)
         # import ipdb; ipdb.set_trace()
 
+    @staticmethod
+    def _get_lits_from_conds(conds):
+        if isinstance(conds, list):
+            return [lit for c in conds for lit in PrologInterface._get_lits_from_conds(c)]
+        if isinstance(conds, Literal):
+            return [conds]
+        if hasattr(conds, 'literals'):
+            return PrologInterface._get_lits_from_conds(conds.literals)
+        if hasattr(conds, 'body'):
+            return PrologInterface._get_lits_from_conds(conds.body)
+        import ipdb; ipdb.set_trace()
+        raise NotImplementedError()
+
     @classmethod
     def _clean_atom_name(cls, atom_name):
         return atom_name.lower().replace("-", "_")
 
     @classmethod
     def _clean_variable_name(cls, var_name):
-        return var_name.replace("-", "_").replace("?", "").capitalize()
+        var_name = var_name.replace("-", "_")
+        if var_name.startswith("?"):
+            return var_name.replace("?", "").capitalize()
+        return var_name
 
     @classmethod
     def _clean_predicate_name(cls, predicate_name):
@@ -86,7 +105,8 @@ class PrologInterface:
     def _prolog_goal(self, conds, allow_redundant_variables):
         """
         """
-        all_vars = sorted({ v for lit in conds if isinstance(lit, Literal) for v in lit.variables })
+        all_vars = sorted({ v for lit in conds if isinstance(lit, Literal)\
+                            for v in lit.variables if v.startswith("?") })
         all_vars_cleaned = [self._clean_variable_name(v) for v in all_vars]
         main_cond_str = ""
         for lit in conds:
@@ -102,14 +122,22 @@ class PrologInterface:
             all_different_str = "."
         head_str = "\ngoal({}) :-".format(",".join(all_vars_cleaned))
         final_str = head_str + main_cond_str + type_cond_str + all_different_str
+        if final_str.endswith(",."):
+            final_str = final_str[:-2] + "."
         return final_str, all_vars
 
     def _prolog_goal_line(self, lit):
         """
         """
+        if isinstance(lit, LiteralConjunction):
+            inner_str = ",".join(self._prolog_goal_line(l) for l in lit.literals)
+            return "({})".format(inner_str)
+        if isinstance(lit, LiteralDisjunction):
+            inner_str = ";".join(self._prolog_goal_line(l) for l in lit.literals)
+            return "({})".format(inner_str)
         if lit.is_negative:
             pos_pred_str = self._prolog_goal_line(lit.positive)
-            pred_str = "dif(true, {})".format(pos_pred_str)
+            pred_str = "\\+({})".format(pos_pred_str)
             return pred_str
         if isinstance(lit, Literal):
             pred_name = self._clean_predicate_name(lit.predicate.name)
@@ -123,26 +151,19 @@ class PrologInterface:
             var_type = lit.variables[0].var_type
             objects_of_type = self._type_to_atomnames[var_type]
             objects_str = "[" + ",".join(objects_of_type) + "]"
-            pred_str_body = self._prolog_goal_line(lit.literal)
+            pred_str_body = self._prolog_goal_line(lit.body)
             pred_str = "forall(member({}, {}), {})".format(variable, objects_str, pred_str_body)
             return pred_str
         if isinstance(lit, Exists):
-            variables = ",".join([self._clean_variable_name(a.name) for a in lit.variables])
-            assert len(variables) == 1, "TODO: support Exists over multiple variables"
-            variable = variables[0]
-            var_type = lit.variables[0].var_type
-            objects_of_type = self._type_to_atomnames[var_type]
-            objects_str = "[" + ",".join(objects_of_type) + "]"
-            pred_str_body = self._prolog_goal_line(lit.body)
-            pred_str = "exists(member({}, {}), {})".format(variable, objects_str, pred_str_body)
-            return pred_str
+            return self._prolog_goal_line(Not(ForAll(Not(lit.body), lit.variables)))
         raise NotImplementedError()
 
     @classmethod
     def _prolog_preamble(cls, conds):
+        cond_lits = cls._get_lits_from_conds(conds)
         pred_definitions = ""
         preds = set()
-        for lit in conds:
+        for lit in cond_lits:
             preds.update(cls._get_predicates_from_literal(lit))
         preds = sorted(preds)
         for pred in preds:
@@ -157,12 +178,10 @@ print_solutions([H|T]) :- write(H), nl, print_solutions(T).
     @classmethod
     def _get_predicates_from_literal(cls, lit):
         if isinstance(lit, Literal):
-            return { lit.predicate }
+            return { lit.predicate.positive }
         if isinstance(lit, LiteralConjunction):
             return { p for l in lit.literals for p in cls._get_predicates_from_literal(l) }
-        if isinstance(lit, ForAll):
-            return cls._get_predicates_from_literal(lit.literal)
-        if isinstance(lit, Exists):
+        if isinstance(lit, ForAll) or isinstance(lit, Exists):
             return cls._get_predicates_from_literal(lit.body)
         raise NotImplementedError()
     
@@ -183,7 +202,10 @@ print_solutions([H|T]) :- write(H), nl, print_solutions(T).
     def _parse_output_line(self, output_line):
         """
         """
-        return output_line[1:-1].split(',')
+        output_line = output_line[1:-1]
+        if output_line == '':
+            return []
+        return output_line.split(',')
 
     def run(self):
         """

@@ -16,7 +16,7 @@ Usage example:
 >>> obs, reward, done, debug_info = env.step(action)
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
-from pddlgym.inference import find_satisfying_assignments
+from pddlgym.inference import find_satisfying_assignments, check_goal
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
@@ -499,17 +499,20 @@ class PDDLEnv(gym.Env):
         """
         Check if the terminal condition is met, i.e., the goal is reached.
         """
-        return self._goal.holds(state.literals)
+        return check_goal(state, self._goal)
 
     def _check_domain_for_strips(self, domain):
         for operator in domain.operators.values():
-            if isinstance(operator.preconds, Literal):
-                continue
-            if not isinstance(operator.preconds, LiteralConjunction):
-                return False
-            if not all([isinstance(l, Literal) for l in operator.preconds.literals]):
+            if not self._check_struct_for_strips(operator.preconds):
                 return False
         return True
+
+    def _check_struct_for_strips(self, struct):
+        if isinstance(struct, Literal):
+            return True
+        if isinstance(struct, LiteralConjunction):
+            return all(self._check_struct_for_strips(l) for l in struct.literals)
+        return False
 
     def _action_valid_test(self, state, action):
         _, assignment = self._select_operator(state, action)

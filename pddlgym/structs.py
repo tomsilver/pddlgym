@@ -266,6 +266,7 @@ class LiteralConjunction:
             lit.pddl_str() for lit in self.literals))
 
     def holds(self, state_literals):
+        print("Deprecation warning: LiteralConjunction.holds will be removed soon")
         assert isinstance(state_literals, (set, frozenset))
         for lit in self.literals:
             assert not lit.is_anti
@@ -328,16 +329,16 @@ class ForAll:
     """Represents a ForAll over the given variable in the given literal.
     variable is a structs.TypedEntity.
     """
-    def __init__(self, literal, variables, is_negative=False):
+    def __init__(self, body, variables, is_negative=False):
         if isinstance(variables, str): 
             variables = [variables]
 
-        self.literal = literal
+        self.body = body
         self.variables = variables
         self.is_negative = is_negative
 
     def __str__(self):
-        forall_str = "FORALL ({}) : {}".format(self.variables, self.literal)
+        forall_str = "FORALL ({}) : {}".format(self.variables, self.body)
         if self.is_negative:
             return "NOT-"+forall_str
         return forall_str
@@ -353,10 +354,10 @@ class ForAll:
 
     @property
     def positive(self):
-        return ForAll(self.literal, self.variables)
+        return ForAll(self.body, self.variables)
 
     def pddl_str(self):
-        body_str = self.literal.pddl_str()
+        body_str = self.body.pddl_str()
         var_str = '\n'.join(['{} - {}'.format(v.name, v.var_type) for v in self.variables])
         forall_str = "(forall ({}) {})".format(var_str, body_str)
         if self.is_negative:
@@ -366,9 +367,9 @@ class ForAll:
 class Exists:
     """
     """
-    def __init__(self, variables, literal, is_negative=False):
+    def __init__(self, variables, body, is_negative=False):
         self.variables = variables
-        self.body = literal
+        self.body = body
         self.is_negative = is_negative
 
     def __str__(self):
@@ -466,10 +467,16 @@ def Not(x):  # pylint:disable=invalid-name
             is_negative=(not x.is_negative), is_anti=(x.is_anti))
 
     if isinstance(x, ForAll):
-        return ForAll(x.literal, x.variables, is_negative=(not x.is_negative))
+        return ForAll(x.body, x.variables, is_negative=(not x.is_negative))
 
     if isinstance(x, Exists):
         return Exists(x.variables, x.body, is_negative=(not x.is_negative))
+
+    if isinstance(x, LiteralConjunction):
+        return LiteralDisjunction([Not(lit) for lit in x.literals])
+
+    if isinstance(x, LiteralDisjunction):
+        return LiteralConjunction([Not(lit) for lit in x.literals])
 
     assert isinstance(x, Literal)
     new_predicate = Not(x.predicate)

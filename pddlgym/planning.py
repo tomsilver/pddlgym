@@ -38,6 +38,8 @@ def run_ff(domain_file, problem_file, horizon=np.inf, timeout=10):
         raise PlanningException("Plan not found with FF! Error: {}".format(output))
     if len(plan) > horizon:
         return []
+    if plan[-1] == "reach-goal":
+        plan = plan[:-1]
     return plan
 
 
