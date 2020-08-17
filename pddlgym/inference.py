@@ -31,9 +31,9 @@ def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False,
 
 def check_goal(state, goal):
     if isinstance(goal, Literal):
-        if goal in state.literals and goal.is_negative:
+        if goal.is_negative and goal.positive in state.literals:
             return False
-        if goal not in state.literals and not goal.is_negative:
+        if not goal.is_negative and goal not in state.literals:
             return False
         return True
     if isinstance(goal, LiteralConjunction):
