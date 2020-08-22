@@ -118,7 +118,13 @@ for env_name, kwargs in [
                    'dynamic_action_space' : True}),
         ("river", {}),
         ("explodingblocks", {}),
-        ("searchandrescue", {'render' : sar_render}),
+        ("searchandrescue_level1", {'render' : sar_render}),
+        ("searchandrescue_level2", {'render' : sar_render}),
+        ("searchandrescue_level3", {'render' : sar_render}),
+        ("searchandrescue_level4", {'render' : sar_render}),
+        ("searchandrescue_level5", {'render' : sar_render}),
+        ("searchandrescue_level6", {'render' : sar_render}),
+
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,

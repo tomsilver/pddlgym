@@ -1,6 +1,6 @@
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
 from pddlgym.structs import LiteralConjunction
-from pddlgym.planning import run_ff
+from pddlgym.planning import run_ff, PlanningException
 import pddlgym
 import os
 import numpy as np
@@ -21,7 +21,7 @@ def sample_state(domain, num_rows=10, num_cols=10,
                  num_people=1,
                  randomize_person_loc=False,
                  randomize_robot_start=True,
-                 wall_probability=0.05,
+                 wall_probability=0.2,
                  randomize_walls=False,
                  randomize_hospital_loc=False):
 
@@ -115,6 +115,10 @@ def sample_state(domain, num_rows=10, num_cols=10,
         wall_rng =  np.random.RandomState(0)
     wall_mask = wall_rng.uniform(size=(num_rows, num_cols)) < wall_probability
 
+    # Hack
+    wall_mask[0, 0] = 0
+    wall_mask[-1, -1] = 0
+
     wall_idx = 0
     for r in range(num_rows):
         for c in range(num_cols):
@@ -150,7 +154,7 @@ def sample_problem(domain, problem_dir, problem_outfile,
                    num_people=1, num_selected_people=1,
                    randomize_person_loc=False,
                    randomize_robot_start=True,
-                   wall_probability=0.05,
+                   wall_probability=0.2,
                    randomize_walls=False,
                    randomize_hospital_loc=False):
     
@@ -164,10 +168,16 @@ def sample_problem(domain, problem_dir, problem_outfile,
         randomize_hospital_loc=randomize_hospital_loc,
     )
 
+    if isinstance(num_selected_people, tuple):
+        lo, hi = num_selected_people
+        num_selected_people = np.random.randint(lo, hi+1)
+
     goal = create_goal(domain, people, hospital_loc, 
         num_selected_people=num_selected_people)
 
-    filepath = os.path.join(PDDLDIR, problem_dir, problem_outfile)
+    filedir = os.path.join(PDDLDIR, problem_dir)
+    os.makedirs(filedir, exist_ok=True)
+    filepath = os.path.join(filedir, problem_outfile)
 
     PDDLProblemParser.create_pddl_file(
         filepath,
@@ -184,13 +194,21 @@ def sample_problem(domain, problem_dir, problem_outfile,
 
 def problem_is_valid(domain, problem_filepath):
     # Verify that plan can be found
-    plan = run_ff(domain.domain_fname, problem_filepath)
+    try:
+        plan = run_ff(domain.domain_fname, problem_filepath)
+    except PlanningException:
+        return False
+    # Make sure plan is nontrivial
     return len(plan) > 0
 
-def generate_problems(num_train=50, num_test=10):
+def generate_problems(num_train=50, num_test=10, level=1, **kwargs):
     domain = PDDLDomainParser(os.path.join(PDDLDIR, f"{DOMAIN_NAME}.pddl"),
-        expect_action_preds=False,
-        operators_as_actions=True)
+        expect_action_preds=True,
+        operators_as_actions=False)
+
+    # Create version of the domain for simplicity
+    domain_name_with_level = f"{DOMAIN_NAME}_level{level}"
+    domain.write(os.path.join(PDDLDIR, f"{domain_name_with_level}.pddl"))
 
     # Make sure problems are unique
     seen_problem_ids = set()
@@ -198,11 +216,12 @@ def generate_problems(num_train=50, num_test=10):
     problem_idx = 0
     while problem_idx < num_train + num_test:
         if problem_idx < num_train:
-            problem_dir = DOMAIN_NAME
+            problem_dir = domain_name_with_level
         else:
-            problem_dir = f"{DOMAIN_NAME}_test"
+            problem_dir = f"{domain_name_with_level}_test"
         problem_outfile = f"problem{problem_idx}.pddl"
-        problem_id, problem_filepath = sample_problem(domain, problem_dir, problem_outfile)
+        problem_id, problem_filepath = sample_problem(domain, problem_dir, 
+            problem_outfile, **kwargs)
         if problem_id in seen_problem_ids:
             continue
         seen_problem_ids.add(problem_id)
@@ -211,4 +230,54 @@ def generate_problems(num_train=50, num_test=10):
 
 
 if __name__ == "__main__":
-    generate_problems()
+    generate_problems(level=1,
+        num_people=1, 
+        num_selected_people=1,
+        randomize_person_loc=False,
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=False)
+
+    generate_problems(level=2,
+        num_people=1, 
+        num_selected_people=1,
+        randomize_person_loc=True, # !
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=False)
+
+    generate_problems(level=3,
+        num_people=1, 
+        num_selected_people=1,
+        randomize_person_loc=True,
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=True, # !
+    )
+
+    generate_problems(level=4,
+        num_people=5, # !
+        num_selected_people=1,
+        randomize_person_loc=True,
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=True,
+    )
+
+    generate_problems(level=5,
+        num_people=5,
+        num_selected_people=(1, 5), # !
+        randomize_person_loc=True,
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=True,
+    )
+
+    generate_problems(level=6,
+        num_people=5,
+        num_selected_people=(1, 5),
+        randomize_person_loc=True,
+        randomize_robot_start=True,
+        randomize_walls=True, # !
+        randomize_hospital_loc=True,
+    )

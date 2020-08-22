@@ -370,6 +370,12 @@ class PDDLDomain:
         """
         predicates = "\n\t".join([lit.pddl_str() for lit in self.predicates.values()])
         operators = "\n\t".join([op.pddl_str() for op in self.operators.values()])
+        if self.constants:
+            constants_str = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
+                                                    self.constants))))
+            constants = f"\n  (:constants {constants_str})\n"
+        else:
+            constants = ""
         requirements = ":typing"
         if "=" in self.predicates:
             requirements += " :equality"
@@ -380,14 +386,14 @@ class PDDLDomain:
   (:types {})
   (:predicates {}
   )
-
+  {}
   ; (:actions {})
 
   {}
 
 )
         """.format(self.domain_name, requirements, self._types_pddl_str(),
-            predicates, " ".join(map(str, self.actions)), operators)
+            predicates, constants, " ".join(map(str, self.actions)), operators)
 
         with open(fname, 'w') as f:
             f.write(domain_str)
@@ -745,4 +751,5 @@ def parse_plan_step(plan_step, operators, action_predicates, objects, operators_
             ground_action = ground_literal(cond, assignments)
             return ground_action
 
+    import ipdb; ipdb.set_trace()
     raise Exception("Unrecognized plan step: `{}`".format(str(plan_step)))
