@@ -384,16 +384,16 @@ class PDDLDomain:
 (define (domain {})
   (:requirements {})
   (:types {})
+  {}
   (:predicates {}
   )
-  {}
   ; (:actions {})
 
   {}
 
 )
         """.format(self.domain_name, requirements, self._types_pddl_str(),
-            predicates, constants, " ".join(map(str, self.actions)), operators)
+            constants, predicates, " ".join(map(str, self.actions)), operators)
 
         with open(fname, 'w') as f:
             f.write(domain_str)
