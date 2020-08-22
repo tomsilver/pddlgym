@@ -112,7 +112,9 @@ def run_all(render=True, verbose=True):
     # demo_ff_planning("equalityblocks2", 4, render=render, verbose=verbose)
     demo_ff_planning("snake", 1, render=render, verbose=verbose)
     demo_ff_planning("snake", 1, render=render, verbose=verbose, test=True)
+    demo_ff_planning("searchandrescue", 50, render=render, verbose=verbose)
+    demo_ff_planning("searchandrescue", 10, render=render, verbose=verbose, test=True)
 
 
 if __name__ == '__main__':
-    run_all(render=False, verbose=False)
+    run_all(render=True, verbose=True)

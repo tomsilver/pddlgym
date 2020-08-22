@@ -562,10 +562,8 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
             else:
                 params = [param.strip() for param in params[1:]]
                 params = [self.types["default"]("?"+k) for k in params]
-            # Always add constants
-            params += self.constants
-            preconds = self._parse_into_literal(preconds.strip(), params)
-            effects = self._parse_into_literal(effects.strip(), params,
+            preconds = self._parse_into_literal(preconds.strip(), params + self.constants)
+            effects = self._parse_into_literal(effects.strip(), params + self.constants,
                 is_effect=True)
             self.operators[op_name] = Operator(
                 op_name, params, preconds, effects)

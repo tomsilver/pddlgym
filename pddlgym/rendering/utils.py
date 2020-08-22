@@ -13,8 +13,8 @@ def get_asset_path(asset_name):
     asset_dir_path = os.path.join(dir_path, 'assets')
     return os.path.join(asset_dir_path, asset_name)
 
-def fig2data(fig):
-    fig.set_dpi(150)
+def fig2data(fig, dpi=150):
+    fig.set_dpi(dpi)
     fig.canvas.draw()
     data = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8, sep='')
     data = data.reshape(fig.canvas.get_width_height()[::-1] + (4,))
@@ -47,7 +47,7 @@ def initialize_figure(height, width, fig_scale=1.):
 
     return fig, ax
 
-def render_from_layout(layout, get_token_images):
+def render_from_layout(layout, get_token_images, dpi=150):
     height, width = layout.shape[:2]
 
     fig, ax = initialize_figure(height, width)
@@ -58,7 +58,7 @@ def render_from_layout(layout, get_token_images):
             for im in token_images:
                 draw_token(im, r, c, ax, height, width)
 
-    im = fig2data(fig)
+    im = fig2data(fig, dpi=dpi)
     plt.close(fig)
 
     im = Image.fromarray(im)

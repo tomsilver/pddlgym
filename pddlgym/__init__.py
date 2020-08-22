@@ -118,6 +118,7 @@ for env_name, kwargs in [
                    'dynamic_action_space' : True}),
         ("river", {}),
         ("explodingblocks", {}),
+        ("searchandrescue", {'render' : sar_render}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
