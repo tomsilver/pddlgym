@@ -42,10 +42,10 @@
 	person1 - person
 	person2 - person
 	robot0 - robot
-	wall0 - wall
-	wall1 - wall
-	wall2 - wall
-	wall3 - wall
+	wall1-2 - wall
+	wall2-3 - wall
+	wall4-1 - wall
+	wall5-0 - wall
   )
   (:init 
 	(clear f0-0f)
@@ -213,10 +213,10 @@
 	(pickup person1)
 	(pickup person2)
 	(robot-at robot0 f0-1f)
-	(wall-at wall0 f1-2f)
-	(wall-at wall1 f2-3f)
-	(wall-at wall2 f4-1f)
-	(wall-at wall3 f5-0f)
+	(wall-at wall1-2 f1-2f)
+	(wall-at wall2-3 f2-3f)
+	(wall-at wall4-1 f4-1f)
+	(wall-at wall5-0 f5-0f)
   )
   (:goal (and
 	(person-at person0 f5-5f)

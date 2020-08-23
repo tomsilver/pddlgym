@@ -40,11 +40,11 @@
 	hospital0 - hospital
 	person0 - person
 	robot0 - robot
-	wall0 - wall
-	wall1 - wall
-	wall2 - wall
-	wall3 - wall
-	wall4 - wall
+	wall2-2 - wall
+	wall2-4 - wall
+	wall4-0 - wall
+	wall4-2 - wall
+	wall5-4 - wall
   )
   (:init 
 	(clear f0-0f)
@@ -207,11 +207,11 @@
 	(person-at person0 f2-5f)
 	(pickup person0)
 	(robot-at robot0 f2-3f)
-	(wall-at wall0 f2-2f)
-	(wall-at wall1 f2-4f)
-	(wall-at wall2 f4-0f)
-	(wall-at wall3 f4-2f)
-	(wall-at wall4 f5-4f)
+	(wall-at wall2-2 f2-2f)
+	(wall-at wall2-4 f2-4f)
+	(wall-at wall4-0 f4-0f)
+	(wall-at wall4-2 f4-2f)
+	(wall-at wall5-4 f5-4f)
   )
   (:goal (and
 	(person-at person0 f4-4f)))

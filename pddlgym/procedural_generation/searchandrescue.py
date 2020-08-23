@@ -119,14 +119,12 @@ def sample_state(domain, num_rows=6, num_cols=6,
     wall_mask[0, 0] = 0
     wall_mask[-1, -1] = 0
 
-    wall_idx = 0
     for r in range(num_rows):
         for c in range(num_cols):
             loc = locations_in_grid[r, c]
             # Don't allow walls at occupied locs
             if loc not in occupied_locations and wall_mask[r, c]:
-                wall = wall_type(f"wall{wall_idx}")
-                wall_idx += 1
+                wall = wall_type(f"wall{r}-{c}")
                 objects.add(wall)
                 state.add(wall_at(wall, loc))
             elif loc != robot_loc:
