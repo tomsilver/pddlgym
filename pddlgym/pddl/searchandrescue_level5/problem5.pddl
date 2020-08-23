@@ -41,13 +41,12 @@
 	person0 - person
 	person1 - person
 	person2 - person
-	person3 - person
-	person4 - person
 	robot0 - robot
 	wall0 - wall
 	wall1 - wall
 	wall2 - wall
 	wall3 - wall
+	wall4 - wall
   )
   (:init 
 	(clear f0-0f)
@@ -64,7 +63,6 @@
 	(clear f1-5f)
 	(clear f2-0f)
 	(clear f2-1f)
-	(clear f2-2f)
 	(clear f2-5f)
 	(clear f3-0f)
 	(clear f3-1f)
@@ -73,7 +71,6 @@
 	(clear f3-4f)
 	(clear f3-5f)
 	(clear f4-1f)
-	(clear f4-2f)
 	(clear f4-3f)
 	(clear f4-4f)
 	(clear f4-5f)
@@ -81,6 +78,7 @@
 	(clear f5-1f)
 	(clear f5-2f)
 	(clear f5-3f)
+	(clear f5-4f)
 	(clear f5-5f)
 	(conn f0-0f f0-1f right)
 	(conn f0-0f f1-0f down)
@@ -204,27 +202,26 @@
 	(conn f5-5f f5-4f left)
 	(dropoff )
 	(handsfree robot0)
-	(hospital-at hospital0 f2-2f)
+	(hospital-at hospital0 f5-0f)
 	(move down)
 	(move left)
 	(move right)
 	(move up)
-	(person-at person0 f4-2f)
-	(person-at person1 f4-3f)
-	(person-at person2 f4-1f)
-	(person-at person3 f0-0f)
-	(person-at person4 f1-4f)
+	(person-at person0 f1-1f)
+	(person-at person1 f5-4f)
+	(person-at person2 f5-2f)
 	(pickup person0)
 	(pickup person1)
 	(pickup person2)
-	(pickup person3)
-	(pickup person4)
-	(robot-at robot0 f4-2f)
-	(wall-at wall0 f2-3f)
-	(wall-at wall1 f2-4f)
-	(wall-at wall2 f4-0f)
-	(wall-at wall3 f5-4f)
+	(robot-at robot0 f3-1f)
+	(wall-at wall0 f2-2f)
+	(wall-at wall1 f2-3f)
+	(wall-at wall2 f2-4f)
+	(wall-at wall3 f4-0f)
+	(wall-at wall4 f4-2f)
   )
   (:goal (and
-	(person-at person0 f2-2f)))
+	(person-at person2 f5-0f)
+	(person-at person1 f5-0f)
+	(person-at person0 f5-0f)))
 )

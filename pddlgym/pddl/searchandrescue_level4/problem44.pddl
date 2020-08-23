@@ -41,8 +41,6 @@
 	person0 - person
 	person1 - person
 	person2 - person
-	person3 - person
-	person4 - person
 	robot0 - robot
 	wall0 - wall
 	wall1 - wall
@@ -204,21 +202,17 @@
 	(conn f5-5f f5-4f left)
 	(dropoff )
 	(handsfree robot0)
-	(hospital-at hospital0 f5-0f)
+	(hospital-at hospital0 f3-4f)
 	(move down)
 	(move left)
 	(move right)
 	(move up)
-	(person-at person0 f1-0f)
-	(person-at person1 f5-1f)
-	(person-at person2 f4-0f)
-	(person-at person3 f2-5f)
-	(person-at person4 f3-1f)
+	(person-at person0 f4-0f)
+	(person-at person1 f4-3f)
+	(person-at person2 f3-5f)
 	(pickup person0)
 	(pickup person1)
 	(pickup person2)
-	(pickup person3)
-	(pickup person4)
 	(robot-at robot0 f0-0f)
 	(wall-at wall0 f2-2f)
 	(wall-at wall1 f2-3f)
@@ -227,5 +221,5 @@
 	(wall-at wall4 f5-4f)
   )
   (:goal (and
-	(person-at person1 f5-0f)))
+	(person-at person1 f3-4f)))
 )

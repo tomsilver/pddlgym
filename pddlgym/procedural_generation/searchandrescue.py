@@ -258,7 +258,7 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=4,
-        num_people=5, # !
+        num_people=3, # !
         num_selected_people=1,
         randomize_person_loc=True,
         randomize_robot_start=True,
@@ -267,8 +267,8 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=5,
-        num_people=5,
-        num_selected_people=(1, 5), # !
+        num_people=3,
+        num_selected_people=(2, 3), # !
         randomize_person_loc=True,
         randomize_robot_start=True,
         randomize_walls=False,
@@ -276,8 +276,8 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=6,
-        num_people=5,
-        num_selected_people=(1, 5),
+        num_people=3,
+        num_selected_people=(2, 3),
         randomize_person_loc=True,
         randomize_robot_start=True,
         randomize_walls=True, # !
