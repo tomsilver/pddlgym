@@ -79,7 +79,6 @@
 	(clear f5-2f)
 	(clear f5-3f)
 	(clear f5-4f)
-	(clear f5-5f)
 	(conn f0-0f f0-1f right)
 	(conn f0-0f f1-0f down)
 	(conn f0-1f f0-0f left)

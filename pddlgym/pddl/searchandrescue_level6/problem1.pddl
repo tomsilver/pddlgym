@@ -53,7 +53,6 @@
   (:init 
 	(clear f0-0f)
 	(clear f0-1f)
-	(clear f0-3f)
 	(clear f0-4f)
 	(clear f1-1f)
 	(clear f1-2f)

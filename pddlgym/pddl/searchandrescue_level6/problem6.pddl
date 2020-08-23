@@ -70,7 +70,6 @@
 	(clear f3-4f)
 	(clear f3-5f)
 	(clear f4-0f)
-	(clear f4-2f)
 	(clear f4-3f)
 	(clear f4-4f)
 	(clear f4-5f)

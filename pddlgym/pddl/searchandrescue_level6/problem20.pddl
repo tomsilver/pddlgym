@@ -50,7 +50,6 @@
 	(clear f0-0f)
 	(clear f0-1f)
 	(clear f0-2f)
-	(clear f0-3f)
 	(clear f0-5f)
 	(clear f1-0f)
 	(clear f1-1f)

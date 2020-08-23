@@ -1,5 +1,5 @@
 from pddlgym.core import PDDLEnv
-from pddlgym.rendering import sar_render
+from pddlgym.rendering import sar_render, slow_sar_render
 from pddlgym.structs import Type, Predicate, Not
 import pddlgym
 import os
@@ -161,13 +161,18 @@ def get_sar_successor_state(state, action):
 
 class SearchAndRescueEnv(PDDLEnv):
 
-    def __init__(self, level=1, test=False):
+    def __init__(self, level=1, test=False, render_version="fast"):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(pddlgym.__file__)), "pddl")
         domain_file = os.path.join(dir_path, "searchandrescue.pddl")
         problem_dir = os.path.join(dir_path, f"searchandrescue_level{level}")
         if test:
             problem_dir += "_test"
-        super().__init__(domain_file=domain_file, problem_dir=problem_dir, render=sar_render)
+        if render_version == "fast":
+            render = sar_render
+        else:
+            assert render_version == "slow"
+            render = slow_sar_render
+        super().__init__(domain_file=domain_file, problem_dir=problem_dir, render=render)
 
     def _get_successor_state(self, state, action, domain, **kwargs):
         """Custom (faster than generic)

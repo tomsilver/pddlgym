@@ -134,10 +134,10 @@ for level in range(1, 7):
     register(
         id=f'SearchAndRescueLevel{level}-v0',
         entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
-        kwargs={'level' : level, 'test' : False},
+        kwargs={'level' : level, 'test' : False, 'render_version' : 'slow'},
     )
     register(
         id=f'SearchAndRescueLevel{level}Test-v0',
         entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
-        kwargs={'level' : level, 'test' : True},
+        kwargs={'level' : level, 'test' : True, 'render_version' : 'slow'},
     )

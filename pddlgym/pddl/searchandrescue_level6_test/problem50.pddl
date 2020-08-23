@@ -51,7 +51,6 @@
 	wall6 - wall
   )
   (:init 
-	(clear f0-0f)
 	(clear f0-1f)
 	(clear f0-2f)
 	(clear f0-3f)

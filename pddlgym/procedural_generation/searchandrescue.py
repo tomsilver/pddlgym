@@ -73,11 +73,11 @@ def sample_state(domain, num_rows=6, num_cols=6,
     
     # Get robot location
     if randomize_robot_start:
-        loc = get_random_location(locations_in_grid)
+        robot_loc = get_random_location(locations_in_grid)
     else:
-        loc = locations_in_grid[0, 0]
-    occupied_locations.add(loc)
-    state.add(robot_at(robot, loc))
+        robot_loc = locations_in_grid[0, 0]
+    occupied_locations.add(robot_loc)
+    state.add(robot_at(robot, robot_loc))
 
     # Add hospital
     hospital = hospital_type("hospital0")
@@ -129,7 +129,7 @@ def sample_state(domain, num_rows=6, num_cols=6,
                 wall_idx += 1
                 objects.add(wall)
                 state.add(wall_at(wall, loc))
-            else:
+            elif loc != robot_loc:
                 state.add(clear(loc))
 
     # Generate actions

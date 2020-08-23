@@ -61,7 +61,6 @@
 	(clear f1-4f)
 	(clear f1-5f)
 	(clear f2-0f)
-	(clear f2-3f)
 	(clear f2-4f)
 	(clear f2-5f)
 	(clear f3-0f)
