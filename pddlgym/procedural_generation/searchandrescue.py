@@ -12,10 +12,12 @@ PDDLDIR = os.path.join(os.path.dirname(pddlgym.__file__), "pddl")
 DOMAIN_NAME = "searchandrescue"
 
 
-def get_random_location(locations_in_grid, rng=np.random):
-    r = rng.randint(locations_in_grid.shape[0])
-    c = rng.randint(locations_in_grid.shape[1])
-    return locations_in_grid[r, c]
+def get_random_location(locations_in_grid, disallowed_mask=None, rng=np.random):
+    while True:
+        r = rng.randint(locations_in_grid.shape[0])
+        c = rng.randint(locations_in_grid.shape[1])
+        if disallowed_mask is None or not disallowed_mask[r, c]:
+            return locations_in_grid[r, c]
 
 def sample_state(domain, num_rows=6, num_cols=6,
                  num_people=1,
@@ -66,6 +68,16 @@ def sample_state(domain, num_rows=6, num_cols=6,
             if c < num_cols - 1:
                 state.add(conn(loc, locations_in_grid[r, c+1], 'right'))
 
+    # Generate walls
+    if randomize_walls:
+        wall_rng = np.random
+    else:
+        wall_rng =  np.random.RandomState(0)
+    wall_mask = wall_rng.uniform(size=(num_rows, num_cols)) < wall_probability
+    # Hack
+    wall_mask[0, 0] = 0
+    wall_mask[-1, -1] = 0
+
     # Add robot
     robot = robot_type("robot0")
     objects.add(robot)
@@ -73,7 +85,8 @@ def sample_state(domain, num_rows=6, num_cols=6,
     
     # Get robot location
     if randomize_robot_start:
-        robot_loc = get_random_location(locations_in_grid)
+        robot_loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
     else:
         robot_loc = locations_in_grid[0, 0]
     occupied_locations.add(robot_loc)
@@ -85,7 +98,8 @@ def sample_state(domain, num_rows=6, num_cols=6,
 
     # Get hospital loc
     if randomize_hospital_loc:
-        hospital_loc = get_random_location(locations_in_grid)
+        hospital_loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
     else:
         hospital_loc = locations_in_grid[-1, -1]
     occupied_locations.add(hospital_loc)
@@ -101,23 +115,14 @@ def sample_state(domain, num_rows=6, num_cols=6,
     # Get people locations
     for person_idx, person in enumerate(people):
         if randomize_person_loc:
-            loc = get_random_location(locations_in_grid)
+            loc = get_random_location(locations_in_grid,
+                disallowed_mask=wall_mask)
         else:
-            loc = get_random_location(locations_in_grid, 
+            loc = get_random_location(locations_in_grid,
+                disallowed_mask=wall_mask,
                 rng=np.random.RandomState(123+person_idx))
         occupied_locations.add(loc)
         state.add(person_at(person, loc))
-
-    # Generate walls
-    if randomize_walls:
-        wall_rng = np.random
-    else:
-        wall_rng =  np.random.RandomState(0)
-    wall_mask = wall_rng.uniform(size=(num_rows, num_cols)) < wall_probability
-
-    # Hack
-    wall_mask[0, 0] = 0
-    wall_mask[-1, -1] = 0
 
     for r in range(num_rows):
         for c in range(num_cols):

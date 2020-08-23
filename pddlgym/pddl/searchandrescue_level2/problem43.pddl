@@ -49,7 +49,7 @@
   )
   (:init 
 	(clear f0-0f)
-	(clear f0-2f)
+	(clear f0-1f)
 	(clear f0-3f)
 	(clear f0-4f)
 	(clear f0-5f)
@@ -206,7 +206,7 @@
 	(move up)
 	(person-at person0 f3-4f)
 	(pickup person0)
-	(robot-at robot0 f0-1f)
+	(robot-at robot0 f0-2f)
 	(wall-at wall2-2 f2-2f)
 	(wall-at wall2-3 f2-3f)
 	(wall-at wall2-4 f2-4f)

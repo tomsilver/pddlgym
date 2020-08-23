@@ -48,7 +48,6 @@
 	wall5-4 - wall
   )
   (:init 
-	(clear f0-0f)
 	(clear f0-1f)
 	(clear f0-2f)
 	(clear f0-3f)
@@ -62,6 +61,7 @@
 	(clear f1-5f)
 	(clear f2-0f)
 	(clear f2-1f)
+	(clear f2-5f)
 	(clear f3-0f)
 	(clear f3-1f)
 	(clear f3-2f)
@@ -204,9 +204,9 @@
 	(move left)
 	(move right)
 	(move up)
-	(person-at person0 f0-5f)
+	(person-at person0 f2-5f)
 	(pickup person0)
-	(robot-at robot0 f2-5f)
+	(robot-at robot0 f0-0f)
 	(wall-at wall2-2 f2-2f)
 	(wall-at wall2-3 f2-3f)
 	(wall-at wall2-4 f2-4f)

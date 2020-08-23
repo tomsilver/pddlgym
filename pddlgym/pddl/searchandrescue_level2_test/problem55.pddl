@@ -43,6 +43,7 @@
 	wall2-2 - wall
 	wall2-3 - wall
 	wall2-4 - wall
+	wall4-0 - wall
 	wall4-2 - wall
 	wall5-4 - wall
   )
@@ -72,7 +73,6 @@
 	(clear f4-3f)
 	(clear f4-4f)
 	(clear f4-5f)
-	(clear f5-0f)
 	(clear f5-1f)
 	(clear f5-2f)
 	(clear f5-3f)
@@ -204,12 +204,13 @@
 	(move left)
 	(move right)
 	(move up)
-	(person-at person0 f4-3f)
+	(person-at person0 f3-5f)
 	(pickup person0)
-	(robot-at robot0 f4-0f)
+	(robot-at robot0 f5-0f)
 	(wall-at wall2-2 f2-2f)
 	(wall-at wall2-3 f2-3f)
 	(wall-at wall2-4 f2-4f)
+	(wall-at wall4-0 f4-0f)
 	(wall-at wall4-2 f4-2f)
 	(wall-at wall5-4 f5-4f)
   )

@@ -204,7 +204,7 @@
 	(move left)
 	(move right)
 	(move up)
-	(person-at person0 f4-3f)
+	(person-at person0 f0-3f)
 	(pickup person0)
 	(robot-at robot0 f3-2f)
 	(wall-at wall2-2 f2-2f)
