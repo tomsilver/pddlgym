@@ -17,7 +17,7 @@ def get_random_location(locations_in_grid, rng=np.random):
     c = rng.randint(locations_in_grid.shape[1])
     return locations_in_grid[r, c]
 
-def sample_state(domain, num_rows=10, num_cols=10,
+def sample_state(domain, num_rows=6, num_cols=6,
                  num_people=1,
                  randomize_person_loc=False,
                  randomize_robot_start=True,
@@ -150,7 +150,7 @@ def create_goal(domain, people, hospital_loc, num_selected_people=1):
     return LiteralConjunction(goal_lits)
 
 def sample_problem(domain, problem_dir, problem_outfile, 
-                   num_rows=10, num_cols=10,
+                   num_rows=6, num_cols=6,
                    num_people=1, num_selected_people=1,
                    randomize_person_loc=False,
                    randomize_robot_start=True,
@@ -230,7 +230,9 @@ def generate_problems(num_train=50, num_test=10, level=1, **kwargs):
 
 
 if __name__ == "__main__":
-    generate_problems(level=1,
+    generate_problems(
+        num_train=20,
+        level=1,
         num_people=1, 
         num_selected_people=1,
         randomize_person_loc=False,
