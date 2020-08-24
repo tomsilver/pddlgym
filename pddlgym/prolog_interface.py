@@ -1,4 +1,5 @@
 from pddlgym.structs import Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists, Not
+import random
 from collections import defaultdict
 import subprocess
 import sys
@@ -78,10 +79,10 @@ class PrologInterface:
         """
         preamble = self._prolog_preamble(self._conds)
         type_str = self._prolog_type_str(self._kb)
-        kb_str = self._prolog_kb_str(self._kb)
+        self._kb_str = self._prolog_kb_str(self._kb)  # can be changed by prolog_goal
         goal_str, variables = self._prolog_goal(self._conds, self._allow_redundant_variables)
         end = self._prolog_end(variables, self._max_assignment_count)
-        return '\n'.join([preamble, kb_str, type_str, goal_str, end])
+        return '\n'.join([preamble, self._kb_str, type_str, goal_str, end])
 
     @classmethod
     def _prolog_kb_str(cls, kb):
@@ -108,8 +109,8 @@ class PrologInterface:
     def _prolog_goal(self, conds, allow_redundant_variables):
         """
         """
-        all_vars = sorted({ v for lit in conds if isinstance(lit, Literal)\
-                            for v in lit.variables if v.startswith("?") })
+        all_vars = sorted({ v for lit in conds
+                            for v in self._get_variables(lit, set()) if v.startswith("?") })
         all_vars_cleaned = [self._clean_variable_name(v) for v in all_vars]
         main_cond_str = ""
         for lit in conds:
@@ -129,6 +130,24 @@ class PrologInterface:
             final_str = final_str[:-2] + "."
         return final_str, all_vars
 
+    def _get_variables(self, lit, free_vars):
+        if isinstance(lit, Literal):
+            return {v for v in lit.variables
+                    if v not in free_vars}
+        if isinstance(lit, (LiteralConjunction, LiteralDisjunction)):
+            return {v for nested_lit in lit.literals
+                    for v in self._get_variables(nested_lit, free_vars)}
+        if isinstance(lit, (ForAll, Exists)):
+            for var in lit.variables:
+                assert var not in free_vars
+                free_vars.add(var)
+            result = self._get_variables(lit.body, free_vars)
+            for var in lit.variables:
+                assert var in free_vars
+                free_vars.remove(var)
+            return result
+        raise Exception("Unsupported lit: {}".format(lit))
+
     def _prolog_goal_line(self, lit):
         """
         """
@@ -139,9 +158,10 @@ class PrologInterface:
             inner_str = ";".join(self._prolog_goal_line(l) for l in lit.literals)
             return "({})".format(inner_str)
         if lit.is_negative:
-            pos_pred_str = self._prolog_goal_line(lit.positive)
-            pred_str = "\\+({})".format(pos_pred_str)
-            return pred_str
+            raise NotImplementedError("Prolog behaves unexpectedly with negative literals")
+            # pos_pred_str = self._prolog_goal_line(lit.positive)
+            # pred_str = "\\+({})".format(pos_pred_str)
+            # return pred_str
         if isinstance(lit, Literal):
             pred_name = self._clean_predicate_name(lit.predicate.name)
             variables = ",".join([self._clean_variable_name(a.name) for a in lit.variables])
@@ -158,8 +178,14 @@ class PrologInterface:
             pred_str = "forall(member({}, {}), {})".format(variable, objects_str, pred_str_body)
             return pred_str
         if isinstance(lit, Exists):
-            return self._prolog_goal_line(Not(ForAll(Not(lit.body), lit.variables)))
-        raise NotImplementedError()
+            variables = ",".join([self._clean_variable_name(a.name)
+                                  for a in self._get_variables(lit, set())])
+            rand_num = random.randint(0, 1e6)
+            body = self._prolog_goal_line(lit.body)
+            self._kb_str += "\nhelper{}({}) :- {}.".format(rand_num, variables, body)
+            pred_str = "helper{}({})".format(rand_num, variables)
+            return pred_str
+        raise NotImplementedError(lit)
 
     @classmethod
     def _prolog_preamble(cls, conds):
