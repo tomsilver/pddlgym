@@ -40,7 +40,7 @@ class InvalidAction(Exception):
     pass
 
 def get_successor_state(state, action, domain, raise_error_on_invalid_action=False, 
-                        inference_mode="infer"):
+                        inference_mode="infer", require_unique_assignment=True):
     """
     Compute successor state using operators in the domain
 
@@ -51,13 +51,15 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
     domain : PDDLDomain
     raise_error_on_invalid_action : bool
     inference_mode : "csp" or "prolog" or "infer"
+    require_unique_assignment : bool
 
     Returns
     -------
     next_state : State
     """
     selected_operator, assignment = _select_operator(state, action, domain, 
-        inference_mode=inference_mode)
+        inference_mode=inference_mode, 
+        require_unique_assignment=require_unique_assignment)
 
     # A ground operator was found; execute the ground effects
     if assignment is not None:
@@ -80,7 +82,8 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
 
     return state
 
-def _select_operator(state, action, domain, inference_mode="infer"):
+def _select_operator(state, action, domain, inference_mode="infer",
+                     require_unique_assignment=True):
     """
     Helper for successor generation
     """
@@ -129,7 +132,8 @@ def _select_operator(state, action, domain, inference_mode="infer"):
             mode=inference_mode)
         num_assignments = len(assignments)
         if num_assignments > 0:
-            assert num_assignments == 1, "Nondeterministic envs not supported"
+            if require_unique_assignment:
+                assert num_assignments == 1, "Nondeterministic envs not supported"
             selected_operator = operator
             assignment = assignments[0]
             break
