@@ -39,6 +39,121 @@ class InvalidAction(Exception):
     """See PDDLEnv docstring"""
     pass
 
+def get_successor_state(state, action, domain, raise_error_on_invalid_action=False, 
+                        inference_mode="infer"):
+    """
+    Compute successor state using operators in the domain
+
+    Parameters
+    ----------
+    state : State
+    action : Literal
+    domain : PDDLDomain
+    raise_error_on_invalid_action : bool
+    inference_mode : "csp" or "prolog" or "infer"
+
+    Returns
+    -------
+    next_state : State
+    """
+    selected_operator, assignment = _select_operator(state, action, domain, 
+        inference_mode=inference_mode)
+
+    # A ground operator was found; execute the ground effects
+    if assignment is not None:
+        # Get operator effects
+        if isinstance(selected_operator.effects, LiteralConjunction):
+            effects = selected_operator.effects.literals
+        else:
+            assert isinstance(selected_operator.effects, Literal)
+            effects = [selected_operator.effects]
+
+        state = _apply_effects(
+            state,
+            effects,
+            assignment,
+        )
+
+    # No operator was found
+    elif raise_error_on_invalid_action:
+        raise InvalidAction()
+
+    return state
+
+def _select_operator(state, action, domain, inference_mode="infer"):
+    """
+    Helper for successor generation
+    """
+    if inference_mode == "infer":
+        inference_mode = "csp" if _check_domain_for_strips(domain) else "prolog"
+
+    if domain.operators_as_actions:
+        # There should be only one possible operator if actions are operators
+        possible_operators = set()
+        for name, operator in domain.operators.items():
+            if name.lower() == action.predicate.name.lower():
+                assert len(possible_operators) == 0
+                possible_operators.add(operator)
+    else:
+        # Possibly multiple operators per action
+        possible_operators = set(domain.operators.values())
+
+    # Knowledge base: literals in the state + action taken
+    kb = set(state.literals) | {action}
+
+    selected_operator = None
+    assignment = None
+    for operator in possible_operators:
+        if isinstance(operator.preconds, Literal):
+            conds = [operator.preconds]
+        else:
+            conds = operator.preconds.literals
+        # Necessary for binding the operator arguments to the variables
+        if domain.operators_as_actions:
+            conds = [action.predicate(*operator.params)] + conds
+        # Check whether action is in the preconditions
+        action_literal = None
+        for lit in conds: 
+            if lit.predicate == action.predicate:
+                action_literal = lit
+                break
+        if action_literal is None:
+            continue
+        # For proving, consider action variable first
+        action_variables = action_literal.variables
+        variable_sort_fn = lambda v : (not v in action_variables, v)
+        assignments = find_satisfying_assignments(kb, conds,
+            variable_sort_fn=variable_sort_fn,
+            type_to_parent_types=domain.type_to_parent_types,
+            constants=domain.constants,
+            mode=inference_mode)
+        num_assignments = len(assignments)
+        if num_assignments > 0:
+            assert num_assignments == 1, "Nondeterministic envs not supported"
+            selected_operator = operator
+            assignment = assignments[0]
+            break
+
+    return selected_operator, assignment
+
+def _check_domain_for_strips(domain):
+    """
+    Check whether all operators in a domain are STRIPS
+    """
+    for operator in domain.operators.values():
+        if not _check_struct_for_strips(operator.preconds):
+            return False
+    return True
+
+def _check_struct_for_strips(struct):
+    """
+    Helper for _check_domain_for_strips
+    """
+    if isinstance(struct, Literal):
+        return True
+    if isinstance(struct, LiteralConjunction):
+        return all(_check_struct_for_strips(l) for l in struct.literals)
+    return False
 
 def _apply_effects(state, lifted_effects, assignments):
     """
@@ -191,7 +306,7 @@ class PDDLEnv(gym.Env):
             operators_as_actions=self.operators_as_actions)
 
         # Determine if the domain is STRIPS
-        self._domain_is_strips = self._check_domain_for_strips(self.domain)
+        self._domain_is_strips = _check_domain_for_strips(self.domain)
         self._inference_mode = "csp" if self._domain_is_strips else "prolog"
 
         # Initialize action space with problem-independent components
@@ -343,59 +458,6 @@ class PDDLEnv(gym.Env):
                 'domain_file' : self.domain.domain_fname }
         return info
 
-    def _select_operator(self, state, action):
-        """
-        Helper function for step.
-        """
-        if self.operators_as_actions:
-            # There should be only one possible operator if actions are operators
-            possible_operators = set()
-            for name, operator in self.domain.operators.items():
-                if name.lower() == action.predicate.name.lower():
-                    assert len(possible_operators) == 0
-                    possible_operators.add(operator)
-        else:
-            # Possibly multiple operators per action
-            possible_operators = set(self.domain.operators.values())
-
-        # Knowledge base: literals in the state + action taken
-        kb = set(state.literals) | {action}
-
-        selected_operator = None
-        assignment = None
-        for operator in possible_operators:
-            if isinstance(operator.preconds, Literal):
-                conds = [operator.preconds]
-            else:
-                conds = operator.preconds.literals
-            # Necessary for binding the operator arguments to the variables
-            if self.operators_as_actions:
-                conds = [action.predicate(*operator.params)] + conds
-            # Check whether action is in the preconditions
-            action_literal = None
-            for lit in conds: 
-                if lit.predicate == action.predicate:
-                    action_literal = lit
-                    break
-            if action_literal is None:
-                continue
-            # For proving, consider action variable first
-            action_variables = action_literal.variables
-            variable_sort_fn = lambda v : (not v in action_variables, v)
-            assignments = find_satisfying_assignments(kb, conds,
-                variable_sort_fn=variable_sort_fn,
-                type_to_parent_types=self.domain.type_to_parent_types,
-                constants=self.domain.constants,
-                mode=self._inference_mode)
-            num_assignments = len(assignments)
-            if num_assignments > 0:
-                assert num_assignments == 1, "Nondeterministic envs not supported"
-                selected_operator = operator
-                assignment = assignments[0]
-                break
-
-        return selected_operator, assignment
-
     def step(self, action):
         """
         Execute an action and update the state.
@@ -430,28 +492,9 @@ class PDDLEnv(gym.Env):
         return state, reward, done, debug_info
 
     def sample_transition(self, action):
-        selected_operator, assignment = self._select_operator(self._state,
-                                                              action)
-        state = self._state
-
-        # A ground operator was found; execute the ground effects
-        if assignment is not None:
-            # Get operator effects
-            if isinstance(selected_operator.effects, LiteralConjunction):
-                effects = selected_operator.effects.literals
-            else:
-                assert isinstance(selected_operator.effects, Literal)
-                effects = [selected_operator.effects]
-
-            state = _apply_effects(
-                self._state,
-                effects,
-                assignment,
-            )
-
-        # No operator was found
-        elif self._raise_error_on_invalid_action:
-            raise InvalidAction()
+        state = get_successor_state(self._state, action, self.domain,
+            inference_mode=self._inference_mode,
+            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
 
         done = self._is_goal_reached(state)
 
@@ -509,21 +552,9 @@ class PDDLEnv(gym.Env):
         """
         return check_goal(state, self._goal)
 
-    def _check_domain_for_strips(self, domain):
-        for operator in domain.operators.values():
-            if not self._check_struct_for_strips(operator.preconds):
-                return False
-        return True
-
-    def _check_struct_for_strips(self, struct):
-        if isinstance(struct, Literal):
-            return True
-        if isinstance(struct, LiteralConjunction):
-            return all(self._check_struct_for_strips(l) for l in struct.literals)
-        return False
-
     def _action_valid_test(self, state, action):
-        _, assignment = self._select_operator(state, action)
+        _, assignment = _select_operator(state, action, self.domain, 
+            inference_mode=self._inference_mode)
         return assignment is not None
 
     def render(self, *args, **kwargs):
