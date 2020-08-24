@@ -492,7 +492,7 @@ class PDDLEnv(gym.Env):
         return state, reward, done, debug_info
 
     def sample_transition(self, action):
-        state = get_successor_state(self._state, action, self.domain,
+        state = self._get_successor_state(self._state, action, self.domain,
             inference_mode=self._inference_mode,
             raise_error_on_invalid_action=self._raise_error_on_invalid_action)
 
@@ -508,6 +508,11 @@ class PDDLEnv(gym.Env):
             debug_info["next_state_heuristic"] = next_heuristic
 
         return state, reward, done, debug_info
+
+    def _get_successor_state(self, *args, **kwargs):
+        """Separated out to allow for overrides in subclasses
+        """
+        return get_successor_state(*args, **kwargs)
 
     def extrinsic_reward(self, state, done):
         if done:

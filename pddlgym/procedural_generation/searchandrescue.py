@@ -12,12 +12,14 @@ PDDLDIR = os.path.join(os.path.dirname(pddlgym.__file__), "pddl")
 DOMAIN_NAME = "searchandrescue"
 
 
-def get_random_location(locations_in_grid, rng=np.random):
-    r = rng.randint(locations_in_grid.shape[0])
-    c = rng.randint(locations_in_grid.shape[1])
-    return locations_in_grid[r, c]
+def get_random_location(locations_in_grid, disallowed_mask=None, rng=np.random):
+    while True:
+        r = rng.randint(locations_in_grid.shape[0])
+        c = rng.randint(locations_in_grid.shape[1])
+        if disallowed_mask is None or not disallowed_mask[r, c]:
+            return locations_in_grid[r, c]
 
-def sample_state(domain, num_rows=10, num_cols=10,
+def sample_state(domain, num_rows=6, num_cols=6,
                  num_people=1,
                  randomize_person_loc=False,
                  randomize_robot_start=True,
@@ -66,6 +68,16 @@ def sample_state(domain, num_rows=10, num_cols=10,
             if c < num_cols - 1:
                 state.add(conn(loc, locations_in_grid[r, c+1], 'right'))
 
+    # Generate walls
+    if randomize_walls:
+        wall_rng = np.random
+    else:
+        wall_rng =  np.random.RandomState(0)
+    wall_mask = wall_rng.uniform(size=(num_rows, num_cols)) < wall_probability
+    # Hack
+    wall_mask[0, 0] = 0
+    wall_mask[-1, -1] = 0
+
     # Add robot
     robot = robot_type("robot0")
     objects.add(robot)
@@ -73,11 +85,12 @@ def sample_state(domain, num_rows=10, num_cols=10,
     
     # Get robot location
     if randomize_robot_start:
-        loc = get_random_location(locations_in_grid)
+        robot_loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
     else:
-        loc = locations_in_grid[0, 0]
-    occupied_locations.add(loc)
-    state.add(robot_at(robot, loc))
+        robot_loc = locations_in_grid[0, 0]
+    occupied_locations.add(robot_loc)
+    state.add(robot_at(robot, robot_loc))
 
     # Add hospital
     hospital = hospital_type("hospital0")
@@ -85,7 +98,8 @@ def sample_state(domain, num_rows=10, num_cols=10,
 
     # Get hospital loc
     if randomize_hospital_loc:
-        hospital_loc = get_random_location(locations_in_grid)
+        hospital_loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
     else:
         hospital_loc = locations_in_grid[-1, -1]
     occupied_locations.add(hospital_loc)
@@ -101,35 +115,24 @@ def sample_state(domain, num_rows=10, num_cols=10,
     # Get people locations
     for person_idx, person in enumerate(people):
         if randomize_person_loc:
-            loc = get_random_location(locations_in_grid)
+            loc = get_random_location(locations_in_grid,
+                disallowed_mask=wall_mask)
         else:
-            loc = get_random_location(locations_in_grid, 
+            loc = get_random_location(locations_in_grid,
+                disallowed_mask=wall_mask,
                 rng=np.random.RandomState(123+person_idx))
         occupied_locations.add(loc)
         state.add(person_at(person, loc))
 
-    # Generate walls
-    if randomize_walls:
-        wall_rng = np.random
-    else:
-        wall_rng =  np.random.RandomState(0)
-    wall_mask = wall_rng.uniform(size=(num_rows, num_cols)) < wall_probability
-
-    # Hack
-    wall_mask[0, 0] = 0
-    wall_mask[-1, -1] = 0
-
-    wall_idx = 0
     for r in range(num_rows):
         for c in range(num_cols):
             loc = locations_in_grid[r, c]
             # Don't allow walls at occupied locs
             if loc not in occupied_locations and wall_mask[r, c]:
-                wall = wall_type(f"wall{wall_idx}")
-                wall_idx += 1
+                wall = wall_type(f"wall{r}-{c}")
                 objects.add(wall)
                 state.add(wall_at(wall, loc))
-            else:
+            elif loc != robot_loc:
                 state.add(clear(loc))
 
     # Generate actions
@@ -150,7 +153,7 @@ def create_goal(domain, people, hospital_loc, num_selected_people=1):
     return LiteralConjunction(goal_lits)
 
 def sample_problem(domain, problem_dir, problem_outfile, 
-                   num_rows=10, num_cols=10,
+                   num_rows=6, num_cols=6,
                    num_people=1, num_selected_people=1,
                    randomize_person_loc=False,
                    randomize_robot_start=True,
@@ -230,7 +233,9 @@ def generate_problems(num_train=50, num_test=10, level=1, **kwargs):
 
 
 if __name__ == "__main__":
-    generate_problems(level=1,
+    generate_problems(
+        num_train=20,
+        level=1,
         num_people=1, 
         num_selected_people=1,
         randomize_person_loc=False,
@@ -256,7 +261,7 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=4,
-        num_people=5, # !
+        num_people=3, # !
         num_selected_people=1,
         randomize_person_loc=True,
         randomize_robot_start=True,
@@ -265,8 +270,8 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=5,
-        num_people=5,
-        num_selected_people=(1, 5), # !
+        num_people=3,
+        num_selected_people=(2, 3), # !
         randomize_person_loc=True,
         randomize_robot_start=True,
         randomize_walls=False,
@@ -274,8 +279,8 @@ if __name__ == "__main__":
     )
 
     generate_problems(level=6,
-        num_people=5,
-        num_selected_people=(1, 5),
+        num_people=3,
+        num_selected_people=(2, 3),
         randomize_person_loc=True,
         randomize_robot_start=True,
         randomize_walls=True, # !

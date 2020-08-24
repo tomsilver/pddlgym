@@ -1,6 +1,9 @@
 (define (domain searchandrescue)
     (:requirements :typing)
     (:types robot person wall hospital location direction)
+    (:constants
+        up down left right - direction
+    )
     (:predicates
         (conn ?v0 - location ?v1 - location ?v2 - direction)
         (clear ?v0 - location)
@@ -13,10 +16,6 @@
         (move ?v0 - direction)
         (pickup ?v0 - person)
         (dropoff)
-    )
-
-    (:constants
-        up down left right - direction
     )
 
     ; (:actions move pickup dropoff)

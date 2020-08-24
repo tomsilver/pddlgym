@@ -118,12 +118,6 @@ for env_name, kwargs in [
                    'dynamic_action_space' : True}),
         ("river", {}),
         ("explodingblocks", {}),
-        ("searchandrescue_level1", {'render' : sar_render}),
-        ("searchandrescue_level2", {'render' : sar_render}),
-        ("searchandrescue_level3", {'render' : sar_render}),
-        ("searchandrescue_level4", {'render' : sar_render}),
-        ("searchandrescue_level5", {'render' : sar_render}),
-        ("searchandrescue_level6", {'render' : sar_render}),
 
 ]:
     other_args = {
@@ -133,3 +127,17 @@ for env_name, kwargs in [
     kwargs.update(other_args)
     for is_test in [False, True]:
         register_pddl_env(env_name, is_test, kwargs)
+
+
+# Custom environments
+for level in range(1, 7):
+    register(
+        id=f'SearchAndRescueLevel{level}-v0',
+        entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
+        kwargs={'level' : level, 'test' : False, 'render_version' : 'slow'},
+    )
+    register(
+        id=f'SearchAndRescueLevel{level}Test-v0',
+        entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
+        kwargs={'level' : level, 'test' : True, 'render_version' : 'slow'},
+    )
