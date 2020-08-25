@@ -75,6 +75,7 @@ class Predicate(object):
         self.is_negative = is_negative
         self.negated_as_failure = negated_as_failure
         self.is_anti = is_anti
+        self.is_derived = False
 
     def __call__(self, *variables):
         return Literal(self, list(variables))
@@ -142,6 +143,24 @@ class Predicate(object):
         if self.negated_as_failure:
             raise NotImplementedError
         return "({} {})".format(self, " ".join(self.pddl_variables()))
+
+
+class DerivedPredicate(Predicate):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.is_derived = True
+        self.param_names = None
+        self.body = None
+
+    def setup(self, param_names, body):
+        self.param_names = param_names
+        assert len(self.param_names) == len(self.var_types)
+        self.body = body
+
+    def derived_pddl_str(self):
+        return "(:derived ({} {}) {})".format(
+            self.name, " ".join(self.param_names), self.body.pddl_str())
+
 
 ### Literals ###
 class Literal:

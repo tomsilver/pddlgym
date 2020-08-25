@@ -2,7 +2,7 @@
 """
 from pddlgym.structs import (Type, Predicate, LiteralConjunction, LiteralDisjunction,
                              Not, Anti, ForAll, Exists, ProbabilisticEffect,
-                             TypedEntity, ground_literal)
+                             TypedEntity, ground_literal, DerivedPredicate)
 
 import re
 
@@ -391,9 +391,12 @@ class PDDLDomain:
 
   {}
 
+  {}
+
 )
         """.format(self.domain_name, requirements, self._types_pddl_str(),
-            constants, predicates, " ".join(map(str, self.actions)), operators)
+                   constants, predicates, " ".join(map(str, self.actions)), operators,
+                   self._derived_preds_pddl_str())
 
         with open(fname, 'w') as f:
             f.write(domain_str)
@@ -404,6 +407,13 @@ class PDDLDomain:
                 self.type_hierarchy[k]), k) for k in self.type_hierarchy])
         else:
             return " ".join(self.types)
+
+    def _derived_preds_pddl_str(self):
+        mystr = ""
+        for pred in self.predicates.values():
+            if pred.is_derived:
+                mystr += "{}\n\n".format(pred.derived_pddl_str())
+        return mystr
 
 
 
@@ -461,6 +471,7 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
         self.domain_name = re.search(patt, self.domain).groups()[0].strip()
         self._parse_domain_types()
         self._parse_domain_predicates()
+        self._parse_domain_derived_predicates()
         self._parse_constants()
         self._parse_domain_operators()
 
@@ -548,6 +559,26 @@ class PDDLDomainParser(PDDLParser, PDDLDomain):
         # Handle equality
         if "=" in self.domain:
             self.predicates["="] = Predicate("=", 2)
+
+    def _parse_domain_derived_predicates(self):
+        for match in re.finditer(r"\(:derived", self.domain):
+            derived_pred = self._find_balanced_expression(self.domain, match.start())
+            derived_pred = derived_pred[9:-1].strip()
+            head, body = self._find_all_balanced_expressions(derived_pred)
+            head = head.strip().strip("(").strip(")")
+            name = head.split()[0]
+            assert name in self.predicates
+            params = head.split("?")[1:]
+            types = self.predicates[name].var_types
+            assert len(params) == len(types)
+            params = [param_type("?"+param.strip())
+                      for param, param_type in zip(params, types)]
+            del self.predicates[name]
+            self.predicates[name] = DerivedPredicate(
+                name, len(params), types)
+            body = self._parse_into_literal(body, params)
+            param_names = [p.name for p in params]
+            self.predicates[name].setup(param_names, body)
 
     def _parse_domain_operators(self):
         matches = re.finditer(r"\(:action", self.domain)
@@ -658,7 +689,8 @@ class PDDLProblemParser(PDDLParser):
         """
         objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
                                                     objects))))
-        init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)])
+        init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)
+                                  if not lit.predicate.is_derived])
 
         problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
         return problem_str.format(
