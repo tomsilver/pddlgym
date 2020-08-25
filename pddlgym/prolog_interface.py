@@ -201,6 +201,7 @@ class PrologInterface:
 
         return """print_solutions([]).
 print_solutions([H|T]) :- write(H), nl, print_solutions(T).
+:- style_check(-singleton).
 {}
 """.format(pred_definitions)
 
