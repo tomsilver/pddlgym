@@ -439,6 +439,7 @@ class PDDLEnv(gym.Env):
         initial_state = State(frozenset(self._problem.initial_state),
                               frozenset(self._problem.objects),
                               self._problem.goal)
+        initial_state = self._handle_derived_literals(initial_state)
         self.set_state(initial_state)
 
         self._goal = self._problem.goal
@@ -500,6 +501,7 @@ class PDDLEnv(gym.Env):
         state = self._get_successor_state(self._state, action, self.domain,
             inference_mode=self._inference_mode,
             raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+        state = self._handle_derived_literals(state)
 
         done = self._is_goal_reached(state)
 
@@ -570,3 +572,33 @@ class PDDLEnv(gym.Env):
     def render(self, *args, **kwargs):
         if self._render:
             return self._render(self._state.literals, *args, **kwargs)
+
+    def _handle_derived_literals(self, state):
+        # first remove any old derived literals since they're outdated
+        to_remove = set()
+        for lit in state.literals:
+            if lit.predicate.is_derived:
+                to_remove.add(lit)
+        state = state.with_literals(state.literals - to_remove)
+        while True:  # loop, because derived predicates can be recursive
+            new_derived_literals = set()
+            for pred in self.domain.predicates.values():
+                if not pred.is_derived:
+                    continue
+                assignments = find_satisfying_assignments(
+                    state.literals, pred.body,
+                    type_to_parent_types=self.domain.type_to_parent_types,
+                    constants=self.domain.constants,
+                    mode="prolog",
+                    max_assignment_count=99999)
+                for assignment in assignments:
+                    objects = [assignment[param_type(param_name)]
+                               for param_name, param_type in zip(pred.param_names, pred.var_types)]
+                    derived_literal = pred(*objects)
+                    if derived_literal not in state.literals:
+                        new_derived_literals.add(derived_literal)
+            if new_derived_literals:
+                state = state.with_literals(state.literals | new_derived_literals)
+            else:  # terminate
+                break
+        return state
