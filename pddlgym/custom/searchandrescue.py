@@ -178,3 +178,9 @@ class SearchAndRescueEnv(PDDLEnv):
         """Custom (faster than generic)
         """
         return get_sar_successor_state(state, action)
+
+    def get_possible_actions(self):
+        """Light wrapper around the action space, for convenience.
+        """
+        assert not self._dynamic_action_space
+        return self.action_space.all_ground_literals(None)
