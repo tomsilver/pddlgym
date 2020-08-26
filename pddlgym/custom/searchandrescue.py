@@ -1,6 +1,6 @@
 from pddlgym.core import PDDLEnv
 from pddlgym.rendering import sar_render, slow_sar_render
-from pddlgym.structs import Type, Predicate, Not
+from pddlgym.structs import Type, Predicate, Not, State
 import pddlgym
 import os
 
@@ -179,8 +179,21 @@ class SearchAndRescueEnv(PDDLEnv):
         """
         return get_sar_successor_state(state, action)
 
+    def get_successor_state(self, state, action):
+        """Allow for public access
+        """
+        return self._get_successor_state(state, action, self.domain)
+
     def get_possible_actions(self):
         """Light wrapper around the action space, for convenience.
         """
         assert not self._dynamic_action_space
-        return self.action_space.all_ground_literals(None)
+        state = self.get_state()
+        if not state:
+            raise Exception("Must all reset() before get_possible_actions().")
+        return sorted(self.action_space.all_ground_literals(state))
+
+    def render_from_state(self, state):
+        """Light wrapper around the render function, for convenience
+        """
+        return self._render(state.literals)
