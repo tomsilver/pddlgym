@@ -68,7 +68,7 @@ def build_layout(obs):
 
 def get_token_images(obs_cell):
     images = []
-    for token in [ROBOT_HOLDING_PERSON, ROBOT, HOSPITAL, WALL, ROBOT_HOLDING_PERSON, HOSPITAL]:
+    for token in [HOSPITAL, WALL, ROBOT_HOLDING_PERSON, ROBOT, PERSON]:
         if obs_cell[token]:
             images.append(TOKEN_IMAGES[token])
     return images
