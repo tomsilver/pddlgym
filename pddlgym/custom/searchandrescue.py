@@ -197,3 +197,8 @@ class SearchAndRescueEnv(PDDLEnv):
         """Light wrapper around the render function, for convenience
         """
         return self._render(state.literals)
+
+    def check_goal(self, state):
+        """Allow for public access
+        """
+        return self._is_goal_reached(state)
