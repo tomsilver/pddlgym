@@ -196,4 +196,5 @@ class SearchAndRescueEnv(PDDLEnv):
     def render_from_state(self, state):
         """Light wrapper around the render function, for convenience
         """
+        assert False
         return self._render(state.literals)
