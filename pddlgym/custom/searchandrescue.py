@@ -188,10 +188,9 @@ class PDDLSearchAndRescueEnv(PDDLEnv):
         """Light wrapper around the action space, for convenience.
         """
         assert not self._dynamic_action_space
-        state = self.get_state()
-        if not state:
+        if not self._state:
             raise Exception("Must all reset() before get_possible_actions().")
-        return sorted(self.action_space.all_ground_literals(state))
+        return sorted(self.action_space.all_ground_literals(self._state))
 
     def _action_valid_test(self, state, action):
         """
@@ -233,6 +232,7 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
         raise NotImplementedError()
 
     def _state_to_internal(self, state):
+        state = dict(state)
         new_state_literals = set()
 
         directions_to_deltas = {
@@ -311,6 +311,7 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
         for lit in internal_state.goal.literals:
             assert lit.predicate == self.person_at
             state["rescue"].add(lit.variables[0].name)
+        state["rescue"] = frozenset(state["rescue"]) # make hashable
         for lit in internal_state.literals:
             if lit.predicate.name.endswith("at"):
                 obj_name = lit.variables[0].name
@@ -319,6 +320,7 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
             if lit.predicate.name == "carrying":
                 person_name = lit.variables[1].name
                 state["carrying"] = person_name
+        state = tuple(sorted(state.items())) # make hashable
         return state
 
     def _loc_to_rc(self, loc_str):
