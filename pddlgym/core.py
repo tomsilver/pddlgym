@@ -19,20 +19,16 @@ from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments, check_goal
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
-from pddlgym.planning import get_fd_optimal_plan_cost, get_pyperplan_heuristic
 
-import pyperplan
 import copy
 import functools
 import glob
 import os
-import tempfile
 
 import gym
 
 import numpy as np
 
-TMP_PDDL_DIR = "/dev/shm" if os.path.exists("/dev/shm") else None
 
 
 class InvalidAction(Exception):
@@ -202,47 +198,6 @@ def _apply_effects(state, lifted_effects, assignments):
     return state.with_literals(new_literals)
 
 
-def _make_heuristic(domain_file, problem, mode, action_space,
-                    cache_maxsize=10000):
-    try:
-        # generate a temporary file to hand over to pyperplan
-        pyp, problem_file = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
-        initial_state = problem.initial_state
-        # Add action literals to initial state so pyperplan works
-        action_lits = set(
-            action_space.all_ground_literals(problem, valid_only=False))
-        initial_state |= action_lits
-        with os.fdopen(pyp, "w") as f:
-            problem.write(f, initial_state=initial_state,
-                          fast_downward_order=True)
-        parser = pyperplan.Parser(domain_file, problem_file)
-        pyperplan_domain = parser.parse_domain()
-        pyperplan_problem = parser.parse_problem(pyperplan_domain)
-    finally:
-        try:
-            os.remove(problem_file)
-        except FileNotFoundError:
-            pass
-
-    task = pyperplan.grounding.ground(pyperplan_problem)
-    heuristic = pyperplan.HEURISTICS[mode](task)
-
-    @functools.lru_cache(cache_maxsize)
-    def _call_heuristic(state):
-        state = frozenset({lit.pddl_str() for lit in state.literals})
-        # Rohan: task.facts is basically all the literals that could
-        # ever change in the domain, unioned with the goal literals.
-        # (I guess this handles the case where you ever have a static
-        # literal in the goal...but that would be sort of silly anyway.)
-        # So, the following line removes static literals from the state.
-        # Also, I verified that this doesn't change the heuristics in blocks.
-        state &= task.facts
-        node = pyperplan.search.searchspace.make_root_node(state)
-        return heuristic(node)
-
-    return _call_heuristic
-
-
 class PDDLEnv(gym.Env):
     """
     Parameters
@@ -265,26 +220,11 @@ class PDDLEnv(gym.Env):
     dynamic_action_space : bool
         Let self.action_space dynamically change on each iteration to
         include only valid actions (must match operator preconditions).
-    shape_reward_mode : Method for reward shaping.
-        - None: no reward shaping is done.
-        - "optimal": Evaluates the current state against the distance to goal
-                     given by an optimal planner. Gives rewards in the range
-                     (-inf, 1), with 1 for the goal state and 0 for the
-                     initial state.
-        - any heuristic in pyperplan.HEURISTICS:
-              https://github.com/aibasel/pyperplan/tree/master/src/heuristics
-              e.g., "blind", "hadd", "hff", "hmax", "hsa", "lmcut"
-              Note that "blind" is equivalent to None.
-              Note that "landmark" is path-dependent and so disallowed.
-              Gives rewards in the range (-inf, 1), with 1 for the goal state
-              and 0 for the initial state.
     """
     def __init__(self, domain_file, problem_dir, render=None, seed=0,
                  raise_error_on_invalid_action=False,
                  operators_as_actions=False,
-                 dynamic_action_space=False,
-                 shape_reward_mode=None,
-                 shaping_discount=1.):
+                 dynamic_action_space=False):
         self._state = None
         self._domain_file = domain_file
         self._problem_dir = problem_dir
@@ -292,13 +232,6 @@ class PDDLEnv(gym.Env):
         self.seed(seed)
         self._raise_error_on_invalid_action = raise_error_on_invalid_action
         self.operators_as_actions = operators_as_actions
-
-        if shape_reward_mode == "none":
-            shape_reward_mode = None
-        self._shape_reward_mode = shape_reward_mode
-        self._shaping_discount = shaping_discount
-        self._current_heuristic = None
-        self._heuristic = None
 
         # Set by self.fix_problem_index
         self._problem_index_fixed = False
@@ -379,8 +312,6 @@ class PDDLEnv(gym.Env):
 
     def set_state(self, state):
         self._state = state
-        if self._shape_reward_mode is not None:
-            self._current_heuristic = self.compute_heuristic(state)
 
     def get_state(self):
         return self._state
@@ -402,9 +333,6 @@ class PDDLEnv(gym.Env):
         ----------
         problem_idx : int
         """
-        if problem_idx != self._problem_idx:
-            # Problem is changing, force ourselves to recompute heuristic
-            self._heuristic = None
         self._problem_idx = problem_idx
         self._problem_index_fixed = True
 
@@ -422,20 +350,9 @@ class PDDLEnv(gym.Env):
             See self._get_debug_info()
         """
         if not self._problem_index_fixed:
-            # Problem is changing, force ourselves to recompute heuristic
-            self._heuristic = None
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
 
-        # Create new heuristic if using reward shaping and either the problem
-        # isn't fixed or no heuristic has been created yet.
-        if (self._shape_reward_mode is not None
-                and self._shape_reward_mode != "optimal"
-                and self._heuristic is None):
-            self._heuristic = self.make_heuristic_function(self._shape_reward_mode)
-
-        # reset the current heuristic
-        self._current_heuristic = None
         initial_state = State(frozenset(self._problem.initial_state),
                               frozenset(self._problem.objects),
                               self._problem.goal)
@@ -446,14 +363,6 @@ class PDDLEnv(gym.Env):
         debug_info = self._get_debug_info()
 
         return self.get_state(), debug_info
-
-    def make_heuristic_function(self, mode):
-        return _make_heuristic(
-                self._domain_file,
-                self._problem,
-                mode=mode,
-                action_space=self.action_space,
-            )
 
     def _get_debug_info(self):
         """
@@ -493,8 +402,6 @@ class PDDLEnv(gym.Env):
         """
         state, reward, done, debug_info = self.sample_transition(action)
         self.set_state(state)
-        if "next_state_heuristic" in debug_info:
-            self._current_heuristic = debug_info["next_state_heuristic"]
         return state, reward, done, debug_info
 
     def sample_transition(self, action):
@@ -507,12 +414,6 @@ class PDDLEnv(gym.Env):
 
         reward = self.extrinsic_reward(state, done)
         debug_info = self._get_debug_info()
-
-        # add intrinsic reward
-        if self._shape_reward_mode:
-            next_heuristic = 0. if done else self.compute_heuristic(state)
-            reward += self._current_heuristic - next_heuristic * self._shaping_discount
-            debug_info["next_state_heuristic"] = next_heuristic
 
         return state, reward, done, debug_info
 
@@ -528,35 +429,6 @@ class PDDLEnv(gym.Env):
             reward = 0.
 
         return reward
-
-    def compute_heuristic(self, state):
-        """Compute the heuristic for a given state in the current problem.
-        """
-        if self._shape_reward_mode == "optimal":
-            problem = self.problems[self._problem_idx]
-
-            # Add action literals to state to enable planning
-            state_lits = set(state.literals)
-            action_lits = set(
-                self.action_space.all_ground_literals(state, valid_only=False))
-            state_lits |= action_lits
-
-            problem_path = ""
-            try:
-                # generate a temporary file to hand over to the external planner
-                fd, problem_path = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
-                with os.fdopen(fd, "w") as f:
-                    problem.write(f, initial_state=state_lits, fast_downward_order=True)
-
-                return get_fd_optimal_plan_cost(
-                    self.domain.domain_fname, problem_path)
-            finally:
-                try:
-                    os.remove(problem_path)
-                except FileNotFoundError:
-                    pass
-        else:
-            return self._heuristic(state)
 
     def _is_goal_reached(self, state):
         """
