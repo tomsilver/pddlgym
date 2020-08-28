@@ -122,57 +122,7 @@ def test_pddlenv_hierarchical_types():
     print("Test passed.")
 
 
-def test_heuristic():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    domain_file = os.path.join(dir_path, 'pddl', 'easyblocks.pddl')
-    problem_dir = os.path.join(dir_path, 'pddl', 'easyblocks')
-
-    block = Type("block")
-    pickup = Predicate("pickup", 1, [block])
-    stack = Predicate("stack", 2, [block, block])
-
-    shaped_env = PDDLEnv(
-        domain_file,
-        problem_dir,
-        shape_reward_mode="lmcut",
-        raise_error_on_invalid_action=True,
-    )
-    env = PDDLEnv(
-        domain_file,
-        problem_dir,
-        shape_reward_mode=None,
-        raise_error_on_invalid_action=True,
-    )
-    shaped_env.reset()
-    env.reset()
-
-    _, rew, _, _ = env.step(pickup("b"))
-    _, shaped_rew, _, _ = shaped_env.step(pickup("b"))
-
-    assert rew == 0.
-    assert shaped_rew == 1.
-    intermediate_state = env.get_state()
-
-    def assert_last_step():
-        _, rew, done, _ = env.step(stack("b", "a"))
-        _, shaped_rew, shaped_done, _ = shaped_env.step(stack("b", "a"))
-        assert done
-        assert shaped_done
-        assert rew == 1.
-        assert shaped_rew == 2.
-
-    # check if the step to the goal is terminal and with correct rewards
-    assert_last_step()
-
-    # check if shaped reward is consistent after setting the state
-    shaped_env.set_state(intermediate_state)
-    env.set_state(intermediate_state)
-    assert_last_step()
-
-    print("Test passed.")
-
 
 if __name__ == "__main__":
     test_pddlenv()
     test_pddlenv_hierarchical_types()
-    test_heuristic()
