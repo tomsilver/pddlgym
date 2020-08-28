@@ -25,6 +25,7 @@ def test_searchandrescue(num_actions_to_test=100, verbose=False):
             assert env._state.literals == env._state_to_internal(state).literals
             assert env._state.objects == env._state_to_internal(state).objects
             assert set(env._state.goal.literals) == set(env._state_to_internal(state).goal.literals)
+            assert env.check_goal(state) == done
             for a in all_actions:
                 ns = env.get_successor_state(state, a)
                 assert ns == env._internal_to_state(env._state_to_internal(ns))

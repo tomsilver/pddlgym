@@ -358,4 +358,4 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
 
     def check_goal(self, state):
         internal_state = self._state_to_internal(state)
-        return super().check_goal(state)
+        return super().check_goal(internal_state)
