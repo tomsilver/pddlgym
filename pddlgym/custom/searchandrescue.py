@@ -1,6 +1,6 @@
 from pddlgym.core import PDDLEnv
 from pddlgym.rendering import sar_render, slow_sar_render
-from pddlgym.structs import Type, Predicate, Not, State
+from pddlgym.structs import Type, Predicate, Not, State, LiteralConjunction
 import pddlgym
 import os
 
@@ -159,7 +159,7 @@ def get_sar_successor_state(state, action):
     return state.with_literals(frozenset(new_state_literals))
 
 
-class SearchAndRescueEnv(PDDLEnv):
+class PDDLSearchAndRescueEnv(PDDLEnv):
 
     def __init__(self, level=1, test=False, render_version="fast"):
         dir_path = os.path.join(os.path.dirname(os.path.realpath(pddlgym.__file__)), "pddl")
@@ -193,6 +193,11 @@ class SearchAndRescueEnv(PDDLEnv):
             raise Exception("Must all reset() before get_possible_actions().")
         return sorted(self.action_space.all_ground_literals(state))
 
+    def _action_valid_test(self, state, action):
+        """
+        """
+        raise NotImplementedError("Should not be called.")
+
     def render_from_state(self, state):
         """Light wrapper around the render function, for convenience
         """
@@ -202,3 +207,155 @@ class SearchAndRescueEnv(PDDLEnv):
         """Allow for public access
         """
         return self._is_goal_reached(state)
+
+
+class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
+    """Changes the state space to just be positions of objects
+    and the identity of the person being carried.
+    """
+    person_type = Type('person')
+    robot_type = Type('robot')
+    location_type = Type('location')
+    direction_type = Type('direction')
+    wall_type = Type('wall')
+    hospital_type = Type('hospital')
+    clear = Predicate('clear', 1, [location_type])
+    conn = Predicate("conn", 3, [location_type, location_type, direction_type])
+    robot_at = Predicate('robot-at', 2, [robot_type, location_type])
+    person_at = Predicate('person-at', 2, [person_type, location_type])
+    wall_at = Predicate('wall-at', 2, [wall_type, location_type])
+    hospital_at = Predicate('hospital-at', 2, [hospital_type, location_type])
+    carrying = Predicate('carrying', 2, [robot_type, person_type])
+    handsfree = Predicate('handsfree', 1, [robot_type])
+
+    @property
+    def observation_space(self):
+        raise NotImplementedError()
+
+    def _state_to_internal(self, state):
+        new_state_literals = set()
+
+        directions_to_deltas = {
+            self.direction_type('up') : (-1, 0),
+            self.direction_type('down') : (1, 0),
+            self.direction_type('left') : (0, -1),
+            self.direction_type('right') : (0, 1),
+        }
+
+        # conn
+        height, width = 6, 6
+        for r in range(height):
+            for c in range(width):
+                loc = self.location_type(f"f{r}-{c}f")
+                for direction, (dr, dc) in directions_to_deltas.items():
+                    next_r, next_c = r + dr, c + dc
+                    if not (0 <= next_r < height and 0 <= next_c < width):
+                        continue
+                    next_loc = self.location_type(f"f{next_r}-{next_c}f")
+                    conn_lit = self.conn(loc, next_loc, direction)
+                    new_state_literals.add(conn_lit)
+
+        # at
+        occupied_locs = set()
+        hospital_loc = None
+        for obj_name, loc_tup in state.items():
+            if obj_name in ["carrying", "rescue"]:
+                continue
+            r, c = loc_tup
+            loc = self.location_type(f"f{r}-{c}f")
+            if obj_name.startswith("person"):
+                at_pred = self.person_at
+            elif obj_name.startswith("robot"):
+                at_pred = self.robot_at
+                occupied_locs.add((r, c))
+            elif obj_name.startswith("wall"):
+                at_pred = self.wall_at
+                occupied_locs.add((r, c))
+            elif obj_name.startswith("hospital"):
+                at_pred = self.hospital_at
+                assert hospital_loc is None
+                hospital_loc = loc
+            else:
+                raise Exception(f"Unrecognized object {obj_name}")
+            new_state_literals.add(at_pred(obj_name, loc))
+        assert hospital_loc is not None
+
+        # carrying/handsfree
+        if state["carrying"] is None:
+            new_state_literals.add(self.handsfree("robot0"))
+        else:
+            new_state_literals.add(self.carrying("robot0", state["carrying"]))
+
+        # clear
+        for r in range(height):
+            for c in range(width):
+                if (r, c) not in occupied_locs:
+                    loc = self.location_type(f"f{r}-{c}f")
+                    clear_lit = self.clear(loc)
+                    new_state_literals.add(clear_lit)
+
+        # objects
+        new_objects = frozenset({o for lit in new_state_literals for o in lit.variables })
+
+        # goal
+        new_goal = LiteralConjunction([self.person_at(person, hospital_loc) \
+            for person in sorted(state["rescue"])])
+
+        new_state = State(frozenset(new_state_literals), new_objects, new_goal)
+
+        return new_state
+
+    def _internal_to_state(self, internal_state):
+        state = { "carrying" : None }
+        state["rescue"] = set()
+        for lit in internal_state.goal.literals:
+            assert lit.predicate == self.person_at
+            state["rescue"].add(lit.variables[0].name)
+        for lit in internal_state.literals:
+            if lit.predicate.name.endswith("at"):
+                obj_name = lit.variables[0].name
+                r, c = self._loc_to_rc(lit.variables[1])
+                state[obj_name] = (r, c)
+            if lit.predicate.name == "carrying":
+                person_name = lit.variables[1].name
+                state["carrying"] = person_name
+        return state
+
+    def _loc_to_rc(self, loc_str):
+        assert loc_str.startswith("f") and loc_str.endswith("f")
+        r, c = loc_str[1:-1].split('-')
+        return (int(r), int(c))
+
+    def set_state(self, state):
+        assert isinstance(state, State), "Do not call set_state"
+        self._state = state
+
+    def get_state(self):
+        assert isinstance(self._state, State), "Do not call get_state"
+        return self._state
+
+    def reset(self):
+        internal_state, debug_info = super().reset()
+        return self._internal_to_state(internal_state), debug_info
+
+    def step(self, action):
+        internal_state, reward, done, debug_info = super().step(action)
+        state = self._internal_to_state(internal_state)
+        return state, reward, done, debug_info
+
+    def get_successor_state(self, state, action):
+        internal_state = self._state_to_internal(state)
+        next_internal_state = super().get_successor_state(internal_state, action)
+        next_state = self._internal_to_state(next_internal_state)
+        # Sanity checks
+        assert state == self._internal_to_state(internal_state)
+        assert next_internal_state == self._state_to_internal(next_state)
+        return next_state
+
+    def render_from_state(self, state):
+        internal_state = self._state_to_internal(state)
+        return super().render_from_state(internal_state)
+
+    def check_goal(self, state):
+        internal_state = self._state_to_internal(state)
+        return super().check_goal(state)

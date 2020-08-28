@@ -146,3 +146,13 @@ for level in range(1, 7):
         entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
         kwargs={'level' : level, 'test' : True, 'render_version' : 'slow'},
     )
+    register(
+        id=f'PDDLSearchAndRescueLevel{level}-v0',
+        entry_point=f'pddlgym.custom.searchandrescue:PDDLSearchAndRescueEnv',
+        kwargs={'level' : level, 'test' : False, 'render_version' : 'slow'},
+    )
+    register(
+        id=f'PDDLSearchAndRescueLevel{level}Test-v0',
+        entry_point=f'pddlgym.custom.searchandrescue:PDDLSearchAndRescueEnv',
+        kwargs={'level' : level, 'test' : True, 'render_version' : 'slow'},
+    )
