@@ -244,8 +244,6 @@ class PDDLParser:
         return sorted(to_return)
 
     def _purge_comments(self, pddl_str):
-        # Remove commas
-        pddl_str = pddl_str.replace(",", "")
         # Purge comments from the given string.
         while True:
             match = re.search(r";(.*)\n", pddl_str)
