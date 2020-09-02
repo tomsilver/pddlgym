@@ -1,4 +1,5 @@
-from pddlgym.structs import Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists, Not
+from pddlgym.structs import Predicate, Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists, Not
+from pddlgym.utils import get_object_combinations
 import random
 from collections import defaultdict
 import subprocess
@@ -13,6 +14,8 @@ class PrologInterface:
                  allow_redundant_variables=True, constants=None):
         if not isinstance(conds, list):
             conds = [conds]
+        # Preprocess negative literals into renamed positive literals
+        kb, conds = self._preprocess_negative_literals(kb, conds)
         self._kb = kb
         self._conds = conds
         self._cond_lits = self._get_lits_from_conds(conds)
@@ -29,6 +32,75 @@ class PrologInterface:
         self._constants = constants # unused now because variables begin with ? by convention
         # print(self._prolog_str)
         # import ipdb; ipdb.set_trace()
+
+    @classmethod
+    def _preprocess_negative_literals(cls, kb, conds):
+        # Check for negated quantifiers, which we do not handle
+        if any((isinstance(c, Exists) or isinstance(c, ForAll)) and c.is_negative \
+                for c in conds):
+            raise NotImplementedError("We do not yet handle negated quantifiers")
+        # Find all predicates with a negated literal in the conds
+        negated_predicates = set()
+        for cond in cls._get_lits_from_conds(conds):
+            if cond.is_negative:
+                negated_predicates.add(cond.predicate)
+        if len(negated_predicates) == 0:
+            return kb, conds
+        # Start the new kb and conds
+        kb = [lit for lit in kb]
+        conds = [c for c in conds]
+        # Sanity check
+        assert all(str(p).startswith("Not") for p in negated_predicates)
+        # Create positive predicates for the negated predicates
+        negated_pred_to_pos_pred = {}
+        for p in negated_predicates:
+            # Prolog hands = specially
+            if p.name == "=":
+                pos_pred = Predicate(f"neg-eq", p.arity, p.var_types)
+            else:
+                pos_pred = Predicate(f"neg-{p.name}", p.arity, p.var_types)
+            negated_pred_to_pos_pred[p] = pos_pred
+        # TODO pass in objects separately
+        objects = { o for lit in kb for o in lit.variables }
+        # Get all instantiations of the new positive predicates
+        for negated_pred, pos_pred in negated_pred_to_pos_pred.items():
+            original_positive_pred = negated_pred.positive
+            # Get all combinations of objects
+            for objs in get_object_combinations(objects,
+                arity=pos_pred.arity,
+                var_types=pos_pred.var_types,
+                allow_duplicates=True):
+                # Check whether the positive version is in the kb
+                if original_positive_pred(*objs) in kb:
+                    continue
+                # Add the new positive literal to the kb
+                kb.append(pos_pred(*objs))
+            # Update the conds to include the positive pred instead of the negative pred
+            conds = cls._replace_predicate(conds, negated_pred, pos_pred)
+        return kb, conds
+
+    @classmethod
+    def _replace_predicate(cls, conds, from_pred, to_pred):
+        if isinstance(conds, list):
+            return [cls._replace_predicate(c, from_pred, to_pred) for c in conds]
+        if isinstance(conds, Literal):
+            if conds.predicate == from_pred:
+                return to_pred(*conds.variables)
+            return conds
+        if isinstance(conds, LiteralConjunction):
+            return LiteralConjunction(cls._replace_predicate(conds.literals, from_pred, to_pred))
+        if isinstance(conds, LiteralDisjunction):
+            return LiteralDisjunction(cls._replace_predicate(conds.literals, from_pred, to_pred))
+        if isinstance(conds, ForAll):
+            assert not conds.is_negative, "Negative universal quantification not implemented (use Exists instead)"
+            return ForAll(cls._replace_predicate(conds.body, from_pred, to_pred), conds.variables, 
+                          is_negative=conds.is_negative)
+        if isinstance(conds, Exists):
+            assert not conds.is_negative, "Negative exisential quantification not implemented (use ForAll instead)"
+            return Exists(conds.variables,cls._replace_predicate(conds.body, from_pred, to_pred),
+                          is_negative=conds.is_negative)
+        import ipdb; ipdb.set_trace()
+        raise NotImplementedError()
 
     @staticmethod
     def _get_lits_from_conds(conds):
