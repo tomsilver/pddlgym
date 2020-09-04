@@ -124,12 +124,11 @@ See `pddlgym/pddl/blocks.pddl` and `pddlgym/pddl/blocks/problem1.pddl` for an ex
 
 Please use this bibtex if you want to cite this repository in your publications:
 ```
-@misc{silver2020pddlgym,
-    title={PDDLGym: Gym Environments from PDDL Problems},
-    author={Tom Silver and Rohan Chitnis},
-    year={2020},
-    eprint={2002.06432},
-    archivePrefix={arXiv},
-    primaryClass={cs.AI}
+@inproceedings{silver2020pddlgym,
+  author    = {Tom Silver and Rohan Chitnis},
+  title     = {PDDLGym: Gym Environments from PDDL Problems},
+  booktitle = {International Conference on Automated Planning and Scheduling (ICAPS) PRL Workshop},
+  year      = {2020},
+  url       = {https://arxiv.org/abs/2002.06432},
 }
 ```
