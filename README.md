@@ -129,6 +129,6 @@ Please use this bibtex if you want to cite this repository in your publications:
   title     = {PDDLGym: Gym Environments from PDDL Problems},
   booktitle = {International Conference on Automated Planning and Scheduling (ICAPS) PRL Workshop},
   year      = {2020},
-  url       = {https://arxiv.org/abs/2002.06432},
+  url       = {https://github.com/tomsilver/pddlgym},
 }
 ```
