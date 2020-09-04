@@ -52,6 +52,10 @@ Sister packages: [pyperplan](https://github.com/aibasel/pyperplan) and [rddlgym]
 
 ## Installation
 
+### Python version
+
+We require Python 3.6+.
+
 ### Installing via pip
 
 `pip install pddlgym`
