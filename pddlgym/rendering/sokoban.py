@@ -93,9 +93,79 @@ def build_layout(obs):
     # import ipdb; ipdb.set_trace()
     return layout
 
+def build_layout_egocentric(obs,size=5):
+    if (size % 2) == 0:
+        size += 1
+    width = (size-1)//2
+
+    layout = CLEAR * np.ones((size, size), dtype=np.uint8)
+
+    # Put things in the layout
+    # Also track seen locs and goal locs
+    seen_locs = set()
+    goal_locs = set()
+
+    for r, c in get_locations(obs, 'player'):
+        player_r, player_c = r, c
+        offset_r, offset_c = r - width, c - width
+
+    def within_view(r,c):
+        return (abs(r - player_r) <= width) and (abs(c - player_c) <= width)
+
+    for v in get_values(obs, 'is-goal'):
+        r, c = loc_str_to_loc(v[0])
+        if within_view(r,c):
+            layout[r-offset_r, c-offset_c] = GOAL
+            seen_locs.add((r, c))
+            goal_locs.add((r, c))
+
+    for r, c in get_locations(obs, 'stone'):
+        if within_view(r,c):
+            if (r, c) in goal_locs:
+                layout[r-offset_r, c-offset_c] = STONE_AT_GOAL
+            else:
+                layout[r-offset_r, c-offset_c] = STONE
+            seen_locs.add((r, c))
+
+    for r, c in get_locations(obs, 'player'):
+        layout[width, width] = PLAYER
+        seen_locs.add((r, c))
+
+    for v in get_values(obs, 'clear'):
+        r, c = loc_str_to_loc(v[0])
+        if within_view(r,c):
+            if (r, c) in goal_locs:
+                continue
+            layout[r-offset_r, c-offset_c] = CLEAR
+            seen_locs.add((r, c))
+
+    # Add walls
+    for v in get_values(obs, 'is-nongoal'):
+        r, c = loc_str_to_loc(v[0])
+        if within_view(r,c):
+            if (r, c) in seen_locs:
+                continue
+            layout[r-offset_r, c-offset_c] = WALL
+
+    # r-c flip
+    layout = np.transpose(layout)
+
+    # print("layout:")
+    # print(layout)
+    # import ipdb; ipdb.set_trace()
+    return layout
+
 def get_token_images(obs_cell):
     return [TOKEN_IMAGES[obs_cell]]
 
 def render(obs, mode='human', close=False):
-    layout = build_layout(obs)
-    return render_from_layout(layout, get_token_images)
+    if mode == "egocentric":
+        layout = build_layout_egocentric(obs)
+        return render_from_layout(layout, get_token_images)
+    elif mode == "human":
+        layout = build_layout(obs)
+        return render_from_layout(layout, get_token_images)
+    elif mode == "layout":
+        return build_layout(obs)
+    elif mode == "egocentric_layout":
+        return build_layout_egocentric(obs)
