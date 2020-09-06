@@ -106,8 +106,6 @@ def build_layout_egocentric(obs,size=5):
     goal_locs = set()
 
     for r, c in get_locations(obs, 'player'):
-        layout[width, width] = PLAYER
-        seen_locs.add((r, c))
         player_r, player_c = r, c
         offset_r, offset_c = r - width, c - width
 
@@ -128,6 +126,10 @@ def build_layout_egocentric(obs,size=5):
             else:
                 layout[r-offset_r, c-offset_c] = STONE
             seen_locs.add((r, c))
+
+    for r, c in get_locations(obs, 'player'):
+        layout[width, width] = PLAYER
+        seen_locs.add((r, c))
 
     for v in get_values(obs, 'clear'):
         r, c = loc_str_to_loc(v[0])
