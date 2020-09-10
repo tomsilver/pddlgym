@@ -73,3 +73,22 @@ def draw_token(token_image, r, c, ax, height, width, token_scale=1.0, fig_scale=
     box = AnnotationBbox(oi, (c + 0.5, (height - 1 - r) + 0.5), frameon=False)
     ax.add_artist(box)
     return box
+
+
+################################################################
+# no margins
+
+from skimage.transform import resize
+
+def render_from_layout_crisp(layout, get_token_images, tilesize=16):
+    height, width = layout.shape[:2]
+    canvas = np.zeros((height*tilesize,width*tilesize,3))
+
+    for r in range(height):
+        for c in range(width):
+            token_images = get_token_images(layout[r, c])
+            for im in token_images:
+                canvas[r*tilesize:(r+1)*tilesize, c*tilesize:(c+1)*tilesize] = \
+                    resize(im[:,:,:3], (tilesize,tilesize,3), preserve_range=True)
+
+    return canvas

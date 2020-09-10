@@ -1,4 +1,4 @@
-from .utils import get_asset_path, render_from_layout
+from .utils import get_asset_path, render_from_layout, render_from_layout_crisp
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -165,6 +165,12 @@ def render(obs, mode='human', close=False):
     elif mode == "human":
         layout = build_layout(obs)
         return render_from_layout(layout, get_token_images)
+    elif mode == "egocentric_crisp":
+        layout = build_layout_egocentric(obs)
+        return render_from_layout_crisp(layout, get_token_images)
+    elif mode == "human_crisp":
+        layout = build_layout(obs)
+        return render_from_layout_crisp(layout, get_token_images)
     elif mode == "layout":
         return build_layout(obs)
     elif mode == "egocentric_layout":
