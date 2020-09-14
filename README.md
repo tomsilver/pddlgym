@@ -19,8 +19,9 @@ Please see [our paper](https://arxiv.org/abs/2002.06432) describing the design d
 - Disjunctions (or)
 - Equality
 - Constants
+- Derived predicates
 
-Notable features that we do not currently support: conditional effects, action costs, derived predicates.
+Notable features that we do not currently support include conditional effects and action costs.
 
 Several PDDL environments are included, such as:
 - Sokoban
