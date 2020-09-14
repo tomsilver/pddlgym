@@ -129,6 +129,7 @@ class LiteralActionSpace(LiteralSpace):
             operator = self._action_predicate_to_operators[ground_action.predicate]
             lifted_preconds = operator.preconds.literals
             subs = dict(zip(operator.params, ground_action.variables))
+            subs.update(zip(self.domain.constants, self.domain.constants))
             preconds = [ground_literal(lit, subs) for lit in lifted_preconds]
             pos_preconds, neg_preconds = set(), set()
             for p in preconds:
@@ -165,13 +166,13 @@ class LiteralActionSpace(LiteralSpace):
         """Call FastDownward's instantiator.
         """
         # Generate temporary files to hand over to instantiator.
-        _, domain_fname = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
+        d_desc, domain_fname = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
         self.domain.write(domain_fname)
         p_desc, problem_fname = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
         with os.fdopen(p_desc, "w") as f:
             PDDLProblemParser.create_pddl_file(
                 file_or_filepath=f,
-                objects=state.objects,
+                objects=state.objects-set(self.domain.constants),
                 initial_state=state.literals,
                 problem_name="myproblem",
                 domain_name=self.domain.domain_name,
@@ -198,6 +199,7 @@ class LiteralActionSpace(LiteralSpace):
             assert pred is not None
             objs = [obj_name_to_obj[obj_name] for obj_name in obj_names]
             all_ground_literals.add(pred(*objs))
+        os.close(d_desc)
         return all_ground_literals
 
 

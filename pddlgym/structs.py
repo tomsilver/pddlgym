@@ -128,9 +128,14 @@ class Predicate(object):
 
     def pddl_variables(self):
         variables = []
-        for i, vt in enumerate(self.var_types):
-            v = "?v{} - {}".format(i, vt)
-            variables.append(v)
+        if self.var_types:
+            for i, vt in enumerate(self.var_types):
+                v = "?v{} - {}".format(i, vt)
+                variables.append(v)
+        else:
+            for i in range(self.arity):
+                v = "?v{}".format(i)
+                variables.append(v)
         return variables
 
     def pddl_str(self):
