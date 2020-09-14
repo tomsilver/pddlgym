@@ -688,7 +688,7 @@ class PDDLProblemParser(PDDLParser):
         objects_typed = "\n\t".join(list(sorted(map(lambda o: str(o).replace(":", " - "),
                                                     objects))))
         init_state = "\n\t".join([lit.pddl_str() for lit in sorted(initial_state)
-                                  if not lit.predicate.is_derived])
+                                  if not lit.predicate.is_derived and lit.predicate.name != "="])
 
         problem_str = FAST_DOWNWARD_STR if fast_downward_order else PROBLEM_STR
         return problem_str.format(

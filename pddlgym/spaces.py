@@ -129,6 +129,7 @@ class LiteralActionSpace(LiteralSpace):
             operator = self._action_predicate_to_operators[ground_action.predicate]
             lifted_preconds = operator.preconds.literals
             subs = dict(zip(operator.params, ground_action.variables))
+            subs.update(zip(self.domain.constants, self.domain.constants))
             preconds = [ground_literal(lit, subs) for lit in lifted_preconds]
             pos_preconds, neg_preconds = set(), set()
             for p in preconds:
@@ -171,7 +172,7 @@ class LiteralActionSpace(LiteralSpace):
         with os.fdopen(p_desc, "w") as f:
             PDDLProblemParser.create_pddl_file(
                 file_or_filepath=f,
-                objects=state.objects,
+                objects=state.objects-set(self.domain.constants),
                 initial_state=state.literals,
                 problem_name="myproblem",
                 domain_name=self.domain.domain_name,
