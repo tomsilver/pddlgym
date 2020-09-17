@@ -392,46 +392,48 @@ class POSARXrayEnv(gym.Env):
         # Turn xray vision off
         xray = False
         # Set the state
-        self._set_state(robot=robot_loc, person=person_room_id, xray=xray)
+        self._state = self._construct_state(robot=robot_loc, 
+            person=person_room_id, xray=xray, rescued=False)
         # Get the observation
-        return self._get_observation(), {}
+        return self.get_observation(), {}
 
-    def _set_state(self, robot, person, xray):
+    def _construct_state(self, robot, person, xray, rescued):
         """
         """
-        if self._state is not None:
-            rescued = self._state["rescued"]
+        if rescued or (robot == self.room_locs[person]):
+            rescued = True
         else:
             rescued = False
-        if robot == self.room_locs[person]:
-            rescued = True
 
-        self._state = {
+        return {
             "robot" : robot,
             "person" : person,
             "xray" : xray,
             "rescued" : rescued,
         }
 
-    def _get_observation(self):
+    def get_observation(self, state=None):
         """
         """
+        if state is None:
+            state = self._state
+
         obs = {}
 
         # We can always see the robot, xray, and rescued state
-        obs["robot"] = self._state["robot"]
-        obs["xray"] = self._state["xray"]
-        obs["rescued"] = self._state["rescued"]
+        obs["robot"] = state["robot"]
+        obs["xray"] = state["xray"]
+        obs["rescued"] = state["rescued"]
 
         # Get which rooms are sensed
         sensed_rooms = set()
 
         # If xray is on, we can see everything
-        if self._state["xray"]:
+        if state["xray"]:
             sensed_rooms.update(range(len(self.room_locs)))
         # If we are within a radius of a room, we can see into it
         else:
-            rob_r, rob_c = self._state["robot"]
+            rob_r, rob_c = state["robot"]
             for room_id, (room_r, room_c) in enumerate(self.room_locs):
                 if abs(rob_r - room_r) + abs(rob_c - room_c) <= self.sense_radius:
                     sensed_rooms.add(room_id)
@@ -441,20 +443,21 @@ class POSARXrayEnv(gym.Env):
             if room_id not in sensed_rooms:
                 obs[f"room{room_id}"] = "?"
             else:
-                if (room_id == self._state["person"]):
+                if (room_id == state["person"]):
                     obs[f"room{room_id}"] = "person"
                 else:
                     obs[f"room{room_id}"] = "empty"
 
         return obs
 
-    def step(self, action):
-        """
-        """
+    def get_possible_actions(self):
+        return list(self.actions)
+
+    def get_successor_state(self, state, action):
         assert action in self.actions, "Invalid action f{action}"
 
         # Start out with previous values
-        robot, person, xray = self._state["robot"], self._state["person"], self._state["xray"]
+        robot, person, xray = state["robot"], state["person"], state["xray"]
 
         # Turn on xray
         if action == self.do_xray:
@@ -470,32 +473,43 @@ class POSARXrayEnv(gym.Env):
                 robot = (rob_r + dr, rob_c + dc)
 
         # Update the previous state
-        self._set_state(robot, person, xray)
+        return self._construct_state(robot, person, xray, state["rescued"])
+
+    def check_goal(self, state):
+        return state["rescued"]
+
+    def step(self, action):
+        """
+        """
+        self._state = self.get_successor_state(self._state, action)
 
         # We're done if the person is rescued
-        done = self._state["rescued"]
+        done = self.check_goal(self._state)
         reward = float(done)
 
-        return self._get_observation(), reward, done, {}
-
-    def get_possible_actions(self):
-        return list(self.actions)
+        return self.get_observation(), reward, done, {}
 
     def render(self, *args, **kwargs):
-        return posar_render(self._get_observation(), self)
+        return posar_render(self.get_observation(), self)
+
+    def render_from_state(self, state):
+        return posar_render(self.get_observation(state=state), self)
+
 
 
 class POSARNoXrayEnv(POSARXrayEnv):
     actions = up, down, left, right = range(4)
 
-    def _get_observation(self):
-        obs = super()._get_observation()
+    def get_observation(self, *args, **kwargs):
+        obs = super().get_observation(*args, **kwargs)
         assert obs["xray"] == False
         del obs["xray"]
         return obs
 
+
 class POSARRadius1Env(POSARNoXrayEnv):
     sense_radius = 1
+
 
 class POSARRadius1XrayEnv(POSARXrayEnv):
     sense_radius = 1
