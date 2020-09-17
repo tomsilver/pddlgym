@@ -165,3 +165,13 @@ for level in range(1, 7):
         entry_point=f'pddlgym.custom.searchandrescue:PDDLSearchAndRescueEnv',
         kwargs={'level' : level, 'test' : True, 'render_version' : 'slow'},
     )
+
+register(
+    id='POSARRadius1-v0',
+    entry_point='pddlgym.custom.searchandrescue:POSARRadius1Env',
+)
+
+register(
+    id='POSARRadius1Xray-v0',
+    entry_point='pddlgym.custom.searchandrescue:POSARRadius1XrayEnv',
+)

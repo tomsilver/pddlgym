@@ -1,8 +1,10 @@
 from pddlgym.core import PDDLEnv
-from pddlgym.rendering import sar_render, slow_sar_render
+from pddlgym.rendering import sar_render, slow_sar_render, posar_render
 from pddlgym.structs import Type, Predicate, Not, State, LiteralConjunction
+import gym
 import pddlgym
 import os
+import numpy as np
 
 
 def get_sar_successor_state(state, action):
@@ -361,3 +363,159 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
     def check_goal(self, state):
         internal_state = self._state_to_internal(state)
         return super().check_goal(internal_state)
+
+
+class POSARXrayEnv(gym.Env):
+    """Partially observable search and rescue
+    """
+    height, width = 5, 5
+    room_locs = [(0, 0), (0, 4), (4, 0), (4, 4)]
+    robot_starts = [(2, 2)]
+    sense_radius = 0
+    actions = up, down, left, right, do_xray = range(5)
+
+    def __init__(self, seed=0):
+        self._state = None # set in reset
+        self.seed(seed)
+
+    def seed(self, seed=0):
+        self._seed = seed
+        self._rng = np.random.RandomState(seed)        
+
+    def reset(self):
+        """
+        """
+        # Randomize the robot location
+        robot_loc = self.robot_starts[self._rng.choice(len(self.robot_starts))]
+        # Randomize the location of the person
+        person_room_id = self._rng.choice(len(self.room_locs))
+        # Turn xray vision off
+        xray = False
+        # Set the state
+        self._set_state(robot=robot_loc, person=person_room_id, xray=xray)
+        # Get the observation
+        return self._get_observation(), {}
+
+    def _set_state(self, robot, person, xray):
+        """
+        """
+        if self._state is not None:
+            rescued = self._state["rescued"]
+        else:
+            rescued = False
+        if robot == self.room_locs[person]:
+            rescued = True
+
+        self._state = {
+            "robot" : robot,
+            "person" : person,
+            "xray" : xray,
+            "rescued" : rescued,
+        }
+
+    def _get_observation(self):
+        """
+        """
+        obs = {}
+
+        # We can always see the robot, xray, and rescued state
+        obs["robot"] = self._state["robot"]
+        obs["xray"] = self._state["xray"]
+        obs["rescued"] = self._state["rescued"]
+
+        # Get which rooms are sensed
+        sensed_rooms = set()
+
+        # If xray is on, we can see everything
+        if self._state["xray"]:
+            sensed_rooms.update(range(len(self.room_locs)))
+        # If we are within a radius of a room, we can see into it
+        else:
+            rob_r, rob_c = self._state["robot"]
+            for room_id, (room_r, room_c) in enumerate(self.room_locs):
+                if abs(rob_r - room_r) + abs(rob_c - room_c) <= self.sense_radius:
+                    sensed_rooms.add(room_id)
+
+        # Get room observations
+        for room_id in range(len(self.room_locs)):
+            if room_id not in sensed_rooms:
+                obs[f"room{room_id}"] = "?"
+            else:
+                if (room_id == self._state["person"]):
+                    obs[f"room{room_id}"] = "person"
+                else:
+                    obs[f"room{room_id}"] = "empty"
+
+        return obs
+
+    def step(self, action):
+        """
+        """
+        assert action in self.actions, "Invalid action f{action}"
+
+        # Start out with previous values
+        robot, person, xray = self._state["robot"], self._state["person"], self._state["xray"]
+
+        # Turn on xray
+        if action == self.do_xray:
+            xray = True
+
+        # Move
+        else:
+            rob_r, rob_c = robot
+            dr, dc = {self.up : (-1, 0), self.down : (1, 0),
+                      self.right : (0, 1), self.left : (0, -1)}[action]
+
+            if 0 <= rob_r + dr < self.height and 0 <= rob_c + dc < self.width:
+                robot = (rob_r + dr, rob_c + dc)
+
+        # Update the previous state
+        self._set_state(robot, person, xray)
+
+        # We're done if the person is rescued
+        done = self._state["rescued"]
+        reward = float(done)
+
+        return self._get_observation(), reward, done, {}
+
+    def get_possible_actions(self):
+        return list(self.actions)
+
+    def render(self, *args, **kwargs):
+        return posar_render(self._get_observation(), self)
+
+
+class POSARNoXrayEnv(POSARXrayEnv):
+    actions = up, down, left, right = range(4)
+
+    def _get_observation(self):
+        obs = super()._get_observation()
+        assert obs["xray"] == False
+        del obs["xray"]
+        return obs
+
+class POSARRadius1Env(POSARNoXrayEnv):
+    sense_radius = 1
+
+class POSARRadius1XrayEnv(POSARXrayEnv):
+    sense_radius = 1
+
+
+if __name__ == "__main__":
+    import imageio
+    np.random.seed(1)
+    for env_name in ["POSARRadius1", "POSARRadius1Xray"]:
+        imgs = []
+        env = pddlgym.make(f"{env_name}-v0")
+        obs, _ = env.reset()
+        print(obs)
+        imgs.append(env.render())
+        plan = np.random.choice(env.get_possible_actions(), size=250)
+        for act in plan:
+            obs, reward, done, _ = env.step(act)
+            print(obs, reward, done)
+            imgs.append(env.render())
+            if done:
+                break
+        imageio.mimsave(f"/tmp/{env_name}_random.mp4", imgs)
+

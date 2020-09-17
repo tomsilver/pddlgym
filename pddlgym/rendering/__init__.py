@@ -10,3 +10,4 @@ from .tireworld import render as tireworld_render
 from .snake import render as snake_render
 from .searchandrescue import render as sar_render
 from .slow_searchandrescue import render as slow_sar_render
+from .posar import render as posar_render
