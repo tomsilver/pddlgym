@@ -2,6 +2,7 @@ from pddlgym.core import PDDLEnv
 from pddlgym.rendering import sar_render, slow_sar_render, posar_render
 from pddlgym.structs import Type, Predicate, Not, State, LiteralConjunction
 import gym
+import functools
 import pddlgym
 import os
 import numpy as np
@@ -368,12 +369,12 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
 class POSARXrayEnv(gym.Env):
     """Partially observable search and rescue
     """
-    height, width = 9, 9
-    room_locs = [(0, i) for i in range(9)] + [(8, i) for i in range(9)]
-    robot_starts = [(4, 3), (4, 4), (4, 5)]
-    wall_locs = [(1, 1), (2, 4), (1, 4), (1, 5), (2, 1), (2, 7), (2, 8),
-                 (3, 0), (3, 2), (4, 6), (4, 7), (5, 1), (5, 3), (5, 4),
-                 (6, 2), (6, 5), (6, 6), (6, 8), (7, 3), (7, 4)]
+    height, width = 7, 7
+    room_locs = [(6, 0), (0, 6), (6, 6), (3, 6)]
+    robot_starts = [(4, 3)]
+    wall_locs = [(1, 1), (2, 4), (1, 4), (1, 5), (2, 5), (2, 6),
+                 (3, 2), (4, 4), (4, 6), (5, 1), (5, 3), (5, 4)]
+    fire_locs = [(1, 2), (2, 3), (4, 0)]
     sense_radius = 0
     actions = up, down, left, right, pickup, do_xray = range(6)
 
@@ -410,23 +411,26 @@ class POSARXrayEnv(gym.Env):
         self._state = self._construct_state(robot=robot_loc, 
             person=person_room_id, xray=xray, rescued=False)
         # Get the observation
-        return self.get_observation(), {}
+        return self.get_observation(self._state), {}
 
     def _construct_state(self, robot, person, xray, rescued):
         """
         """
-        return {
+        d = {
             "robot" : robot,
             "person" : person,
             "xray" : xray,
             "rescued" : rescued,
         }
+        return self._flat_dict_to_hashable(d)
 
-    def get_observation(self, state=None):
+    @functools.lru_cache(maxsize=10000)
+    def get_observation(self, state):
         """
         """
         if state is None:
             state = self._state
+        state = dict(state)
 
         obs = {}
 
@@ -459,8 +463,9 @@ class POSARXrayEnv(gym.Env):
                     obs[f"room{room_id}"] = "empty"
 
         # Make hashable
-        return tuple(sorted(obs.items()))
+        return self._flat_dict_to_hashable(obs)
 
+    @functools.lru_cache(maxsize=10000)
     def observation_to_states(self, obs):
         # Make easier to manipulate
         obs = dict(obs)
@@ -481,7 +486,7 @@ class POSARXrayEnv(gym.Env):
         # If the person is observed, there is only one possible state
         if person is not None:
             base_state["person"] = person
-            return [base_state]
+            return frozenset([self._flat_dict_to_hashable(base_state)])
         # Otherwise, the person could be in any room that is hidden
         states = []
         for k, v in obs.items():
@@ -489,13 +494,15 @@ class POSARXrayEnv(gym.Env):
                 person = int(k[len("room"):])
                 state = base_state.copy()
                 state["person"] = person
-                states.append(state)
-        return states
+                states.append(self._flat_dict_to_hashable(state))
+        return frozenset(states)
 
     def get_possible_actions(self):
         return list(self.actions)
 
+    @functools.lru_cache(maxsize=10000)
     def get_successor_state(self, state, action):
+        state = dict(state)
         assert action in self.actions, f"Invalid action f{action}"
 
         # Start out with previous values
@@ -507,13 +514,15 @@ class POSARXrayEnv(gym.Env):
 
         # Move
         elif action in [self.up, self.down, self.left, self.right]:
-            rob_r, rob_c = robot
-            dr, dc = {self.up : (-1, 0), self.down : (1, 0),
-                      self.right : (0, 1), self.left : (0, -1)}[action]
+            # If we're in a fire location, we're trapped forever
+            if robot not in self.fire_locs:
+                rob_r, rob_c = robot
+                dr, dc = {self.up : (-1, 0), self.down : (1, 0),
+                          self.right : (0, 1), self.left : (0, -1)}[action]
 
-            if 0 <= rob_r + dr < self.height and 0 <= rob_c + dc < self.width:
-                if (rob_r + dr, rob_c + dc) not in self.wall_locs:
-                    robot = (rob_r + dr, rob_c + dc)
+                if 0 <= rob_r + dr < self.height and 0 <= rob_c + dc < self.width:
+                    if (rob_r + dr, rob_c + dc) not in self.wall_locs:
+                        robot = (rob_r + dr, rob_c + dc)
 
         # Pickup
         if state['rescued'] or \
@@ -526,6 +535,7 @@ class POSARXrayEnv(gym.Env):
         return self._construct_state(robot, person, xray, rescued)
 
     def check_goal(self, state):
+        state = dict(state)
         return state["rescued"]
 
     def step(self, action):
@@ -537,14 +547,16 @@ class POSARXrayEnv(gym.Env):
         done = self.check_goal(self._state)
         reward = float(done)
 
-        return self.get_observation(), reward, done, {}
+        return self.get_observation(self._state), reward, done, {}
 
     def render(self, *args, **kwargs):
-        return posar_render(self.get_observation(), self)
+        return posar_render(self.get_observation(self._state), self)
 
     def render_from_state(self, state):
         return posar_render(self.get_observation(state=state), self)
 
+    def _flat_dict_to_hashable(self, d):
+        return tuple(sorted(d.items()))
 
 
 class POSARNoXrayEnv(POSARXrayEnv):
@@ -555,7 +567,7 @@ class POSARNoXrayEnv(POSARXrayEnv):
         obs = dict(obs)
         assert obs["xray"] == False
         del obs["xray"]
-        return tuple(sorted(obs.items()))
+        return self._flat_dict_to_hashable(obs)
 
 
 class POSARRadius1Env(POSARNoXrayEnv):
@@ -565,17 +577,37 @@ class POSARRadius1Env(POSARNoXrayEnv):
 class POSARRadius1XrayEnv(POSARXrayEnv):
     sense_radius = 1
 
+
+class POSARRadius0Env(POSARNoXrayEnv):
+    sense_radius = 0
+
+
+class POSARRadius0XrayEnv(POSARXrayEnv):
+    sense_radius = 0
+
+
 class SmallPOSARRadius1Env(POSARRadius1Env):
     height, width = 3, 3
     room_locs = [(0, i) for i in range(3)] + [(2, i) for i in range(3)]
     robot_starts = [(1, 1)]
     wall_locs = []
+    fire_locs = []
+
+
+class LargePOSARRadius1Env(POSARRadius1Env):
+    height, width = 9, 9
+    room_locs = [(0, i) for i in range(9)] + [(8, i) for i in range(9)]
+    robot_starts = [(4, 3), (4, 4), (4, 5)]
+    wall_locs = [(1, 1), (2, 4), (1, 4), (1, 5), (2, 1), (2, 7), (2, 8),
+                 (3, 0), (3, 2), (4, 6), (4, 7), (5, 1), (5, 3), (5, 4),
+                 (6, 2), (6, 5), (6, 6), (6, 8), (7, 3), (7, 4)]
+    fire_locs = []
 
 
 if __name__ == "__main__":
     import imageio
     np.random.seed(1)
-    for env_name in ["SmallPOSARRadius1"]: #, "POSARRadius1", "POSARRadius1Xray"]:
+    for env_name in ["POSARRadius1"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
         env.fix_problem_index(0)
