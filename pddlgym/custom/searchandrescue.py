@@ -368,15 +368,27 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
 class POSARXrayEnv(gym.Env):
     """Partially observable search and rescue
     """
-    height, width = 5, 5
-    room_locs = [(0, 0), (0, 4), (4, 0), (4, 4)]
-    robot_starts = [(2, 2)]
+    height, width = 9, 9
+    room_locs = [(0, i) for i in range(9)] + [(8, i) for i in range(9)]
+    robot_starts = [(4, 3), (4, 4), (4, 5)]
+    wall_locs = [(1, 1), (2, 4), (1, 4), (1, 5), (2, 1), (2, 7), (2, 8),
+                 (3, 0), (3, 2), (4, 6), (4, 7), (5, 1), (5, 3), (5, 4),
+                 (6, 2), (6, 5), (6, 6), (6, 8), (7, 3), (7, 4)]
     sense_radius = 0
-    actions = up, down, left, right, do_xray = range(5)
+    actions = up, down, left, right, pickup, do_xray = range(6)
 
     def __init__(self, seed=0):
         self._state = None # set in reset
+        self._problem_idx = None
         self.seed(seed)
+
+    @property
+    def problems(self):
+        return [(s, i) for s in self.robot_starts \
+                for i in range(len(self.room_locs))]
+
+    def fix_problem_index(self, idx):
+        self._problem_idx = idx
 
     def seed(self, seed=0):
         self._seed = seed
@@ -385,10 +397,13 @@ class POSARXrayEnv(gym.Env):
     def reset(self):
         """
         """
-        # Randomize the robot location
-        robot_loc = self.robot_starts[self._rng.choice(len(self.robot_starts))]
-        # Randomize the location of the person
-        person_room_id = self._rng.choice(len(self.room_locs))
+        if self._problem_idx is None:
+            # Randomize the robot location
+            robot_loc = self.robot_starts[self._rng.choice(len(self.robot_starts))]
+            # Randomize the location of the person
+            person_room_id = self._rng.choice(len(self.room_locs))
+        else:
+            robot_loc, person_room_id = self.problems[self._problem_idx]
         # Turn xray vision off
         xray = False
         # Set the state
@@ -400,11 +415,6 @@ class POSARXrayEnv(gym.Env):
     def _construct_state(self, robot, person, xray, rescued):
         """
         """
-        if rescued or (robot == self.room_locs[person]):
-            rescued = True
-        else:
-            rescued = False
-
         return {
             "robot" : robot,
             "person" : person,
@@ -448,13 +458,45 @@ class POSARXrayEnv(gym.Env):
                 else:
                     obs[f"room{room_id}"] = "empty"
 
-        return obs
+        # Make hashable
+        return tuple(sorted(obs.items()))
+
+    def observation_to_states(self, obs):
+        # Make easier to manipulate
+        obs = dict(obs)
+        # Create base state
+        base_state = {
+            "robot" : obs["robot"],
+            "rescued" : obs["rescued"],
+        }
+        if "xray" in obs:
+            base_state["xray"] = obs["xray"]
+        else:
+            base_state["xray"] = False
+        # Check whether we're observing a person
+        person = None
+        for k, v in obs.items():
+            if k.startswith("room") and v == "person":
+                person = int(k[len("room"):])
+        # If the person is observed, there is only one possible state
+        if person is not None:
+            base_state["person"] = person
+            return [base_state]
+        # Otherwise, the person could be in any room that is hidden
+        states = []
+        for k, v in obs.items():
+            if k.startswith("room") and v == "?":
+                person = int(k[len("room"):])
+                state = base_state.copy()
+                state["person"] = person
+                states.append(state)
+        return states
 
     def get_possible_actions(self):
         return list(self.actions)
 
     def get_successor_state(self, state, action):
-        assert action in self.actions, "Invalid action f{action}"
+        assert action in self.actions, f"Invalid action f{action}"
 
         # Start out with previous values
         robot, person, xray = state["robot"], state["person"], state["xray"]
@@ -464,16 +506,24 @@ class POSARXrayEnv(gym.Env):
             xray = True
 
         # Move
-        else:
+        elif action in [self.up, self.down, self.left, self.right]:
             rob_r, rob_c = robot
             dr, dc = {self.up : (-1, 0), self.down : (1, 0),
                       self.right : (0, 1), self.left : (0, -1)}[action]
 
             if 0 <= rob_r + dr < self.height and 0 <= rob_c + dc < self.width:
-                robot = (rob_r + dr, rob_c + dc)
+                if (rob_r + dr, rob_c + dc) not in self.wall_locs:
+                    robot = (rob_r + dr, rob_c + dc)
+
+        # Pickup
+        if state['rescued'] or \
+            (action == self.pickup and robot == self.room_locs[person]):
+            rescued = True
+        else:
+            rescued = False
 
         # Update the previous state
-        return self._construct_state(robot, person, xray, state["rescued"])
+        return self._construct_state(robot, person, xray, rescued)
 
     def check_goal(self, state):
         return state["rescued"]
@@ -498,13 +548,14 @@ class POSARXrayEnv(gym.Env):
 
 
 class POSARNoXrayEnv(POSARXrayEnv):
-    actions = up, down, left, right = range(4)
+    actions = up, down, left, right, pickup = range(5)
 
     def get_observation(self, *args, **kwargs):
         obs = super().get_observation(*args, **kwargs)
+        obs = dict(obs)
         assert obs["xray"] == False
         del obs["xray"]
-        return obs
+        return tuple(sorted(obs.items()))
 
 
 class POSARRadius1Env(POSARNoXrayEnv):
@@ -514,17 +565,24 @@ class POSARRadius1Env(POSARNoXrayEnv):
 class POSARRadius1XrayEnv(POSARXrayEnv):
     sense_radius = 1
 
+class SmallPOSARRadius1Env(POSARRadius1Env):
+    height, width = 3, 3
+    room_locs = [(0, i) for i in range(3)] + [(2, i) for i in range(3)]
+    robot_starts = [(1, 1)]
+    wall_locs = []
+
 
 if __name__ == "__main__":
     import imageio
     np.random.seed(1)
-    for env_name in ["POSARRadius1", "POSARRadius1Xray"]:
+    for env_name in ["SmallPOSARRadius1"]: #, "POSARRadius1", "POSARRadius1Xray"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
+        env.fix_problem_index(0)
         obs, _ = env.reset()
         print(obs)
         imgs.append(env.render())
-        plan = np.random.choice(env.get_possible_actions(), size=250)
+        plan = np.random.choice(env.get_possible_actions(), size=25)
         for act in plan:
             obs, reward, done, _ = env.step(act)
             print(obs, reward, done)
