@@ -167,6 +167,11 @@ for level in range(1, 7):
     )
 
 register(
+    id='SmallPOSARRadius1-v0',
+    entry_point='pddlgym.custom.searchandrescue:SmallPOSARRadius1Env',
+)
+
+register(
     id='POSARRadius1-v0',
     entry_point='pddlgym.custom.searchandrescue:POSARRadius1Env',
 )

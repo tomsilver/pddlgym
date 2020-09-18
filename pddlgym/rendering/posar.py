@@ -3,17 +3,19 @@ from .utils import get_asset_path, render_from_layout
 import matplotlib.pyplot as plt
 import numpy as np
 
-NUM_OBJECTS = 4
-ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN = range(NUM_OBJECTS)
+NUM_OBJECTS = 5
+ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL = range(NUM_OBJECTS)
 
 TOKEN_IMAGES = {
     ROBOT : plt.imread(get_asset_path('sar_robot.png')),
     ROBOT_WITH_XRAY : plt.imread(get_asset_path('sar_robot_xray.png')),
     PERSON : plt.imread(get_asset_path('sar_person.png')),
     HIDDEN : plt.imread(get_asset_path('sar_hidden.png')),
+    WALL : plt.imread(get_asset_path('sar_wall.png')),
 }
 
 def build_layout(obs, env):
+    obs = dict(obs)
     # Get location boundaries
     min_r, min_c, max_r, max_c = 0, 0, env.height-1, env.width-1
     layout = np.zeros((max_r+1-min_r, max_c+1-min_c, NUM_OBJECTS), dtype=bool)
@@ -33,11 +35,15 @@ def build_layout(obs, env):
         elif room_obs == "?":
             layout[r, c, HIDDEN] = True
 
+    # Put in walls
+    for (r, c) in env.wall_locs:
+        layout[r, c, WALL] = True
+
     return layout
 
 def get_token_images(obs_cell):
     images = []
-    for token in [ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN]:
+    for token in [ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL]:
         if obs_cell[token]:
             images.append(TOKEN_IMAGES[token])
     return images
