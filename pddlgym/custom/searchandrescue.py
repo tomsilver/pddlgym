@@ -424,7 +424,7 @@ class POSARXrayEnv(gym.Env):
         }
         return self._flat_dict_to_hashable(d)
 
-    @functools.lru_cache(maxsize=10000)
+    # @functools.lru_cache(maxsize=10000)
     def get_observation(self, state):
         """
         """
@@ -465,7 +465,7 @@ class POSARXrayEnv(gym.Env):
         # Make hashable
         return self._flat_dict_to_hashable(obs)
 
-    @functools.lru_cache(maxsize=10000)
+    # @functools.lru_cache(maxsize=10000)
     def observation_to_states(self, obs):
         # Make easier to manipulate
         obs = dict(obs)
@@ -500,10 +500,10 @@ class POSARXrayEnv(gym.Env):
     def get_possible_actions(self):
         return list(self.actions)
 
-    @functools.lru_cache(maxsize=10000)
+    # @functools.lru_cache(maxsize=10000)
     def get_successor_state(self, state, action):
         state = dict(state)
-        assert action in self.actions, f"Invalid action f{action}"
+        assert action in self.actions, f"Invalid action {action}"
 
         # Start out with previous values
         robot, person, xray = state["robot"], state["person"], state["xray"]
@@ -592,6 +592,10 @@ class SmallPOSARRadius1Env(POSARRadius1Env):
     robot_starts = [(1, 1)]
     wall_locs = []
     fire_locs = []
+
+
+class SmallPOSARRadius0Env(SmallPOSARRadius1Env):
+    sense_radius = 0
 
 
 class LargePOSARRadius1Env(POSARRadius1Env):
