@@ -172,6 +172,11 @@ register(
 )
 
 register(
+    id='SmallPOSARRadius0-v0',
+    entry_point='pddlgym.custom.searchandrescue:SmallPOSARRadius0Env',
+)
+
+register(
     id='POSARRadius1-v0',
     entry_point='pddlgym.custom.searchandrescue:POSARRadius1Env',
 )
@@ -179,4 +184,15 @@ register(
 register(
     id='POSARRadius1Xray-v0',
     entry_point='pddlgym.custom.searchandrescue:POSARRadius1XrayEnv',
+)
+
+
+register(
+    id='POSARRadius0-v0',
+    entry_point='pddlgym.custom.searchandrescue:POSARRadius0Env',
+)
+
+register(
+    id='POSARRadius0Xray-v0',
+    entry_point='pddlgym.custom.searchandrescue:POSARRadius0XrayEnv',
 )

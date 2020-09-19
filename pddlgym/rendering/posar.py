@@ -3,8 +3,8 @@ from .utils import get_asset_path, render_from_layout
 import matplotlib.pyplot as plt
 import numpy as np
 
-NUM_OBJECTS = 5
-ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL = range(NUM_OBJECTS)
+NUM_OBJECTS = 6
+ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL, FIRE = range(NUM_OBJECTS)
 
 TOKEN_IMAGES = {
     ROBOT : plt.imread(get_asset_path('sar_robot.png')),
@@ -12,6 +12,7 @@ TOKEN_IMAGES = {
     PERSON : plt.imread(get_asset_path('sar_person.png')),
     HIDDEN : plt.imread(get_asset_path('sar_hidden.png')),
     WALL : plt.imread(get_asset_path('sar_wall.png')),
+    FIRE : plt.imread(get_asset_path('sar_fire.png')),
 }
 
 def build_layout(obs, env):
@@ -39,11 +40,15 @@ def build_layout(obs, env):
     for (r, c) in env.wall_locs:
         layout[r, c, WALL] = True
 
+    # Put in fire
+    for (r, c) in env.fire_locs:
+        layout[r, c, FIRE] = True
+
     return layout
 
 def get_token_images(obs_cell):
     images = []
-    for token in [ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL]:
+    for token in [FIRE, ROBOT, ROBOT_WITH_XRAY, PERSON, HIDDEN, WALL]:
         if obs_cell[token]:
             images.append(TOKEN_IMAGES[token])
     return images
