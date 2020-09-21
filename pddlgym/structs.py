@@ -10,6 +10,11 @@ class Type(str):
     def __call__(self, entity_name):
         return TypedEntity.__new__(TypedEntity, entity_name, self)
 
+class FloatType(str):
+    """A numeric PDDL type"""
+    def __call__(self, entity_name):
+        return FloatTypedEntity.__new__(FloatTypedEntity, entity_name, self)
+
 # Default type
 NULLTYPE = Type("null")
 
@@ -47,6 +52,42 @@ class TypedEntity(str):
 
     def __getnewargs_ex__(self):
         return ((self.name, self.var_type), {})
+
+
+class FloatTypedEntity(float):
+    """A numeric object"""
+    def __new__(cls, value, var_type):
+        assert isinstance(var_type, FloatType)
+        obj = float.__new__(cls, value)
+        obj.value = value
+        obj.var_type = var_type
+        obj._str = str(value) + ":" + str(obj.var_type)
+        return obj
+
+    def __str__(self):
+        return self._str
+
+    def __repr__(self):
+        return str(self)
+
+    def __hash__(self):
+        return hash(str(self))
+
+    def __add__(self, other):
+        return str(self) + str(other)
+
+    def __radd__(self, other):
+        return str(other) + str(self)
+
+    def __copy__(self):
+        return self
+
+    def __deepcopy__(self, memo):
+        return self
+
+    def __getnewargs_ex__(self):
+        return ((self.name, self.var_type), {})
+
 
 ### Predicates ###
 class Predicate(object):
