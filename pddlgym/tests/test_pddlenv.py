@@ -18,7 +18,7 @@ def test_pddlenv():
     type2 = Type('type2')
     pred1 = Predicate('pred1', 1, [type1])
     pred2 = Predicate('pred2', 1, [type2])
-    pred3 = Predicate('pred3', 1, [type1, type2, type2])
+    pred3 = Predicate('pred3', 3, [type1, type2, type2])
     operator_name = 'action1'
     action_pred = Predicate('actionpred', 1, [type1])
 

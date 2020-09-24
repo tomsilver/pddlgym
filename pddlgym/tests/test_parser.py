@@ -21,7 +21,7 @@ def test_parser():
     # Predicates
     pred1 = Predicate('pred1', 1, [type1])
     pred2 = Predicate('pred2', 1, [type2])
-    pred3 = Predicate('pred3', 1, [type1, type2, type2])
+    pred3 = Predicate('pred3', 3, [type1, type2, type2])
     assert set(domain.predicates.values()) == { pred1, pred2, pred3, action_pred }
     assert domain.actions == { action_pred.name }
 

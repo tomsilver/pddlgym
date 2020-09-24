@@ -1,7 +1,7 @@
 import pddlgym
 import numpy as np
 
-def test_searchandrescue(num_actions_to_test=100, verbose=False):
+def test_searchandrescue(num_actions_to_test=10, verbose=False):
     """Test state encoding and decoding
     """
     for level in range(1, 7):
@@ -38,7 +38,7 @@ def test_searchandrescue(num_actions_to_test=100, verbose=False):
 
     print("Test passed.")
 
-def test_searchandrescue_walls(num_actions_to_test=100):
+def test_searchandrescue_walls(num_actions_to_test=10):
     """Test that when we try to move into walls, we stay put.
     """
     rng = np.random.RandomState(0)
