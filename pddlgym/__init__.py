@@ -186,7 +186,6 @@ register(
     entry_point='pddlgym.custom.searchandrescue:POSARRadius1XrayEnv',
 )
 
-
 register(
     id='POSARRadius0-v0',
     entry_point='pddlgym.custom.searchandrescue:POSARRadius0Env',
@@ -195,4 +194,14 @@ register(
 register(
     id='POSARRadius0Xray-v0',
     entry_point='pddlgym.custom.searchandrescue:POSARRadius0XrayEnv',
+)
+
+register(
+    id='MyopicPOSAR-v0',
+    entry_point='pddlgym.custom.searchandrescue:MyopicPOSAREnv',
+)
+
+register(
+    id='SmallMyopicPOSAR-v0',
+    entry_point='pddlgym.custom.searchandrescue:SmallMyopicPOSAREnv',
 )

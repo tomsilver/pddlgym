@@ -21,7 +21,7 @@ def fig2data(fig, dpi=150):
     data[..., [0, 1, 2, 3]] = data[..., [1, 2, 3, 0]]
     return data
 
-def initialize_figure(height, width, fig_scale=1.):
+def initialize_figure(height, width, fig_scale=1., grid_colors=None):
     fig = plt.figure(figsize=((width + 2) * fig_scale, (height + 2) * fig_scale))
     ax = fig.add_axes((0.0, 0.0, 1.0, 1.0),
                                 aspect='equal', frameon=False,
@@ -35,7 +35,10 @@ def initialize_figure(height, width, fig_scale=1.):
     for r in range(height):
         for c in range(width):
             edge_color = '#888888'
-            face_color = 'white'
+            if grid_colors is not None:
+                face_color = grid_colors[r, c]
+            else:
+                face_color = 'white'
             
             drawing = RegularPolygon((c + 0.5, (height - 1 - r) + 0.5),
                                          numVertices=4,
@@ -47,10 +50,10 @@ def initialize_figure(height, width, fig_scale=1.):
 
     return fig, ax
 
-def render_from_layout(layout, get_token_images, dpi=150):
+def render_from_layout(layout, get_token_images, dpi=150, grid_colors=None):
     height, width = layout.shape[:2]
 
-    fig, ax = initialize_figure(height, width)
+    fig, ax = initialize_figure(height, width, grid_colors=grid_colors)
 
     for r in range(height):
         for c in range(width):

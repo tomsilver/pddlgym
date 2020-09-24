@@ -1,5 +1,5 @@
 from pddlgym.core import PDDLEnv
-from pddlgym.rendering import sar_render, slow_sar_render, posar_render
+from pddlgym.rendering import sar_render, slow_sar_render, posar_render, myopic_posar_render
 from pddlgym.structs import Type, Predicate, Not, State, LiteralConjunction
 import gym
 import functools
@@ -570,6 +570,69 @@ class POSARNoXrayEnv(POSARXrayEnv):
         return self._flat_dict_to_hashable(obs)
 
 
+class MyopicPOSAREnv(POSARNoXrayEnv):
+    """The agent now does not know where the fires or people might be
+    """
+    sense_radius = 0
+
+    def get_observation(self, state):
+        """Can only observe: 
+            - the current robot location
+            - what's at the location: empty, person, or fire
+            - smoke, i.e., a fire that is within manhattan distance 1
+            - whether the person has been rescued
+        """
+        if state is None:
+            state = self._state
+        state = dict(state)
+
+        obs = {}
+
+        # We can always see the robot and rescued state
+        obs["robot"] = state["robot"]
+        obs["rescued"] = state["rescued"]
+
+        # We can see what's in the current cell
+        rob_r, rob_c = state["robot"]
+        cell = "empty"
+        # Is the robot at a person?
+        if (rob_r, rob_c) in self.room_locs:
+            room_id = self.room_locs.index((rob_r, rob_c))
+            if room_id == state["person"]:
+                cell = "person"
+        # Is the robot at a fire?
+        elif (rob_r, rob_c) in self.fire_locs:
+            cell = "fire"
+        obs["cell"] = cell
+
+        # Are we fire-adjacent?
+        obs["smoke"] = False
+        for (dr, dc) in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
+            if (rob_r + dr, rob_c + dc) in self.fire_locs:
+                obs["smoke"] = True
+                break
+
+        # Make hashable
+        return self._flat_dict_to_hashable(obs)
+
+    def observation_to_states(self, obs):
+        raise NotImplementedError("There are too many possible states to enumerate!")
+
+    def render(self, *args, **kwargs):
+        return myopic_posar_render(self.get_observation(self._state), self)
+
+    def render_from_state(self, state):
+        return myopic_posar_render(self.get_observation(state=state), self)
+
+
+class SmallMyopicPOSAREnv(MyopicPOSAREnv):
+    height, width = 3, 3
+    room_locs = [(0, 1), (0, 2), (2, 0), (2, 1), (2, 2)]
+    robot_starts = [(1, 1)]
+    wall_locs = []
+    fire_locs = [(0, 0)]
+
+
 class POSARRadius1Env(POSARNoXrayEnv):
     sense_radius = 1
 
@@ -611,14 +674,14 @@ class LargePOSARRadius1Env(POSARRadius1Env):
 if __name__ == "__main__":
     import imageio
     np.random.seed(1)
-    for env_name in ["POSARRadius1"]:
+    for env_name in ["SmallMyopicPOSAR"]: #, "MyopicPOSAR"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
         env.fix_problem_index(0)
         obs, _ = env.reset()
         print(obs)
         imgs.append(env.render())
-        plan = np.random.choice(env.get_possible_actions(), size=25)
+        plan = np.random.choice(env.get_possible_actions(), size=50)
         for act in plan:
             obs, reward, done, _ = env.step(act)
             print(obs, reward, done)
