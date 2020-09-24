@@ -79,7 +79,9 @@ class Predicate(object):
         self.is_derived = False
 
     def __call__(self, *variables):
-        return Literal(self, list(variables))
+        var_list = list(variables)
+        assert len(var_list) == self.arity
+        return Literal(self, var_list)
 
     def __str__(self):
         if self.negated_as_failure:
