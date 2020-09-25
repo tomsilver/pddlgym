@@ -205,3 +205,13 @@ register(
     id='SmallMyopicPOSAR-v0',
     entry_point='pddlgym.custom.searchandrescue:SmallMyopicPOSAREnv',
 )
+
+register(
+    id='TinyMyopicPOSAR1-v0',
+    entry_point='pddlgym.custom.searchandrescue:TinyMyopicPOSAREnv1',
+)
+
+register(
+    id='TinyMyopicPOSAR2-v0',
+    entry_point='pddlgym.custom.searchandrescue:TinyMyopicPOSAREnv2',
+)

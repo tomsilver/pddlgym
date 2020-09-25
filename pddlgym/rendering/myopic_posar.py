@@ -3,14 +3,15 @@ from .utils import get_asset_path, render_from_layout
 import matplotlib.pyplot as plt
 import numpy as np
 
-NUM_OBJECTS = 4
-ROBOT, PERSON, SMOKE, FIRE = range(NUM_OBJECTS)
+NUM_OBJECTS = 6
+ROBOT, PERSON, SMOKE, FIRE, WALL, EMPTY = range(NUM_OBJECTS)
 
 TOKEN_IMAGES = {
     ROBOT : plt.imread(get_asset_path('sar_robot.png')),
     PERSON : plt.imread(get_asset_path('sar_person.png')),
     SMOKE : plt.imread(get_asset_path('sar_smoke.png')),
     FIRE : plt.imread(get_asset_path('sar_fire.png')),
+    WALL : plt.imread(get_asset_path('sar_wall.png')),
 }
 
 def build_layout(obs, env):
@@ -40,12 +41,19 @@ def build_layout(obs, env):
 
 def get_token_images(obs_cell):
     images = []
-    for token in [FIRE, ROBOT, SMOKE, PERSON]:
+    for token in [FIRE, ROBOT, SMOKE, PERSON, WALL]:
         if obs_cell[token]:
             images.append(TOKEN_IMAGES[token])
     return images
 
 def render(obs, env, mode='human', close=False):
     layout, grid_colors = build_layout(obs, env)
+    return render_from_layout(layout, get_token_images, dpi=150,
+        grid_colors=grid_colors)
+
+def posar_render_from_layout(layout):
+    known_mask = np.any(layout, axis=2)
+    grid_colors = np.full(layout.shape[:2], 'gray', dtype=object)
+    grid_colors[known_mask] = 'white'
     return render_from_layout(layout, get_token_images, dpi=150,
         grid_colors=grid_colors)

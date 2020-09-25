@@ -633,6 +633,21 @@ class SmallMyopicPOSAREnv(MyopicPOSAREnv):
     fire_locs = [(0, 0)]
 
 
+class TinyMyopicPOSAREnv1(MyopicPOSAREnv):
+    height, width = 1, 5
+    room_locs = [(0, 4)]
+    robot_starts = [(0, 2)]
+    wall_locs = []
+    fire_locs = [(0, 0)]
+
+class TinyMyopicPOSAREnv2(MyopicPOSAREnv):
+    height, width = 1, 5
+    room_locs = [(0, 4)]
+    robot_starts = [(0, 2)]
+    wall_locs = [(0, 1)]
+    fire_locs = []
+
+
 class POSARRadius1Env(POSARNoXrayEnv):
     sense_radius = 1
 
