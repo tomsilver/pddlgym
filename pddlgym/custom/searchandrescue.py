@@ -737,6 +737,29 @@ class SmallMyopicPOSAREnv(MyopicPOSAREnv):
     def problems(self):
         initial_states = []
 
+        # Important to not initialize robot in smoke
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (0, 2),
+            "person" : (0, 0),
+            "fire_locs" : frozenset({(2, 2)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (2, 0),
+            "fire_locs" : frozenset({(0, 1)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (2, 2),
+            "fire_locs" : frozenset({(2, 0)}),
+            "rescued" : False,
+        }))
+
         initial_states.append(self._flat_dict_to_hashable({
             "robot" : (1, 2),
             "person" : (0, 4),
@@ -744,30 +767,7 @@ class SmallMyopicPOSAREnv(MyopicPOSAREnv):
             "rescued" : False,
         }))
 
-        initial_states.append(self._flat_dict_to_hashable({
-            "robot" : (1, 2),
-            "person" : (0, 0),
-            "fire_locs" : frozenset({(0, 1), (2, 2)}),
-            "rescued" : False,
-        }))
-
-        initial_states.append(self._flat_dict_to_hashable({
-            "robot" : (1, 2),
-            "person" : (2, 0),
-            "fire_locs" : frozenset({(0, 0), (0, 1)}),
-            "rescued" : False,
-        }))
-
-        initial_states.append(self._flat_dict_to_hashable({
-            "robot" : (1, 2),
-            "person" : (2, 2),
-            "fire_locs" : frozenset({(2, 0), (2, 1)}),
-            "rescued" : False,
-        }))
-
         return initial_states
-
-
 
 
 class POSARRadius1Env(POSARNoXrayEnv):
