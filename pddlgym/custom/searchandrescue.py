@@ -570,10 +570,92 @@ class POSARNoXrayEnv(POSARXrayEnv):
         return self._flat_dict_to_hashable(obs)
 
 
-class MyopicPOSAREnv(POSARNoXrayEnv):
+class MyopicPOSAREnv(gym.Env):
     """The agent now does not know where the fires or people might be
     """
-    sense_radius = 0
+    height, width = 5, 5 # modified in subclasses
+    actions = up, down, left, right, pickup = range(5)
+
+    def __init__(self, seed=0):
+        self._state = None # set in reset
+        self._problem_idx = None
+        self.seed(seed)
+
+    @property
+    def problems(self):
+        raise NotImplementedError("Override me!")
+
+    def fix_problem_index(self, idx):
+        self._problem_idx = idx
+
+    def seed(self, seed=0):
+        self._seed = seed
+        self._rng = np.random.RandomState(seed)        
+
+    def reset(self):
+        """
+        """
+        if self._problem_idx is None:
+            problem_idx = self._rng.choice(len(self.problems))
+        else:
+            problem_idx = self._problem_idx
+        # Set state            
+        self._state = self.problems[problem_idx]
+        # Get the observation
+        return self.get_observation(self._state), {}
+
+    def get_possible_actions(self):
+        return list(self.actions)
+
+    def get_successor_state(self, state, action):
+        state = dict(state)
+        assert action in self.actions, f"Invalid action {action}"
+
+        # Start out with previous values
+        robot, person = state["robot"], state["person"]
+
+        # Static
+        fire_locs = state["fire_locs"]
+
+        # Move
+        if action in [self.up, self.down, self.left, self.right]:
+            # If we're in a fire location, we're trapped forever
+            if robot not in fire_locs:
+                rob_r, rob_c = robot
+                dr, dc = {self.up : (-1, 0), self.down : (1, 0),
+                          self.right : (0, 1), self.left : (0, -1)}[action]
+
+                if 0 <= rob_r + dr < self.height and 0 <= rob_c + dc < self.width:
+                    robot = (rob_r + dr, rob_c + dc)
+
+        # Pickup
+        if state['rescued'] or (action == self.pickup and robot == person):
+            rescued = True
+        else:
+            rescued = False
+
+        # Update state
+        state["robot"] = robot
+        state["rescued"] = rescued
+        return self._flat_dict_to_hashable(state)
+
+    def check_goal(self, state):
+        state = dict(state)
+        return state["rescued"]
+
+    def step(self, action):
+        """
+        """
+        self._state = self.get_successor_state(self._state, action)
+
+        # We're done if the person is rescued
+        done = self.check_goal(self._state)
+        reward = float(done)
+
+        return self.get_observation(self._state), reward, done, {}
+
+    def _flat_dict_to_hashable(self, d):
+        return tuple(sorted(d.items()))
 
     def get_observation(self, state):
         """Can only observe: 
@@ -596,19 +678,17 @@ class MyopicPOSAREnv(POSARNoXrayEnv):
         rob_r, rob_c = state["robot"]
         cell = "empty"
         # Is the robot at a person?
-        if (rob_r, rob_c) in self.room_locs:
-            room_id = self.room_locs.index((rob_r, rob_c))
-            if room_id == state["person"]:
-                cell = "person"
+        if (rob_r, rob_c) == state["person"]:
+            cell = "person"
         # Is the robot at a fire?
-        elif (rob_r, rob_c) in self.fire_locs:
+        elif (rob_r, rob_c) in state["fire_locs"]:
             cell = "fire"
         obs["cell"] = cell
 
         # Are we fire-adjacent?
         obs["smoke"] = False
         for (dr, dc) in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
-            if (rob_r + dr, rob_c + dc) in self.fire_locs:
+            if (rob_r + dr, rob_c + dc) in state["fire_locs"]:
                 obs["smoke"] = True
                 break
 
@@ -625,27 +705,69 @@ class MyopicPOSAREnv(POSARNoXrayEnv):
         return myopic_posar_render(self.get_observation(state=state), self)
 
 
+class TinyMyopicPOSAREnv(MyopicPOSAREnv):
+    height, width = 1, 5
+
+    @property
+    def problems(self):
+        initial_states = []
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (0, 2),
+            "person" : (0, 4),
+            "fire_locs" : frozenset({(0, 0)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (0, 2),
+            "person" : (0, 0),
+            "fire_locs" : frozenset({(0, 4)}),
+            "rescued" : False,
+        }))
+
+        return initial_states
+
+
+
 class SmallMyopicPOSAREnv(MyopicPOSAREnv):
-    height, width = 3, 3
-    room_locs = [(0, 1), (0, 2), (2, 0), (2, 1), (2, 2)]
-    robot_starts = [(1, 1)]
-    wall_locs = []
-    fire_locs = [(0, 0)]
+    height, width = 3, 5
+
+    @property
+    def problems(self):
+        initial_states = []
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (0, 4),
+            "fire_locs" : frozenset({(0, 3), (2, 0)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (0, 0),
+            "fire_locs" : frozenset({(0, 1), (2, 2)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (2, 0),
+            "fire_locs" : frozenset({(0, 0), (0, 1)}),
+            "rescued" : False,
+        }))
+
+        initial_states.append(self._flat_dict_to_hashable({
+            "robot" : (1, 2),
+            "person" : (2, 2),
+            "fire_locs" : frozenset({(2, 0), (2, 1)}),
+            "rescued" : False,
+        }))
+
+        return initial_states
 
 
-class TinyMyopicPOSAREnv1(MyopicPOSAREnv):
-    height, width = 1, 5
-    room_locs = [(0, 4)]
-    robot_starts = [(0, 2)]
-    wall_locs = []
-    fire_locs = [(0, 0)]
-
-class TinyMyopicPOSAREnv2(MyopicPOSAREnv):
-    height, width = 1, 5
-    room_locs = [(0, 4)]
-    robot_starts = [(0, 2)]
-    wall_locs = [(0, 1)]
-    fire_locs = []
 
 
 class POSARRadius1Env(POSARNoXrayEnv):
@@ -688,7 +810,7 @@ class LargePOSARRadius1Env(POSARRadius1Env):
 
 if __name__ == "__main__":
     import imageio
-    np.random.seed(1)
+    np.random.seed(0)
     for env_name in ["SmallMyopicPOSAR"]: #, "MyopicPOSAR"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
