@@ -306,7 +306,8 @@ class PDDLDomain:
     """A PDDL domain.
     """
     def __init__(self, domain_name=None, types=None, type_hierarchy=None, predicates=None, 
-                 operators=None, actions=None, operators_as_actions=False, is_probabilistic=False):
+                 operators=None, actions=None, constants=None, operators_as_actions=False, 
+                 is_probabilistic=False):
         # String of domain name.
         self.domain_name = domain_name
         # Dict from type name -> structs.Type object.
@@ -319,6 +320,8 @@ class PDDLDomain:
         self.operators = operators
         # Action predicate names (not part of standard PDDL)
         self.actions = actions
+        # Constant objects, shared across problems
+        self.constants = constants or []
         self.operators_as_actions = operators_as_actions
         self.is_probabilistic = is_probabilistic
 
