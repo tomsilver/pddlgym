@@ -142,15 +142,17 @@ class Predicate(object):
         return variables
 
     def pddl_str(self):
+        if len(self.var_types) > 0:
+            var_str = " " + " ".join(self.pddl_variables())
+        else:
+            var_str = ""
         if self.is_anti:
-            return "(not ({} {}))".format(self.inverted_anti, " ".join(
-                self.pddl_variables()))
+            return "(not ({}{}))".format(self.inverted_anti, var_str)
         if self.is_negative:
-            return "(not ({} {}))".format(self.positive, " ".join(
-                self.pddl_variables()))
+            return "(not ({}{}))".format(self.positive, var_str)
         if self.negated_as_failure:
             raise NotImplementedError
-        return "({} {})".format(self, " ".join(self.pddl_variables()))
+        return "({}{})".format(self, var_str)
 
 
 class DerivedPredicate(Predicate):
@@ -166,8 +168,13 @@ class DerivedPredicate(Predicate):
         self.body = body
 
     def derived_pddl_str(self):
-        return "(:derived ({} {}) {})".format(
-            self.name, " ".join(self.param_names), self.body.pddl_str())
+        if len(self.param_names) > 0:
+            param_str = " " + " ".join(self.param_names)
+        else:
+            param_str = ""
+        return "(:derived ({}{}) {})".format(
+            self.name, param_str,
+            self.body.pddl_str())
 
 
 ### Literals ###
@@ -261,15 +268,17 @@ class Literal:
                 for v in self.variables]
 
     def pddl_str(self):
+        if len(self.variables) > 0:
+            var_str = " " + " ".join(self.pddl_variables())
+        else:
+            var_str = ""
         if self.is_anti:
-            return "(not ({} {}))".format(self.predicate.inverted_anti, " ".join(
-                self.pddl_variables()))
+            return "(not ({}{}))".format(self.predicate.inverted_anti, var_str)
         if self.is_negative:
-            return "(not ({} {}))".format(self.predicate.positive, " ".join(
-                self.pddl_variables()))
+            return "(not ({}{}))".format(self.predicate.positive, var_str)
         if self.negated_as_failure:
             raise NotImplementedError
-        return "({} {})".format(self.predicate, " ".join(self.pddl_variables()))
+        return "({}{})".format(self.predicate, var_str)
 
 
 class LiteralConjunction:
