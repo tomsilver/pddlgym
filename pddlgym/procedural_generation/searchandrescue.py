@@ -25,19 +25,22 @@ def sample_state(domain, num_rows=6, num_cols=6,
                  randomize_robot_start=True,
                  wall_probability=0.2,
                  randomize_walls=False,
-                 randomize_hospital_loc=False):
+                 randomize_hospital_loc=False,
+                 num_chickens=0):
 
     person_type = domain.types['person']
     robot_type = domain.types['robot']
     location_type = domain.types['location']
     wall_type = domain.types['wall']
     hospital_type = domain.types['hospital']
+    chicken_type = domain.types['chicken']
     conn = domain.predicates['conn']
     clear = domain.predicates['clear']
     robot_at = domain.predicates['robot-at']
     person_at = domain.predicates['person-at']
     wall_at = domain.predicates['wall-at']
     hospital_at = domain.predicates['hospital-at']
+    chicken_at = domain.predicates['chicken-at']
     handsfree = domain.predicates['handsfree']
     move = domain.predicates['move']
     pickup = domain.predicates['pickup']
@@ -124,6 +127,20 @@ def sample_state(domain, num_rows=6, num_cols=6,
         occupied_locations.add(loc)
         state.add(person_at(person, loc))
 
+    # Add chickens
+    chickens = []
+    for chicken_idx in range(num_chickens):
+        chicken = chicken_type(f"chicken{chicken_idx}")
+        objects.add(chicken)
+        chickens.append(chicken)
+
+    # Get people locations
+    for chicken_idx, chicken in enumerate(chickens):
+        loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
+        occupied_locations.add(loc)
+        state.add(chicken_at(chicken, loc))
+
     for r in range(num_rows):
         for c in range(num_cols):
             loc = locations_in_grid[r, c]
@@ -159,7 +176,8 @@ def sample_problem(domain, problem_dir, problem_outfile,
                    randomize_robot_start=True,
                    wall_probability=0.2,
                    randomize_walls=False,
-                   randomize_hospital_loc=False):
+                   randomize_hospital_loc=False,
+                   num_chickens=0):
     
     all_objects, initial_state, people, hospital_loc = sample_state(domain, 
         num_rows=num_rows, num_cols=num_cols,
@@ -169,6 +187,7 @@ def sample_problem(domain, problem_dir, problem_outfile,
         wall_probability=wall_probability,
         randomize_walls=randomize_walls,
         randomize_hospital_loc=randomize_hospital_loc,
+        num_chickens=num_chickens,
     )
 
     if isinstance(num_selected_people, tuple):
@@ -286,3 +305,13 @@ if __name__ == "__main__":
         randomize_walls=True, # !
         randomize_hospital_loc=True,
     )
+
+    # generate_problems(level=7,
+    #     num_people=1,
+    #     num_selected_people=1,
+    #     randomize_person_loc=False,
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=False,
+    #     num_chickens=5, # !
+    # )

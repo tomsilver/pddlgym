@@ -144,7 +144,7 @@ for env_name, kwargs in [
 
 
 # Custom environments
-for level in range(1, 7):
+for level in range(1, 8):
     register(
         id=f'SearchAndRescueLevel{level}-v0',
         entry_point=f'pddlgym.custom.searchandrescue:SearchAndRescueEnv',
