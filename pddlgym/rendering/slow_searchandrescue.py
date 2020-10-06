@@ -3,8 +3,8 @@ from .utils import get_asset_path, render_from_layout
 import matplotlib.pyplot as plt
 import numpy as np
 
-NUM_OBJECTS = 5
-ROBOT, PERSON, WALL, HOSPITAL, ROBOT_HOLDING_PERSON = range(NUM_OBJECTS)
+NUM_OBJECTS = 6
+ROBOT, PERSON, WALL, HOSPITAL, ROBOT_HOLDING_PERSON, CHICKEN = range(NUM_OBJECTS)
 
 TOKEN_IMAGES = {
     ROBOT : plt.imread(get_asset_path('sar_robot.png')),
@@ -12,6 +12,7 @@ TOKEN_IMAGES = {
     WALL : plt.imread(get_asset_path('sar_wall.png')),
     HOSPITAL : plt.imread(get_asset_path('sar_hospital.png')),
     ROBOT_HOLDING_PERSON : plt.imread(get_asset_path('sar_robot_holding_person.png')),
+    CHICKEN : plt.imread(get_asset_path('sar_chicken.png')),
 }
 
 def loc_str_to_loc(loc_str):
@@ -64,11 +65,14 @@ def build_layout(obs):
     for _, (r, c) in get_locations(obs, 'person'):
         layout[r, c, PERSON] = 1
 
+    for _, (r, c) in get_locations(obs, 'chicken'):
+        layout[r, c, CHICKEN] = 1
+
     return layout
 
 def get_token_images(obs_cell):
     images = []
-    for token in [HOSPITAL, WALL, ROBOT_HOLDING_PERSON, ROBOT, PERSON]:
+    for token in [HOSPITAL, WALL, ROBOT_HOLDING_PERSON, ROBOT, PERSON, CHICKEN]:
         if obs_cell[token]:
             images.append(TOKEN_IMAGES[token])
     return images

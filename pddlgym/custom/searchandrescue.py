@@ -811,10 +811,10 @@ class LargePOSARRadius1Env(POSARRadius1Env):
 if __name__ == "__main__":
     import imageio
     np.random.seed(0)
-    for env_name in ["SmallMyopicPOSAR"]: #, "MyopicPOSAR"]:
+    for env_name in ["PDDLSearchAndRescueLevel7"]: #, "MyopicPOSAR"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
-        env.fix_problem_index(0)
+        env.fix_problem_index(1)
         obs, _ = env.reset()
         print(obs)
         imgs.append(env.render())

@@ -1,7 +1,7 @@
 import numpy as np
 
-NUM_OBJECTS = 6
-BG, ROBOT, PERSON, WALL, HOSPITAL, ROBOT_HOLDING_PERSON = range(NUM_OBJECTS)
+NUM_OBJECTS = 7
+BG, ROBOT, PERSON, WALL, HOSPITAL, ROBOT_HOLDING_PERSON, CHICKEN = range(NUM_OBJECTS)
 
 COLORS = {
     BG : (0, 0, 0),
@@ -10,6 +10,7 @@ COLORS = {
     ROBOT_HOLDING_PERSON : (250, 150, 210),
     HOSPITAL : (10, 210, 50),
     WALL : (100, 100, 100),
+    CHICKEN : (52, 102, 30),
 }
 
 def loc_str_to_loc(loc_str):
