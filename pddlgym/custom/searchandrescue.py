@@ -25,7 +25,7 @@ def get_sar_successor_state(state, action):
     carrying = Predicate('carrying', 2, [robot_type, person_type])
     person_at = Predicate('person-at', 2, [person_type, location_type])
     handsfree = Predicate('handsfree', 1, [robot_type])
-    fire_at = Predicate("fire_at", 1, [location_type])
+    fire_at = Predicate("fire-at", 1, [location_type])
 
     # Parse the state
     robot_location = None # location
@@ -176,7 +176,8 @@ def get_sar_successor_state(state, action):
     if not is_valid:
         return state
 
-    assert state.literals.issuperset(pos_preconds)
+    if not state.literals.issuperset(pos_preconds):
+        import ipdb; ipdb.set_trace()
     assert len(state.literals & {Not(p) for p in neg_preconds}) == 0
     new_state_literals = set(state.literals)
     new_state_literals -= neg_effects
