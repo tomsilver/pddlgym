@@ -14,7 +14,7 @@
     (person-at ?v0 - person ?v1 - location)
     (wall-at ?v0 - wall ?v1 - location)
     (hospital-at ?v0 - hospital ?v1 - location)
-    ; (chicken-at ?v0 - chicken ?v1 - location)
+    (chicken-at ?v0 - chicken ?v1 - location)
     (fire-at ?v0 - location)
     (carrying ?v0 - robot ?v1 - person)
     (handsfree ?v0 - robot)
