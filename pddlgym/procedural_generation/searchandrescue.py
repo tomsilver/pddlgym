@@ -26,7 +26,8 @@ def sample_state(domain, num_rows=6, num_cols=6,
                  wall_probability=0.2,
                  randomize_walls=False,
                  randomize_hospital_loc=False,
-                 num_chickens=0):
+                 num_chickens=0,
+                 num_fires=0):
 
     person_type = domain.types['person']
     robot_type = domain.types['robot']
@@ -40,11 +41,13 @@ def sample_state(domain, num_rows=6, num_cols=6,
     person_at = domain.predicates['person-at']
     wall_at = domain.predicates['wall-at']
     hospital_at = domain.predicates['hospital-at']
-    chicken_at = domain.predicates['chicken-at']
+    # chicken_at = domain.predicates['chicken-at']
+    fire_at = domain.predicates['fire-at']
     handsfree = domain.predicates['handsfree']
     move = domain.predicates['move']
     pickup = domain.predicates['pickup']
     dropoff = domain.predicates['dropoff']
+    extinguish = domain.predicates['extinguish']
 
     objects = set()
     state = set()
@@ -134,12 +137,19 @@ def sample_state(domain, num_rows=6, num_cols=6,
         objects.add(chicken)
         chickens.append(chicken)
 
-    # Get people locations
+    # Get chicken locations
     for chicken_idx, chicken in enumerate(chickens):
         loc = get_random_location(locations_in_grid,
             disallowed_mask=wall_mask)
         occupied_locations.add(loc)
         state.add(chicken_at(chicken, loc))
+
+    # Get fire locations
+    for _ in range(num_fires):
+        loc = get_random_location(locations_in_grid,
+            disallowed_mask=wall_mask)
+        occupied_locations.add(loc)
+        state.add(fire_at(loc))
 
     for r in range(num_rows):
         for c in range(num_cols):
@@ -158,6 +168,7 @@ def sample_state(domain, num_rows=6, num_cols=6,
     state.add(dropoff())
     for direction in domain.constants:
         state.add(move(direction))
+        state.add(extinguish(direction))
 
     return objects, state, people, hospital_loc
 
@@ -177,7 +188,8 @@ def sample_problem(domain, problem_dir, problem_outfile,
                    wall_probability=0.2,
                    randomize_walls=False,
                    randomize_hospital_loc=False,
-                   num_chickens=0):
+                   num_chickens=0,
+                   num_fires=0):
     
     all_objects, initial_state, people, hospital_loc = sample_state(domain, 
         num_rows=num_rows, num_cols=num_cols,
@@ -188,6 +200,7 @@ def sample_problem(domain, problem_dir, problem_outfile,
         randomize_walls=randomize_walls,
         randomize_hospital_loc=randomize_hospital_loc,
         num_chickens=num_chickens,
+        num_fires=num_fires,
     )
 
     if isinstance(num_selected_people, tuple):
@@ -252,59 +265,59 @@ def generate_problems(num_train=50, num_test=10, level=1, **kwargs):
 
 
 if __name__ == "__main__":
-    generate_problems(
-        num_train=20,
-        level=1,
-        num_people=1, 
-        num_selected_people=1,
-        randomize_person_loc=False,
-        randomize_robot_start=True,
-        randomize_walls=False,
-        randomize_hospital_loc=False)
+    # generate_problems(
+    #     num_train=20,
+    #     level=1,
+    #     num_people=1, 
+    #     num_selected_people=1,
+    #     randomize_person_loc=False,
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=False)
 
-    generate_problems(level=2,
-        num_people=1, 
-        num_selected_people=1,
-        randomize_person_loc=True, # !
-        randomize_robot_start=True,
-        randomize_walls=False,
-        randomize_hospital_loc=False)
+    # generate_problems(level=2,
+    #     num_people=1, 
+    #     num_selected_people=1,
+    #     randomize_person_loc=True, # !
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=False)
 
-    generate_problems(level=3,
-        num_people=1, 
-        num_selected_people=1,
-        randomize_person_loc=True,
-        randomize_robot_start=True,
-        randomize_walls=False,
-        randomize_hospital_loc=True, # !
-    )
+    # generate_problems(level=3,
+    #     num_people=1, 
+    #     num_selected_people=1,
+    #     randomize_person_loc=True,
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=True, # !
+    # )
 
-    generate_problems(level=4,
-        num_people=3, # !
-        num_selected_people=1,
-        randomize_person_loc=True,
-        randomize_robot_start=True,
-        randomize_walls=False,
-        randomize_hospital_loc=True,
-    )
+    # generate_problems(level=4,
+    #     num_people=3, # !
+    #     num_selected_people=1,
+    #     randomize_person_loc=True,
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=True,
+    # )
 
-    generate_problems(level=5,
-        num_people=3,
-        num_selected_people=(2, 3), # !
-        randomize_person_loc=True,
-        randomize_robot_start=True,
-        randomize_walls=False,
-        randomize_hospital_loc=True,
-    )
+    # generate_problems(level=5,
+    #     num_people=3,
+    #     num_selected_people=(2, 3), # !
+    #     randomize_person_loc=True,
+    #     randomize_robot_start=True,
+    #     randomize_walls=False,
+    #     randomize_hospital_loc=True,
+    # )
 
-    generate_problems(level=6,
-        num_people=3,
-        num_selected_people=(2, 3),
-        randomize_person_loc=True,
-        randomize_robot_start=True,
-        randomize_walls=True, # !
-        randomize_hospital_loc=True,
-    )
+    # generate_problems(level=6,
+    #     num_people=3,
+    #     num_selected_people=(2, 3),
+    #     randomize_person_loc=True,
+    #     randomize_robot_start=True,
+    #     randomize_walls=True, # !
+    #     randomize_hospital_loc=True,
+    # )
 
     # generate_problems(level=7,
     #     num_people=1,
@@ -315,3 +328,13 @@ if __name__ == "__main__":
     #     randomize_hospital_loc=False,
     #     num_chickens=5, # !
     # )
+
+    generate_problems(level=8,
+        num_people=1,
+        num_selected_people=1,
+        randomize_person_loc=False,
+        randomize_robot_start=True,
+        randomize_walls=False,
+        randomize_hospital_loc=False,
+        num_fires=5, # !
+    )

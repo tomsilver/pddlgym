@@ -14,14 +14,16 @@
     (person-at ?v0 - person ?v1 - location)
     (wall-at ?v0 - wall ?v1 - location)
     (hospital-at ?v0 - hospital ?v1 - location)
-    (chicken-at ?v0 - chicken ?v1 - location)
+    ; (chicken-at ?v0 - chicken ?v1 - location)
+    (fire-at ?v0 - location)
     (carrying ?v0 - robot ?v1 - person)
     (handsfree ?v0 - robot)
     (move ?v0 - direction)
+    (extinguish ?v0 - direction)
     (pickup ?v0 - person)
     (dropoff)
   )
-  ; (:actions dropoff pickup move)
+  ; (:actions dropoff pickup move extinguish)
 
   
 
@@ -30,6 +32,7 @@
         :precondition (and (move ?dir)
             (conn ?from ?to ?dir)
             (robot-at ?robot ?from)
+            (not (fire-at ?from))
             (clear ?to))
         :effect (and
             (not (robot-at ?robot ?from))
@@ -61,6 +64,18 @@
             (person-at ?person ?loc)
             (handsfree ?robot)
             (not (carrying ?robot ?person)))
+    )
+
+    (:action extinguish-fire
+        :parameters (?robot - robot ?from - location ?to - location ?dir - direction)
+        :precondition (and (extinguish ?dir)
+            (move ?dir)
+            (conn ?from ?to ?dir)
+            (robot-at ?robot ?from)
+            (fire-at ?to))
+        :effect (and
+            (not (fire-at ?to))
+            )
     )
 
   

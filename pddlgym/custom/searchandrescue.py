@@ -25,6 +25,7 @@ def get_sar_successor_state(state, action):
     carrying = Predicate('carrying', 2, [robot_type, person_type])
     person_at = Predicate('person-at', 2, [person_type, location_type])
     handsfree = Predicate('handsfree', 1, [robot_type])
+    fire_at = Predicate("fire_at", 1, [location_type])
 
     # Parse the state
     robot_location = None # location
@@ -32,6 +33,7 @@ def get_sar_successor_state(state, action):
     adjacency_map = {} # (location, direction) -> location
     people_locs = {} # person -> location
     clear_locs = set()
+    fire_locs = set()
 
     for lit in state.literals:
         if lit.predicate.name == "robot-at":
@@ -46,6 +48,8 @@ def get_sar_successor_state(state, action):
             people_locs[lit.variables[0]] = lit.variables[1]
         elif lit.predicate.name == "clear":
             clear_locs.add(lit.variables[0])
+        elif lit.predicate.name == "fire-at":
+            fire_locs.add(lit.variables[0])
 
     assert robot_location is not None
 
@@ -73,12 +77,15 @@ def get_sar_successor_state(state, action):
         direction = action.variables[0]
         if (robot_location, direction) in adjacency_map:
             next_robot_location = adjacency_map[(robot_location, direction)]
-            if next_robot_location in clear_locs:
+            if next_robot_location in clear_locs and robot_location not in fire_locs:
                 is_valid = True
                 pos_preconds = { 
                     conn(robot_location, next_robot_location, direction),
                     robot_at("robot0", robot_location),
                     clear(next_robot_location),
+                }
+                neg_preconds = {
+                    fire_at(robot_location),
                 }
                 pos_effects = {
                     robot_at("robot0", next_robot_location),
@@ -87,6 +94,21 @@ def get_sar_successor_state(state, action):
                 neg_effects = {
                     robot_at("robot0", robot_location),
                     clear(next_robot_location)
+                }
+
+    elif action.predicate.name == "extinguish":
+        direction = action.variables[0]
+        if (robot_location, direction) in adjacency_map:
+            fire_location = adjacency_map[(robot_location, direction)]
+            if fire_location in fire_locs:
+                is_valid = True
+                pos_preconds = { 
+                    conn(robot_location, fire_location, direction),
+                    robot_at("robot0", robot_location),
+                    fire_at(fire_location),
+                }
+                neg_effects = {
+                    fire_at(fire_location),
                 }
 
     elif action.predicate.name == "pickup":
@@ -811,10 +833,10 @@ class LargePOSARRadius1Env(POSARRadius1Env):
 if __name__ == "__main__":
     import imageio
     np.random.seed(0)
-    for env_name in ["PDDLSearchAndRescueLevel7"]: #, "MyopicPOSAR"]:
+    for env_name in ["PDDLSearchAndRescueLevel8"]: #, "MyopicPOSAR"]:
         imgs = []
         env = pddlgym.make(f"{env_name}-v0")
-        env.fix_problem_index(1)
+        env.fix_problem_index(4)
         obs, _ = env.reset()
         print(obs)
         imgs.append(env.render())
