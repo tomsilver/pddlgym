@@ -142,7 +142,7 @@ class Predicate(object):
         return variables
 
     def pddl_str(self):
-        if len(self.var_types) > 0:
+        if self.var_types and len(self.var_types) > 0:
             var_str = " " + " ".join(self.pddl_variables())
         else:
             var_str = ""
