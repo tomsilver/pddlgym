@@ -10,12 +10,13 @@ from pddlgym.structs import Literal, LiteralConjunction
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
                                 max_assignment_count=2, type_to_parent_types=None,
                                 allow_redundant_variables=True, constants=None,
-                                mode="csp"):
+                                mode="csp", init_assignments=None):
     if mode == "csp":
         return ProofSearchTree(kb,
             allow_redundant_variables=allow_redundant_variables,
             type_to_parent_types=type_to_parent_types,
             constants=constants,
+            initial_assignments=init_assignments,
             ).prove(list(conds), 
             max_assignment_count=max_assignment_count, 
             variable_sort_fn=variable_sort_fn,
