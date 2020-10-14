@@ -7,6 +7,8 @@ import numpy as np
 ### PDDL Types, Objects, Variables ###
 class Type(str):
     """A PDDL type"""
+    is_continuous = False
+
     def __call__(self, entity_name):
         return TypedEntity.__new__(TypedEntity, entity_name, self)
 
@@ -22,6 +24,7 @@ class TypedEntity(str):
         obj.name = name
         obj.var_type = var_type
         obj._str = str(obj.name) + ":" + str(obj.var_type)
+        obj.is_continuous = False
         return obj
 
     def __str__(self):
