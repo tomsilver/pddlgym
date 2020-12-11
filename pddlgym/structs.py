@@ -147,6 +147,8 @@ class Predicate(object):
     def pddl_str(self):
         if self.var_types and len(self.var_types) > 0:
             var_str = " " + " ".join(self.pddl_variables())
+        elif not self.var_types and self.arity > 0:
+            var_str = " " + " ".join(self.pddl_variables())
         else:
             var_str = ""
         if self.is_anti:
