@@ -72,11 +72,10 @@ To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward
 
 ### Hello, PDDLGym
 ```
-import gym
 import pddlgym
 import imageio
 
-env = gym.make("PDDLEnvSokoban-v0")
+env = pddlgym.make("PDDLEnvSokoban-v0")
 obs, debug_info = env.reset()
 img = env.render()
 imageio.imsave("frame1.png", img)
@@ -88,12 +87,11 @@ imageio.imsave("frame2.png", img)
 
 ### Plan with FastForward
 ```
-import gym
 import pddlgym
 from pddlgym.utils import run_planning_demo
 
 # See `pddl/sokoban.pddl` and `pddl/sokoban/problem3.pddl`.
-env = gym.make("PDDLEnvSokoban-v0")
+env = pddlgym.make("PDDLEnvSokoban-v0")
 env.fix_problem_index(2)
 run_planning_demo(env, 'ff', verbose=True)
 ```
