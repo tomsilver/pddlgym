@@ -366,8 +366,8 @@ class PDDLDomain:
                 parent_types.update(self._get_parent_types(super_type))
         return parent_types
 
-    def write(self, fname):
-        """Write the domain PDDL string to a file.
+    def to_string(self):
+        """Create PDDL string
         """
         predicates = "\n\t".join([lit.pddl_str() for lit in self.predicates.values()])
         operators = "\n\t".join([op.pddl_str() for op in self.operators.values()])
@@ -398,6 +398,12 @@ class PDDLDomain:
         """.format(self.domain_name, requirements, self._types_pddl_str(),
                    constants, predicates, " ".join(map(str, self.actions)), operators,
                    self._derived_preds_pddl_str())
+        return domain_str
+
+    def write(self, fname):
+        """Write the domain PDDL string to a file.
+        """
+        domain_pddl = self.to_string()
 
         with open(fname, 'w') as f:
             f.write(domain_str)
