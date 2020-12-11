@@ -403,7 +403,7 @@ class PDDLDomain:
     def write(self, fname):
         """Write the domain PDDL string to a file.
         """
-        domain_pddl = self.to_string()
+        domain_str = self.to_string()
 
         with open(fname, 'w') as f:
             f.write(domain_str)
