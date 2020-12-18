@@ -68,6 +68,9 @@ First, set up a virtual environment with Python 3. For instance, if you use [vir
 ### Planner dependencies (optional)
 To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to point to the `ff` executable (note: the executable itself, not just the directory containing the executable), wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.com/ronuchit/FF) instead of the previous link.
 
+### Note on Rendering and Matplotlib
+If you encounter an error message that seems related to rendering (e.g. https://github.com/tomsilver/pddlgym/issues/47), it's possible that your `matplotlib` backend needs to be reconfigured. Try to use the `agg` backend by adding this line to the top of your script, before anything else is imported: `import matplotlib; matplotlib.use('agg')`
+
 ## Usage examples
 
 ### Hello, PDDLGym
