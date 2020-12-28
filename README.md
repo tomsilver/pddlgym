@@ -88,7 +88,7 @@ imageio.imsave("frame2.png", img)
 See also `demo.py`.
 
 ### Plan with FastDownward
-To run this example, make sure you install the optional companion repository [pddlgym-planners](https://github.com/ronuchit/pddlgym_planners).
+To run this example, make sure you install the optional companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners).
 ```
 import pddlgym
 from pddlgym_planners.fd import FD
