@@ -66,7 +66,7 @@ We require Python 3.6+.
 First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `pddlgym/demo.py`. You should also be able to `import pddlgym` from any Python shell.
 
 ### Planner dependencies (optional)
-To be able to run the planning demos in `pddlgym/demo_planning.py`, see our companion repository [pddlgym-planners](https://github.com/ronuchit/pddlgym_planners), which provides an interface to FastForward and FastDownward.
+To be able to run the planning demos in `pddlgym/demo_planning.py`, see our companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners), which provides an interface to FastForward and FastDownward.
 
 ## Usage examples
 
