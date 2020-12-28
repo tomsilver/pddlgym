@@ -26,8 +26,8 @@ def run_all(render=True, verbose=True):
     demo_random("minecraft", render=render, verbose=verbose)
     demo_random("blocks", render=render, verbose=verbose)
     demo_random("blocks_operator_actions", render=render, verbose=verbose)
-    demo_random("quantifiedblocks", render=render, verbose=verbose)
-    demo_random("fridge", render=render, verbose=verbose)
+    # demo_random("quantifiedblocks", render=render, verbose=verbose)
+    # demo_random("fridge", render=render, verbose=verbose)
 
 
 if __name__ == '__main__':
