@@ -66,7 +66,7 @@ We require Python 3.6+.
 First, set up a virtual environment with Python 3. For instance, if you use [virtualenvwrapper](https://virtualenvwrapper.readthedocs.io/en/latest/), you can simply run ``mkvirtualenv --python=`which python3` pddlgymenv``. Next, clone this repository, and from inside it run `pip install -e .`. Now you should able to run the random agent demos in `pddlgym/demo.py`. You should also be able to `import pddlgym` from any Python shell.
 
 ### Planner dependencies (optional)
-To be able to run the planning demos in `pddlgym/demo.py`, install [Fast-Forward](https://fai.cs.uni-saarland.de/hoffmann/ff/FF-v2.3.tgz). Set the environment variable `FF_PATH` to point to the `ff` executable (note: the executable itself, not just the directory containing the executable), wherever you install it. MAC USERS: you may want to install Rohan's [patch](https://github.com/ronuchit/FF) instead of the previous link.
+To be able to run the planning demos in `pddlgym/demo_planning.py`, see our companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners), which provides an interface to FastForward and FastDownward.
 
 ### Note on Rendering and Matplotlib
 If you encounter an error message that seems related to rendering (e.g. https://github.com/tomsilver/pddlgym/issues/47), it's possible that your `matplotlib` backend needs to be reconfigured. Try to use the `agg` backend by adding this line to the top of your script, before anything else is imported: `import matplotlib; matplotlib.use('agg')`
@@ -88,15 +88,25 @@ img = env.render()
 imageio.imsave("frame2.png", img)
 ```
 
-### Plan with FastForward
+See also `demo.py`.
+
+### Plan with FastDownward
+To run this example, make sure you install the optional companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners).
 ```
 import pddlgym
-from pddlgym.utils import run_planning_demo
+from pddlgym_planners.fd import FD
 
 # See `pddl/sokoban.pddl` and `pddl/sokoban/problem3.pddl`.
 env = pddlgym.make("PDDLEnvSokoban-v0")
 env.fix_problem_index(2)
-run_planning_demo(env, 'ff', verbose=True)
+obs, debug_info = env.reset()
+planner = FD()
+plan = planner(env.domain, obs)
+for act in plan:
+    print("Obs:", obs)
+    print("Act:", act)
+    obs, reward, done, info = env.step(act)
+print("Final obs, reward, done:", obs, reward, done)
 ```
 
 ## Observation representation
