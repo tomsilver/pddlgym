@@ -63,16 +63,17 @@ def create_goal(domain, objects, pile_heights):
 
 def sample_problem(domain, problem_dir, problem_outfile, seen_problems,
                    min_num_piles=30, max_num_piles=50,
-                   min_num_piles_goal=1, max_num_piles_goal=2):
+                   min_num_piles_goal=1, max_num_piles_goal=2,
+                   min_pile_height=1, max_pile_height=3):
 
     while True:
         blocks, block_state = sample_blocks(domain, 
-            pile_heights=np.random.randint(1, 3, 
+            pile_heights=np.random.randint(min_pile_height, max_pile_height, 
                 size=np.random.randint(min_num_piles, max_num_piles+1)),
         )
 
         goal = create_goal(domain, blocks, 
-            pile_heights=np.random.randint(2, 4, 
+            pile_heights=np.random.randint(min_pile_height, max_pile_height,
                 size=np.random.randint(min_num_piles_goal, max_num_piles_goal+1)))
 
         objects = frozenset(blocks)
@@ -97,28 +98,34 @@ def sample_problem(domain, problem_dir, problem_outfile, seen_problems,
     )
     print("Wrote out to {}.".format(filepath))
 
-def generate_problems():
+def generate_problems(problem_dir="generated_blocks", min_num_piles=2, max_num_piles=5,
+                      min_pile_height=1, max_pile_height=3):
     domain = PDDLDomainParser(os.path.join(PDDLDIR, "generated_blocks.pddl"),
         expect_action_preds=False,
         operators_as_actions=True)
 
     seen_problems = set()
 
+    train_problem_dir = problem_dir
+    test_problem_dir = problem_dir + "_test"
+
     for problem_idx in range(50):
         if problem_idx < 40:
-            problem_dir = "generated_blocks"
+            problem_dir = train_problem_dir
         else:
-            problem_dir = "generated_blocks_test"
+            problem_dir = test_problem_dir
+        if not os.path.exists(os.path.join(PDDLDIR, problem_dir)):
+            os.makedirs(os.path.join(PDDLDIR, problem_dir))
         problem_outfile = "problem{}.pddl".format(problem_idx)
 
-        if problem_idx < 40:
-            sample_problem(domain, problem_dir, problem_outfile, seen_problems, 
-                   min_num_piles=2, max_num_piles=5,
-                   min_num_piles_goal=2, max_num_piles_goal=5)
-        else:
-            sample_problem(domain, problem_dir, problem_outfile, seen_problems,
-                   min_num_piles=2, max_num_piles=5,
-                   min_num_piles_goal=2, max_num_piles_goal=5)
+        sample_problem(domain, problem_dir, problem_outfile, seen_problems, 
+               min_num_piles=min_num_piles, max_num_piles=max_num_piles,
+               min_num_piles_goal=min_num_piles, max_num_piles_goal=max_num_piles,
+               min_pile_height=min_pile_height, max_pile_height=max_pile_height)
+
 
 if __name__ == "__main__":
-    generate_problems()
+    # generate_problems()
+    generate_problems(problem_dir="blocks_medium", min_num_piles=3, max_num_piles=6,
+                      min_pile_height=3, max_pile_height=6)
+
