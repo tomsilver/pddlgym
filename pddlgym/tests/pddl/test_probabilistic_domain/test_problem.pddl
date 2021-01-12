@@ -16,7 +16,7 @@
 
   (:init
     (pred1 b2)
-    (predprob c1)
+    (pred2 c1)
     (pred3 a1 c1 d1)
     (pred3 a2 c2 d2)
     (actionpred a1)
@@ -27,7 +27,7 @@
   )
 
   (:goal (and
-    (predprob c2)
+    (pred2 c2)
     (pred3 b1 c1 d1)
   ))
 )
