@@ -163,7 +163,7 @@ class PDDLParser:
             lits = []
             probs = []
             expr = string[14:-1].strip()
-            for match in re.finditer("(\d*\.?\d+)", expr):
+            for match in re.finditer("(\d*\.\d+)", expr):
                 prob = float(match.group())
                 subexpr = self._find_balanced_expression(expr[match.end():].strip(), 0)
                 lit = self._parse_into_literal(subexpr, params, is_effect=is_effect)
