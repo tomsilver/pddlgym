@@ -404,10 +404,7 @@ class PDDLEnv(gym.Env):
         self.set_state(state)
         return state, reward, done, debug_info
 
-    def sample_transition(self, action):
-        state = self._get_successor_state(self._state, action, self.domain,
-            inference_mode=self._inference_mode,
-            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+    def _get_new_state_info(self, state):
         state = self._handle_derived_literals(state)
 
         done = self._is_goal_reached(state)
@@ -416,6 +413,12 @@ class PDDLEnv(gym.Env):
         debug_info = self._get_debug_info()
 
         return state, reward, done, debug_info
+
+    def sample_transition(self, action):
+        state = self._get_successor_state(self._state, action, self.domain,
+                                          inference_mode=self._inference_mode,
+                                          raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+        return self._get_new_state_info(state)
 
     def _get_successor_state(self, *args, **kwargs):
         """Separated out to allow for overrides in subclasses
