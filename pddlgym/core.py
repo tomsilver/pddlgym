@@ -511,6 +511,14 @@ class PDDLEnv(gym.Env):
         """
         return get_successor_states(*args, **kwargs)
 
+    def get_all_possible_transitions(self, action):
+        assert self.domain.is_probabilistic
+        states = self._get_successor_states(self._state, action, self.domain,
+                                            inference_mode=self._inference_mode,
+                                            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+
+        return [self._get_new_state_info(state) for state in states]
+
     def extrinsic_reward(self, state, done):
         if done:
             reward = 1.
