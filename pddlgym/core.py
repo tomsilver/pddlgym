@@ -187,6 +187,24 @@ def _check_struct_for_strips(struct):
     return False
 
 
+def _compute_new_state_from_lifted_effects(lifted_effects, assignments, new_literals):
+    for lifted_effect in lifted_effects:
+        if lifted_effect == "NOCHANGE":
+            continue
+        effect = ground_literal(lifted_effect, assignments)
+        # Negative effect
+        if effect.is_anti:
+            literal = effect.inverted_anti
+            if literal in new_literals:
+                new_literals.remove(literal)
+    for lifted_effect in lifted_effects:
+        if lifted_effect == "NOCHANGE":
+            continue
+        effect = ground_literal(lifted_effect, assignments)
+        if not effect.is_anti:
+            new_literals.add(effect)
+    return new_literals
+
 def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False):
     """
     Update a state given lifted operator effects and
@@ -199,21 +217,31 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
     lifted_effects : { Literal }
     assignments : { TypedEntity : TypedEntity }
         Maps variables to objects.
+    get_all_transitions : bool
+        If true, this function returns all possible successor states in the case that probabilistic effects exist in the domain.
     """
     new_literals = set(state.literals)
     determinized_lifted_effects = []
     # Handle probabilistic effects.
+
+    # Each element of this list contain
+    #   a pair of outcomes from a probabilistic effect
     probabilistic_lifted_effects = []
     for lifted_effect in lifted_effects:
         if isinstance(lifted_effect, ProbabilisticEffect):
             effect_outcomes = lifted_effect.literals
             cur_probabilistic_lifted_effects = []
+
+
             if get_all_transitions:
                 lifted_effects_list = cur_probabilistic_lifted_effects
             else:
                 lifted_effects_list = determinized_lifted_effects
             sampled_effect = lifted_effect.sample()
 
+
+            # If get_all_transitions == False, create list with sampled state only
+            # Otherwise, populate it with possible outcomes
             effects_to_process = [
                 sampled_effect] if not get_all_transitions else effect_outcomes
 
@@ -230,50 +258,23 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
         else:
             determinized_lifted_effects.append(lifted_effect)
 
-    # TODO
-    # - Refactor code after finished
     states = []
     if not get_all_transitions:
-        for lifted_effect in determinized_lifted_effects:
-            if lifted_effect == "NOCHANGE":
-                continue
-            effect = ground_literal(lifted_effect, assignments)
-            # Negative effect
-            if effect.is_anti:
-                literal = effect.inverted_anti
-                if literal in new_literals:
-                    new_literals.remove(literal)
-        for lifted_effect in determinized_lifted_effects:
-            if lifted_effect == "NOCHANGE":
-                continue
-            effect = ground_literal(lifted_effect, assignments)
-            if not effect.is_anti:
-                new_literals.add(effect)
+        new_literals = _compute_new_state_from_lifted_effects(determinized_lifted_effects, assignments, new_literals)
+
         return state.with_literals(new_literals)
 
+    # else - get all possible transitions
+
+    # Construct combinations of probabilistic effects
     probabilistic_effects_combinations = list(
         product(*probabilistic_lifted_effects))
 
-    # else
     for prob_efs_combination in probabilistic_effects_combinations:
         new_prob_literals = set(state.literals)
         new_determinized_lifted_effects = determinized_lifted_effects + \
             list(prob_efs_combination)
-        for lifted_effect in new_determinized_lifted_effects:
-            if lifted_effect == "NOCHANGE":
-                continue
-            effect = ground_literal(lifted_effect, assignments)
-            # Negative effect
-            if effect.is_anti:
-                literal = effect.inverted_anti
-                if literal in new_prob_literals:
-                    new_prob_literals.remove(literal)
-        for lifted_effect in new_determinized_lifted_effects:
-            if lifted_effect == "NOCHANGE":
-                continue
-            effect = ground_literal(lifted_effect, assignments)
-            if not effect.is_anti:
-                new_prob_literals.add(effect)
+        new_prob_literals = _compute_new_state_from_lifted_effects(new_determinized_lifted_effects, assignments, new_prob_literals)
 
         states.append(state.with_literals(new_prob_literals))
     return frozenset(states)
