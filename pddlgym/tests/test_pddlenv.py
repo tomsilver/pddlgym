@@ -133,11 +133,11 @@ def test_get_all_possible_transitions():
 
     obs, _ = env.reset()
     action = env.action_space.all_ground_literals(obs).pop()
-    states = env.get_all_possible_transitions(action)
+    transitions = env.get_all_possible_transitions(action)
 
-    states_list = list(states)
-    assert len(states_list) == 2
-    state1, state2 = states_list[0][0], states_list[1][0]
+    transition_list = list(transitions)
+    assert len(transition_list) == 2
+    state1, state2 = transition_list[0][0], transition_list[1][0]
 
     type1 = Type('type1')
     type2 = Type('type2')
