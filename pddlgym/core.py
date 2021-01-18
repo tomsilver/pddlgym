@@ -37,9 +37,9 @@ class InvalidAction(Exception):
     pass
 
 def get_successor_state(state, action, domain, raise_error_on_invalid_action=False, 
-                        inference_mode="infer", require_unique_assignment=True):
+                        inference_mode="infer", require_unique_assignment=True, get_all_transitions=False):
     """
-    Compute successor state using operators in the domain
+    Compute successor state(s) using operators in the domain
 
     Parameters
     ----------
@@ -49,6 +49,8 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
     raise_error_on_invalid_action : bool
     inference_mode : "csp" or "prolog" or "infer"
     require_unique_assignment : bool
+    get_all_transitions : bool
+        If true, this function returns all possible successor states in the case that probabilistic effects exist in the domain.
 
     Returns
     -------
@@ -71,6 +73,7 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
             state,
             effects,
             assignment,
+            get_all_transitions
         )
 
     # No operator was found
@@ -82,31 +85,7 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
 
 def get_successor_states(state, action, domain, raise_error_on_invalid_action=False,
                          inference_mode="infer", require_unique_assignment=True):
-    selected_operator, assignment = _select_operator(state, action, domain,
-                                                     inference_mode=inference_mode,
-                                                     require_unique_assignment=require_unique_assignment)
-
-    # A ground operator was found; execute the ground effects
-    if assignment is not None:
-        # Get operator effects
-        if isinstance(selected_operator.effects, LiteralConjunction):
-            effects = selected_operator.effects.literals
-        else:
-            assert isinstance(selected_operator.effects, Literal)
-            effects = [selected_operator.effects]
-
-        states = _apply_effects(
-            state,
-            effects,
-            assignment,
-            get_all_transitions=True
-        )
-
-    # No operator was found
-    elif raise_error_on_invalid_action:
-        raise InvalidAction()
-
-    return states
+    return get_successor_state(state, action, domain, raise_error_on_invalid_action, inference_mode, require_unique_assignment, get_all_transitions=True)
 
 
 def _select_operator(state, action, domain, inference_mode="infer",
