@@ -122,7 +122,41 @@ def test_pddlenv_hierarchical_types():
     print("Test passed.")
 
 
+def test_get_all_possible_transitions():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    domain_file = os.path.join(
+        dir_path, 'pddl', 'test_probabilistic_domain.pddl')
+    problem_dir = os.path.join(dir_path, 'pddl', 'test_probabilistic_domain')
+
+    env = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True,
+                  dynamic_action_space=True)
+
+    obs, _ = env.reset()
+    action = env.action_space.all_ground_literals(obs).pop()
+    transitions = env.get_all_possible_transitions(action)
+
+    transition_list = list(transitions)
+    assert len(transition_list) == 2
+    state1, state2 = transition_list[0][0], transition_list[1][0]
+
+    type1 = Type('type1')
+    type2 = Type('type2')
+    pred1 = Predicate('pred1', 1, [type1])
+    pred2 = Predicate('pred2', 1, [type2])
+    pred3 = Predicate('pred3', 3, [type1, type2, type2])
+
+    state1, state2 = (state1, state2) if pred2(
+        'c1') in state2.literals else (state2, state1)
+
+    assert state1.literals == frozenset({pred1('b2'), pred3(
+        'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), pred3('b2', 'd1', 'c1')})
+    assert state2.literals == frozenset({pred1('b2'), pred2('c1'), pred3(
+        'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), pred3('b2', 'd1', 'c1')})
+
+    print("Test passed.")
+
 
 if __name__ == "__main__":
     test_pddlenv()
     test_pddlenv_hierarchical_types()
+    test_get_all_possible_transitions()

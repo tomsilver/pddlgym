@@ -24,6 +24,7 @@ import copy
 import functools
 import glob
 import os
+from itertools import product
 
 import gym
 
@@ -36,9 +37,9 @@ class InvalidAction(Exception):
     pass
 
 def get_successor_state(state, action, domain, raise_error_on_invalid_action=False, 
-                        inference_mode="infer", require_unique_assignment=True):
+                        inference_mode="infer", require_unique_assignment=True, get_all_transitions=False):
     """
-    Compute successor state using operators in the domain
+    Compute successor state(s) using operators in the domain
 
     Parameters
     ----------
@@ -48,6 +49,8 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
     raise_error_on_invalid_action : bool
     inference_mode : "csp" or "prolog" or "infer"
     require_unique_assignment : bool
+    get_all_transitions : bool
+        If true, this function returns all possible successor states in the case that probabilistic effects exist in the domain.
 
     Returns
     -------
@@ -70,6 +73,7 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
             state,
             effects,
             assignment,
+            get_all_transitions
         )
 
     # No operator was found
@@ -77,6 +81,12 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
         raise InvalidAction()
 
     return state
+
+
+def get_successor_states(state, action, domain, raise_error_on_invalid_action=False,
+                         inference_mode="infer", require_unique_assignment=True):
+    return get_successor_state(state, action, domain, raise_error_on_invalid_action, inference_mode, require_unique_assignment, get_all_transitions=True)
+
 
 def _select_operator(state, action, domain, inference_mode="infer",
                      require_unique_assignment=True):
@@ -155,7 +165,26 @@ def _check_struct_for_strips(struct):
         return all(_check_struct_for_strips(l) for l in struct.literals)
     return False
 
-def _apply_effects(state, lifted_effects, assignments):
+
+def _compute_new_state_from_lifted_effects(lifted_effects, assignments, new_literals):
+    for lifted_effect in lifted_effects:
+        if lifted_effect == "NOCHANGE":
+            continue
+        effect = ground_literal(lifted_effect, assignments)
+        # Negative effect
+        if effect.is_anti:
+            literal = effect.inverted_anti
+            if literal in new_literals:
+                new_literals.remove(literal)
+    for lifted_effect in lifted_effects:
+        if lifted_effect == "NOCHANGE":
+            continue
+        effect = ground_literal(lifted_effect, assignments)
+        if not effect.is_anti:
+            new_literals.add(effect)
+    return new_literals
+
+def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False):
     """
     Update a state given lifted operator effects and
     assignments of variables to objects.
@@ -167,35 +196,67 @@ def _apply_effects(state, lifted_effects, assignments):
     lifted_effects : { Literal }
     assignments : { TypedEntity : TypedEntity }
         Maps variables to objects.
+    get_all_transitions : bool
+        If true, this function returns all possible successor states in the case that probabilistic effects exist in the domain.
     """
     new_literals = set(state.literals)
     determinized_lifted_effects = []
     # Handle probabilistic effects.
+
+    # Each element of this list contain
+    #   a pair of outcomes from a probabilistic effect
+    probabilistic_lifted_effects = []
     for lifted_effect in lifted_effects:
         if isinstance(lifted_effect, ProbabilisticEffect):
-            chosen_effect = lifted_effect.sample()
-            if chosen_effect == "NOCHANGE":
-                continue
-            if isinstance(chosen_effect, LiteralConjunction):
-                for lit in chosen_effect.literals:
-                    determinized_lifted_effects.append(lit)
+            effect_outcomes = lifted_effect.literals
+            cur_probabilistic_lifted_effects = []
+
+
+            if get_all_transitions:
+                lifted_effects_list = cur_probabilistic_lifted_effects
             else:
-                determinized_lifted_effects.append(chosen_effect)
+                lifted_effects_list = determinized_lifted_effects
+            sampled_effect = lifted_effect.sample()
+
+
+            # If get_all_transitions == False, create list with sampled state only
+            # Otherwise, populate it with possible outcomes
+            effects_to_process = [
+                sampled_effect] if not get_all_transitions else effect_outcomes
+
+            for chosen_effect in effects_to_process:
+                if isinstance(chosen_effect, LiteralConjunction):
+                    for lit in chosen_effect.literals:
+                        lifted_effects_list.append(lit)
+                else:
+                    lifted_effects_list.append(chosen_effect)
+
+            if get_all_transitions:
+                probabilistic_lifted_effects.append(
+                    cur_probabilistic_lifted_effects)
         else:
             determinized_lifted_effects.append(lifted_effect)
 
-    for lifted_effect in determinized_lifted_effects:
-        effect = ground_literal(lifted_effect, assignments)
-        # Negative effect
-        if effect.is_anti:
-            literal = effect.inverted_anti
-            if literal in new_literals:
-                new_literals.remove(literal)
-    for lifted_effect in determinized_lifted_effects:
-        effect = ground_literal(lifted_effect, assignments)
-        if not effect.is_anti:
-            new_literals.add(effect)
-    return state.with_literals(new_literals)
+    states = []
+    if not get_all_transitions:
+        new_literals = _compute_new_state_from_lifted_effects(determinized_lifted_effects, assignments, new_literals)
+
+        return state.with_literals(new_literals)
+
+    # else - get all possible transitions
+
+    # Construct combinations of probabilistic effects
+    probabilistic_effects_combinations = list(
+        product(*probabilistic_lifted_effects))
+
+    for prob_efs_combination in probabilistic_effects_combinations:
+        new_prob_literals = set(state.literals)
+        new_determinized_lifted_effects = determinized_lifted_effects + \
+            list(prob_efs_combination)
+        new_prob_literals = _compute_new_state_from_lifted_effects(new_determinized_lifted_effects, assignments, new_prob_literals)
+
+        states.append(state.with_literals(new_prob_literals))
+    return frozenset(states)
 
 
 class PDDLEnv(gym.Env):
@@ -404,10 +465,7 @@ class PDDLEnv(gym.Env):
         self.set_state(state)
         return state, reward, done, debug_info
 
-    def sample_transition(self, action):
-        state = self._get_successor_state(self._state, action, self.domain,
-            inference_mode=self._inference_mode,
-            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+    def _get_new_state_info(self, state):
         state = self._handle_derived_literals(state)
 
         done = self._is_goal_reached(state)
@@ -417,10 +475,29 @@ class PDDLEnv(gym.Env):
 
         return state, reward, done, debug_info
 
+    def sample_transition(self, action):
+        state = self._get_successor_state(self._state, action, self.domain,
+                                          inference_mode=self._inference_mode,
+                                          raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+        return self._get_new_state_info(state)
+
     def _get_successor_state(self, *args, **kwargs):
         """Separated out to allow for overrides in subclasses
         """
         return get_successor_state(*args, **kwargs)
+
+    def _get_successor_states(self, *args, **kwargs):
+        """Separated out to allow for overrides in subclasses
+        """
+        return get_successor_states(*args, **kwargs)
+
+    def get_all_possible_transitions(self, action):
+        assert self.domain.is_probabilistic
+        states = self._get_successor_states(self._state, action, self.domain,
+                                            inference_mode=self._inference_mode,
+                                            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+
+        return [self._get_new_state_info(state) for state in states]
 
     def extrinsic_reward(self, state, done):
         if done:
