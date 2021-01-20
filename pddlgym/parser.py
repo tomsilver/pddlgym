@@ -3,7 +3,7 @@
 from pddlgym.structs import (Type, Predicate, Literal, LiteralConjunction,
                              LiteralDisjunction, Not, Anti, ForAll, Exists,
                              ProbabilisticEffect, TypedEntity, ground_literal,
-                             DerivedPredicate)
+                             DerivedPredicate, NoChange)
 
 import re
 
@@ -343,11 +343,11 @@ class PDDLDomain:
             for i, lit in enumerate(op.effects.literals):
                 if isinstance(lit, ProbabilisticEffect):
                     chosen_effect = lit.max()
-                    if chosen_effect == "NOCHANGE":
+                    if chosen_effect == NoChange():
                         toremove.add(lit)
                     else:
                         op.effects.literals[i] = chosen_effect
-            for rem in toremove:  # remove effects where NOCHANGE is max-probability
+            for rem in toremove:  # remove effects where NoChange is max-probability
                 op.effects.literals.remove(rem)
 
     def _organize_parent_types(self):

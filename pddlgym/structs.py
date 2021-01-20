@@ -448,7 +448,7 @@ class ProbabilisticEffect:
         self.literals = literals
         self.probabilities = probabilities
         assert sum(self.probabilities) <= 1.0
-        self.literals.append("NOCHANGE")
+        self.literals.append(NoChange())
         self.probabilities.append(1-sum(self.probabilities))
 
     def __str__(self):
@@ -573,3 +573,6 @@ def ground_literal(lifted_lit, assignments):
         arg = assignments[v]
         ground_vars.append(arg)
     return lifted_lit.predicate(*ground_vars)
+
+
+NoChange = Predicate("NOCHANGE", 0)  # represents no change in a probabilistic effect
