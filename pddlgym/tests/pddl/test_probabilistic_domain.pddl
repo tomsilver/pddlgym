@@ -19,6 +19,6 @@
                       )
    :effect       (and 
                       (pred3 ?b ?d ?c)
-                      (probabilistic 0.5 (and (not (pred2 ?c)))))
+                      (probabilistic 0.3 (and (not (pred2 ?c)))))
    )
 )

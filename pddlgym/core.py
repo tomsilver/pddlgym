@@ -17,7 +17,7 @@ Usage example:
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
 from pddlgym.inference import find_satisfying_assignments, check_goal
-from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction
+from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction, NoChange
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 
 import copy
@@ -37,7 +37,7 @@ class InvalidAction(Exception):
     pass
 
 def get_successor_state(state, action, domain, raise_error_on_invalid_action=False, 
-                        inference_mode="infer", require_unique_assignment=True, get_all_transitions=False):
+                        inference_mode="infer", require_unique_assignment=True, get_all_transitions=False, return_probs=False):
     """
     Compute successor state(s) using operators in the domain
 
@@ -73,7 +73,8 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
             state,
             effects,
             assignment,
-            get_all_transitions
+            get_all_transitions,
+            return_probs=return_probs,
         )
 
     # No operator was found
@@ -84,8 +85,8 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
 
 
 def get_successor_states(state, action, domain, raise_error_on_invalid_action=False,
-                         inference_mode="infer", require_unique_assignment=True):
-    return get_successor_state(state, action, domain, raise_error_on_invalid_action, inference_mode, require_unique_assignment, get_all_transitions=True)
+                         inference_mode="infer", require_unique_assignment=True, return_probs=False):
+    return get_successor_state(state, action, domain, raise_error_on_invalid_action, inference_mode, require_unique_assignment, get_all_transitions=True, return_probs=return_probs)
 
 
 def _select_operator(state, action, domain, inference_mode="infer",
@@ -168,7 +169,7 @@ def _check_struct_for_strips(struct):
 
 def _compute_new_state_from_lifted_effects(lifted_effects, assignments, new_literals):
     for lifted_effect in lifted_effects:
-        if lifted_effect == "NOCHANGE":
+        if lifted_effect == NoChange():
             continue
         effect = ground_literal(lifted_effect, assignments)
         # Negative effect
@@ -177,14 +178,15 @@ def _compute_new_state_from_lifted_effects(lifted_effects, assignments, new_lite
             if literal in new_literals:
                 new_literals.remove(literal)
     for lifted_effect in lifted_effects:
-        if lifted_effect == "NOCHANGE":
+        if lifted_effect == NoChange():
             continue
         effect = ground_literal(lifted_effect, assignments)
         if not effect.is_anti:
             new_literals.add(effect)
     return new_literals
 
-def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False):
+def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False,
+                   return_probs=False):
     """
     Update a state given lifted operator effects and
     assignments of variables to objects.
@@ -209,6 +211,8 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
     for lifted_effect in lifted_effects:
         if isinstance(lifted_effect, ProbabilisticEffect):
             effect_outcomes = lifted_effect.literals
+            probas = dict(zip(lifted_effect.literals,
+                              lifted_effect.probabilities))
             cur_probabilistic_lifted_effects = []
 
 
@@ -228,8 +232,10 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
                 if isinstance(chosen_effect, LiteralConjunction):
                     for lit in chosen_effect.literals:
                         lifted_effects_list.append(lit)
+                        lit.proba = probas[chosen_effect]
                 else:
                     lifted_effects_list.append(chosen_effect)
+                    chosen_effect.proba = probas[chosen_effect]
 
             if get_all_transitions:
                 probabilistic_lifted_effects.append(
@@ -249,13 +255,19 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
     probabilistic_effects_combinations = list(
         product(*probabilistic_lifted_effects))
 
+    states_to_probs = {}
     for prob_efs_combination in probabilistic_effects_combinations:
+        total_proba = np.prod([lit.proba for lit in prob_efs_combination])
         new_prob_literals = set(state.literals)
         new_determinized_lifted_effects = determinized_lifted_effects + \
             list(prob_efs_combination)
         new_prob_literals = _compute_new_state_from_lifted_effects(new_determinized_lifted_effects, assignments, new_prob_literals)
 
-        states.append(state.with_literals(new_prob_literals))
+        new_state = state.with_literals(new_prob_literals)
+        states_to_probs[new_state] = total_proba
+        states.append(new_state)
+    if return_probs:
+        return states_to_probs
     return frozenset(states)
 
 
@@ -491,11 +503,13 @@ class PDDLEnv(gym.Env):
         """
         return get_successor_states(*args, **kwargs)
 
-    def get_all_possible_transitions(self, action):
+    def get_all_possible_transitions(self, action, return_probs=False):
         assert self.domain.is_probabilistic
         states = self._get_successor_states(self._state, action, self.domain,
                                             inference_mode=self._inference_mode,
-                                            raise_error_on_invalid_action=self._raise_error_on_invalid_action)
+                                            raise_error_on_invalid_action=self._raise_error_on_invalid_action, return_probs=return_probs)
+        if return_probs:
+            return [(self._get_new_state_info(state), prob) for state, prob in states.items()]
 
         return [self._get_new_state_info(state) for state in states]
 
