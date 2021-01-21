@@ -11,13 +11,13 @@ def get_objects_from_obs(obs):
     all_objs = set()
     holding = None
     for lit in obs:
-        if lit.predicate.name == "ontable":
+        if lit.predicate.name.lower() == "ontable":
             pile_bottoms.add(lit.variables[0])
             all_objs.add(lit.variables[0])
-        elif lit.predicate.name == "on":
+        elif lit.predicate.name.lower() == "on":
             on_links[lit.variables[1]] = lit.variables[0]
             all_objs.update(lit.variables)
-        elif lit.predicate.name == "holding":
+        elif lit.predicate.name.lower() == "holding":
             holding = lit.variables[0]
             all_objs.add(lit.variables[0])
     all_objs = sorted(all_objs)
