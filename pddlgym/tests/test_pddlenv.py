@@ -224,10 +224,6 @@ def test_get_all_possible_transitions_multiple_effects():
 
     transition_list = list(transitions)
     assert len(transition_list) == 4
-    #assert abs(transition_list[0][1]-0.3) < 1e-5 or abs(transition_list[0][1]-0.7) < 1e-5
-    #assert abs(transition_list[1][1]-0.3) < 1e-5 or abs(transition_list[1][1]-0.7) < 1e-5
-    #assert abs(transition_list[0][1]-transition_list[1][1]) > 0.3
-    # state1, state2 = transition_list[0][0][0], transition_list[1][0][0]
     states_and_probs = {
         transition_list[0][0][0].literals: transition_list[0][1],
         transition_list[1][0][0].literals: transition_list[1][1],
