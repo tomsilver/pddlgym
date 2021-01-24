@@ -179,7 +179,7 @@ def test_get_all_possible_transitions():
 
     print("Test passed.")
 
-def test_get_all_possible_transitions_multiple_effects():
+def test_get_all_possible_transitions_multiple_independent_effects():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     domain_file = os.path.join(
         dir_path, 'pddl', 'test_probabilistic_domain_alt.pddl')
@@ -254,6 +254,77 @@ def test_get_all_possible_transitions_multiple_effects():
 
     print("Test passed.")
 
+def test_get_all_possible_transitions_multiple_effects():
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    domain_file = os.path.join(
+        dir_path, 'pddl', 'test_probabilistic_domain_alt_2.pddl')
+    problem_dir = os.path.join(dir_path, 'pddl', 'test_probabilistic_domain_alt_2')
+
+    env = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True,
+                  dynamic_action_space=True)
+
+    obs, _ = env.reset()
+    action = env.action_space.all_ground_literals(obs).pop()
+    transitions = env.get_all_possible_transitions(action)
+
+    transition_list = list(transitions)
+    assert len(transition_list) == 3
+
+    states = set({
+        transition_list[0][0].literals,
+        transition_list[1][0].literals,
+        transition_list[2][0].literals
+    })
+
+    type1 = Type('type1')
+    type2 = Type('type2')
+    pred1 = Predicate('pred1', 1, [type1])
+    pred2 = Predicate('pred2', 1, [type2])
+    pred3 = Predicate('pred3', 3, [type1, type2, type2])
+
+    expected_states = set({
+        frozenset({pred1('b2'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2')}),
+        frozenset({pred2('c1'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2')}),
+        frozenset({pred1('b2'), pred2('c1'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), pred3('b2', 'd1', 'c1')})
+    })
+
+    assert states == expected_states
+
+    # Now test again with return_probs=True.
+    transitions = env.get_all_possible_transitions(action, return_probs=True)
+
+    transition_list = list(transitions)
+    assert len(transition_list) == 3
+    states_and_probs = {
+        transition_list[0][0][0].literals: transition_list[0][1],
+        transition_list[1][0][0].literals: transition_list[1][1],
+        transition_list[2][0][0].literals: transition_list[2][1]
+    }
+
+    type1 = Type('type1')
+    type2 = Type('type2')
+    pred1 = Predicate('pred1', 1, [type1])
+    pred2 = Predicate('pred2', 1, [type2])
+    pred3 = Predicate('pred3', 3, [type1, type2, type2])
+
+    expected_states = {
+        frozenset({pred1('b2'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2')}): 0.5,
+        frozenset({pred2('c1'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2')}): 0.4,
+        frozenset({pred1('b2'), pred2('c1'), pred3(
+            'a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2'), pred3('b2', 'd1', 'c1')}): 0.1
+    }
+
+    for s, prob in states_and_probs.items():
+        assert s in expected_states
+        assert prob - expected_states[s] < 1e-5
+
+    print("Test passed.")
+
 def test_determinize():
     dir_path = os.path.dirname(os.path.realpath(__file__))
     domain_file = os.path.join(
@@ -290,4 +361,5 @@ if __name__ == "__main__":
     test_pddlenv_hierarchical_types()
     test_get_all_possible_transitions()
     test_get_all_possible_transitions_multiple_effects()
+    test_get_all_possible_transitions_multiple_independent_effects()
     test_determinize()
