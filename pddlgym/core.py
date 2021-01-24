@@ -266,7 +266,12 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
         new_prob_literals = _compute_new_state_from_lifted_effects(new_determinized_lifted_effects, assignments, new_prob_literals)
 
         new_state = state.with_literals(new_prob_literals)
-        states_to_probs[new_state] = total_proba
+        if new_state in states_to_probs:
+            # If there are multiple ways of reaching next state,
+            #   then these probabilities have to be summed
+            states_to_probs[new_state] += total_proba
+        else:
+            states_to_probs[new_state] = total_proba
         states.append(new_state)
     if return_probs:
         return states_to_probs
