@@ -258,6 +258,8 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
     states_to_probs = {}
     for prob_efs_combination in probabilistic_effects_combinations:
         total_proba = np.prod([lit.proba for lit in prob_efs_combination])
+        if total_proba == 0:
+            continue
         new_prob_literals = set(state.literals)
         new_determinized_lifted_effects = determinized_lifted_effects + \
             list(prob_efs_combination)
@@ -268,6 +270,7 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
         states.append(new_state)
     if return_probs:
         return states_to_probs
+    # convert list of states to set
     return frozenset(states)
 
 
