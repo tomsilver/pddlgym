@@ -258,16 +258,24 @@ def _apply_effects(state, lifted_effects, assignments, get_all_transitions=False
     states_to_probs = {}
     for prob_efs_combination in probabilistic_effects_combinations:
         total_proba = np.prod([lit.proba for lit in prob_efs_combination])
+        if total_proba == 0:
+            continue
         new_prob_literals = set(state.literals)
         new_determinized_lifted_effects = determinized_lifted_effects + \
             list(prob_efs_combination)
         new_prob_literals = _compute_new_state_from_lifted_effects(new_determinized_lifted_effects, assignments, new_prob_literals)
 
         new_state = state.with_literals(new_prob_literals)
-        states_to_probs[new_state] = total_proba
+        if new_state in states_to_probs:
+            # If there are multiple ways of reaching next state,
+            #   then these probabilities have to be summed
+            states_to_probs[new_state] += total_proba
+        else:
+            states_to_probs[new_state] = total_proba
         states.append(new_state)
     if return_probs:
         return states_to_probs
+    # convert list of states to set
     return frozenset(states)
 
 
