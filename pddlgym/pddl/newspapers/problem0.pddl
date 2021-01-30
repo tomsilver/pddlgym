@@ -30,7 +30,6 @@
 	(wantspaper loc-2)
   )
   (:goal (and
-	(at loc-0)
 	(satisfied loc-1)
 	(satisfied loc-2)))
 )

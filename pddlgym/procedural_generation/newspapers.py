@@ -47,7 +47,7 @@ def sample_problem(domain, problem_dir, problem_outfile, num_locs,
         state.add(unpacked(paper))
 
     # Create goal
-    goal_lits = [at(home_loc)] + [satisfied(loc) for loc in target_locs]
+    goal_lits = [satisfied(loc) for loc in target_locs]
     goal = LiteralConjunction(goal_lits)
 
     filepath = os.path.join(PDDLDIR, problem_dir, problem_outfile)
