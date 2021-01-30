@@ -136,6 +136,8 @@ for env_name, kwargs in [
                    'dynamic_action_space' : True}),
         ("river", {}),
         ("explodingblocks", {}),
+        ("newspapers", {'operators_as_actions' : True,
+                        'dynamic_action_space' : True}),
 
 ]:
     other_args = {
