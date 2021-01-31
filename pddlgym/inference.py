@@ -59,6 +59,12 @@ def unify(lits1, lits2):
     if predicate_order1 != predicate_order2:
         return False, None
 
+    # Terminate quickly if there is a mismatch between num objs
+    num_objs1 = len({o for lit in lits1 for o in lit.variables})
+    num_objs2 = len({o for lit in lits2 for o in lit.variables})
+    if num_objs1 != num_objs2:
+        return False, None
+
     # Try to get lucky with a one-to-one mapping
     subs12 = {}
     subs21 = {}
