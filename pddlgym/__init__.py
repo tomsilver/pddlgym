@@ -135,7 +135,7 @@ for env_name, kwargs in [
                    'operators_as_actions' : True,
                    'dynamic_action_space' : True}),
         ("river", {}),
-        ("explodingblocks", {}),
+        ("explodingblocks", {'render' : exploding_blocks_render}),
 
 ]:
     other_args = {
