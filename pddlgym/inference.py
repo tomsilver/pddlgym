@@ -45,6 +45,59 @@ def check_goal(state, goal):
     assignments = prolog_interface.run()
     return len(assignments) > 0
 
+def unify(lits1, lits2):
+    """Return a tuple of (whether the given frozensets lits1 and lits2 can be
+    unified, the mapping if the first return value is True).
+    Also returns the mapping.
+    """
+    sorted_lits1 = sorted(lits1)
+    sorted_lits2 = sorted(lits2)
+
+    # Terminate quickly if there is a mismatch between lits
+    predicate_order1 = [lit.predicate for lit in sorted_lits1]
+    predicate_order2 = [lit.predicate for lit in sorted_lits2]
+    if predicate_order1 != predicate_order2:
+        return False, None
+
+    # Terminate quickly if there is a mismatch between num objs
+    num_objs1 = len({o for lit in lits1 for o in lit.variables})
+    num_objs2 = len({o for lit in lits2 for o in lit.variables})
+    if num_objs1 != num_objs2:
+        return False, None
+
+    # Try to get lucky with a one-to-one mapping
+    subs12 = {}
+    subs21 = {}
+    success = True
+    for lit1, lit2 in zip(sorted_lits1, sorted_lits2):
+        if not success:
+            break
+        for v1, v2 in zip(lit1.variables, lit2.variables):
+            if v1 in subs12 and subs12[v1] != v2:
+                success = False
+                break
+            elif v2 in subs21:
+                success = False
+                break
+            else:
+                subs12[v1] = v2
+                subs21[v2] = v1
+    if success:
+        return True, subs12
+
+    assignments = find_satisfying_assignments(
+        lits2, lits1, allow_redundant_variables=False)
+    if not assignments:
+        return False, None
+    return True, assignments[0]
+
+def can_unify(lits1, lits2):
+    """Shorthand for unify that only returns whether the lits can be
+    unified, not the mapping
+    """
+    return unify(lits1, lits2)[0]
+
+
 class CommitGoalError(Exception):
     pass
 

@@ -19,15 +19,12 @@ def test_pddlenv():
     pred1 = Predicate('pred1', 1, [type1])
     pred2 = Predicate('pred2', 1, [type2])
     pred3 = Predicate('pred3', 3, [type1, type2, type2])
-    operator_name = 'action1'
     action_pred = Predicate('actionpred', 1, [type1])
 
     obs, _ = env.reset()
 
     assert obs.literals == frozenset({ pred1('b2'), pred2('c1'), pred3('a1', 'c1', 'd1'), 
         pred3('a2', 'c2', 'd2') })
-
-    operator = env.domain.operators[operator_name]
 
     # Invalid action
     action = action_pred('b1')
@@ -69,7 +66,6 @@ def test_pddlenv_hierarchical_types():
     isfurry = Predicate("isfurry", 1, [Type("animal")])
     ishappy = Predicate("ishappy", 1, [Type("animal")])
     pet = Predicate("pet", 1, [Type("animal")])
-    throw = Predicate("throw", 1, [Type("object")])
 
     nomsy = Type("jindo")("nomsy")
     rover = Type("corgi")("rover")

@@ -574,5 +574,21 @@ def ground_literal(lifted_lit, assignments):
         ground_vars.append(arg)
     return lifted_lit.predicate(*ground_vars)
 
+def wrap_goal_literal(x):
+    """Append "WANT" to goal literal
+    """
+    if isinstance(x, LiteralConjunction):
+        wrapped_body = [wrap_goal_literal(lit) for lit in x.literals]
+        return LiteralConjunction(wrapped_body)
+    if isinstance(x, ForAll):
+        wrapped_body = wrap_goal_literal(x.body)
+        return ForAll(wrapped_body, x.variables, is_negative=x.is_negative)
+    if isinstance(x, Predicate):
+        return Predicate("WANT"+x.name, x.arity, var_types=x.var_types,
+                         is_negative=x.is_negative, is_anti=x.is_anti)
+    assert isinstance(x, Literal)
+    new_predicate = wrap_goal_literal(x.predicate)
+    return new_predicate(*x.variables)
+
 
 NoChange = Predicate("NOCHANGE", 0)  # represents no change in a probabilistic effect
