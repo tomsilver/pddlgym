@@ -11,6 +11,7 @@ def get_objects_from_obs(obs):
     destroyed = set()
     all_objs = set()
     holding = None
+    table_destroyed = False
     for lit in obs:
         if lit.predicate.name.lower() == "ontable":
             pile_bottoms.add(lit.variables[0])
@@ -20,6 +21,8 @@ def get_objects_from_obs(obs):
             all_objs.update(lit.variables)
         elif lit.predicate.name.lower() == "destroyed":
             destroyed.add(lit.variables[0])
+        elif lit.predicate.name.lower() == "table-destroyed":
+            table_destroyed = True
         elif lit.predicate.name.lower() == "holding":
             holding = lit.variables[0]
             all_objs.add(lit.variables[0])
@@ -41,7 +44,7 @@ def get_objects_from_obs(obs):
         else:
             piles.append([])
 
-    return piles, holding
+    return piles, holding, table_destroyed
 
 def get_block_params(piles, width, height, table_height, robot_height):
     num_blocks = len(piles)
@@ -58,10 +61,13 @@ def get_block_params(piles, width, height, table_height, robot_height):
 
     return block_width, block_height, block_positions
 
-def draw_table(ax, width, table_height):
+def draw_table(ax, width, table_height, table_destroyed):
     rect = patches.Rectangle((0,0), width, table_height, 
         linewidth=1, edgecolor=(0.2,0.2,0.2), facecolor=(0.5,0.2,0.0))
     ax.add_patch(rect)
+    if table_destroyed:
+        mymarker = ax.scatter(width / 2, table_height / 2, s=300, c='black', marker='x')
+        ax.add_artist(mymarker)
 
 def draw_robot(ax, robot_width, robot_height, midx, midy, holding, block_width, block_height):
     x = midx - robot_width/2
@@ -130,7 +136,7 @@ def render(obs, mode='human', close=False):
     table_height = height * 0.15
     robot_height = height * 0.1
 
-    piles, holding = get_objects_from_obs(obs)
+    piles, holding, table_destroyed = get_objects_from_obs(obs)
     block_width, block_height, block_positions = get_block_params(piles, width, height, 
         table_height, robot_height)
 
@@ -138,7 +144,7 @@ def render(obs, mode='human', close=False):
     robot_midx = width / 2
     robot_midy = height - robot_height/2
 
-    draw_table(ax, width, table_height)
+    draw_table(ax, width, table_height, table_destroyed)
     draw_blocks(ax, block_width, block_height, block_positions)
     draw_robot(ax, robot_width, robot_height, robot_midx, robot_midy, holding,
         block_width, block_height)
