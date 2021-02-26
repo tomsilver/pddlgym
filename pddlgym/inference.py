@@ -4,7 +4,9 @@
 from collections import defaultdict
 from copy import deepcopy
 from pddlgym.prolog_interface import PrologInterface
-from pddlgym.structs import Literal, LiteralConjunction
+from pddlgym.structs import Literal, LiteralConjunction, ground_literal
+from pddlgym.utils import get_object_combinations
+import functools
 
 
 def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False, 
@@ -21,6 +23,11 @@ def find_satisfying_assignments(kb, conds, variable_sort_fn=None, verbose=False,
             max_assignment_count=max_assignment_count, 
             variable_sort_fn=variable_sort_fn,
             verbose=verbose)
+    if mode == "ground":
+        return run_ground_inference(kb, conds,
+            constants=constants,
+            allow_redundant_variables=allow_redundant_variables,
+            type_to_parent_types=type_to_parent_types)
     assert mode == "prolog"
     assert all(len(v) == 1 for v in type_to_parent_types.values()), \
         "TODO: implement support for hierarchical types in prolog inference"
@@ -44,6 +51,41 @@ def check_goal(state, goal):
         allow_redundant_variables=True)
     assignments = prolog_interface.run()
     return len(assignments) > 0
+
+def run_ground_inference(kb, conds, constants=None,
+                         allow_redundant_variables=True,
+                         type_to_parent_types=None):
+    objs = tuple(sorted({o for lit in kb for o in lit.variables}))
+    if constants is not None:
+        objs += tuple(sorted(constants))
+    conds = tuple(sorted(conds))
+    if type_to_parent_types:
+        type_to_parent_types_as_tuple = tuple(sorted(
+            [(k, tuple(sorted(v))) \
+                for k, v in type_to_parent_types.items()]))
+    else:
+        type_to_parent_types_as_tuple = None
+    assignments = []
+    for assignment, ground_conds in get_ground_conds(conds, objs,
+        type_to_parent_types=type_to_parent_types_as_tuple,
+        allow_duplicates=allow_redundant_variables):
+        if ground_conds.issubset(kb):
+            assignments.append(assignment)
+    return assignments
+
+@functools.lru_cache(maxsize=None)
+def get_ground_conds(conds, objs, type_to_parent_types=None,
+                     allow_duplicates=True):
+    if type_to_parent_types:
+        type_to_parent_types = dict(type_to_parent_types)
+    vrs = sorted({v for lit in conds for v in lit.variables})
+    var_types = [v.var_type for v in vrs]
+    for choice in get_object_combinations(objs, len(var_types),
+        var_types=var_types, allow_duplicates=allow_duplicates,
+        type_to_parent_types=type_to_parent_types):
+        assignment = dict(zip(vrs, choice))
+        ground_conds = {ground_literal(lit, assignment) for lit in conds}
+        yield (assignment, ground_conds)
 
 def unify(lits1, lits2):
     """Return a tuple of (whether the given frozensets lits1 and lits2 can be
