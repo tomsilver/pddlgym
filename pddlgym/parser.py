@@ -39,8 +39,11 @@ class Operator:
         self.preconds = preconds  # structs.Literal representing preconditions
         self.effects = effects  # structs.Literal representing effects
 
+    def __repr__(self):
+        return str(self)
+
     def __str__(self):
-        s = self.name + "(" + ",".join(self.params) + "): "
+        s = self.name + "(" + ",".join(map(str, self.params)) + "): "
         s += " & ".join(map(str, self.preconds.literals))
         s += " => "
         s += " & ".join(map(str, self.effects.literals))
