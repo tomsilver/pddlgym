@@ -9,7 +9,7 @@
         robot - robot
     )
     (:init 
-(handempty robot) (on b1 b4) (ontable b2) (on b3 b2) (on b4 b5) (ontable b5) (clear b1) (clear b3)
+(handempty robot) (on b1 b3) (on b2 b1) (on b3 b5) (ontable b4) (on b5 b4) (clear b2)
 
         ; action literals
         (pickup b1)
@@ -49,5 +49,5 @@
         (stack b5 b4)
 
     )
-  (:goal (and (on b2 b4) (ontable b4)))
+  (:goal (and (on b2 b5) (on b4 b2) (ontable b5)  )
 )

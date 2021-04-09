@@ -6,10 +6,11 @@
         b3 - block
         b4 - block
         b5 - block
+        b6 - block
         robot - robot
     )
     (:init 
-(handempty robot) (on b1 b4) (ontable b2) (on b3 b2) (on b4 b5) (ontable b5) (clear b1) (clear b3)
+(handempty robot) (on b1 b5) (on b2 b4) (on b3 b1) (ontable b4) (on b5 b2) (on b6 b3) (clear b6)
 
         ; action literals
         (pickup b1)
@@ -19,6 +20,7 @@
         (stack b1 b3)
         (stack b1 b4)
         (stack b1 b5)
+        (stack b1 b6)
         (pickup b2)
         (putdown b2)
         (unstack b2)
@@ -26,6 +28,7 @@
         (stack b2 b3)
         (stack b2 b4)
         (stack b2 b5)
+        (stack b2 b6)
         (pickup b3)
         (putdown b3)
         (unstack b3)
@@ -33,6 +36,7 @@
         (stack b3 b1)
         (stack b3 b4)
         (stack b3 b5)
+        (stack b3 b6)
         (pickup b4)
         (putdown b4)
         (unstack b4)
@@ -40,6 +44,7 @@
         (stack b4 b3)
         (stack b4 b1)
         (stack b4 b5)
+        (stack b4 b6)
         (pickup b5)
         (putdown b5)
         (unstack b5)
@@ -47,7 +52,16 @@
         (stack b5 b3)
         (stack b5 b1)
         (stack b5 b4)
+        (stack b5 b6)
+        (pickup b6)
+        (putdown b6)
+        (unstack b6)
+        (stack b6 b2)
+        (stack b6 b3)
+        (stack b6 b1)
+        (stack b6 b4)
+        (stack b6 b5)
 
     )
-  (:goal (and (on b2 b4) (ontable b4)))
+  (:goal (and (ontable b3) (ontable b4) (on b5 b4) (on b6 b3)  )
 )
