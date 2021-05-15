@@ -4,6 +4,7 @@
         loc-0 - loc
 	loc-1 - loc
 	loc-2 - loc
+    loc-3 - loc
 	paper-0 - paper
 	paper-1 - paper
 	paper-2 - paper
