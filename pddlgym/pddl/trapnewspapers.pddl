@@ -40,7 +40,6 @@
         :parameters (?paper - paper ?loc - loc)
         :precondition (and
             (at ?loc)
-            (wantsPaper ?loc)
             (carrying ?paper)
         )
         :effect (and
