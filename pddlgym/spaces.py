@@ -33,6 +33,9 @@ class LiteralSpace(Space):
         self._type_to_parent_types = type_to_parent_types
         super().__init__()
 
+    def reset_objects(self):
+        self._objects = None
+
     def _update_objects_from_state(self, state):
         """Given a state, extract the objects and if they have changed, 
         recompute all ground literals

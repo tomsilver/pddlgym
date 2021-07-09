@@ -443,6 +443,8 @@ class PDDLEnv(gym.Env):
         self._goal = self._problem.goal
         debug_info = self._get_debug_info()
 
+        self._action_space.reset_objects()
+
         return self.get_state(), debug_info
 
     def _get_debug_info(self):

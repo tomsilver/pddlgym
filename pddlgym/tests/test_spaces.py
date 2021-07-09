@@ -159,7 +159,7 @@ def test_dynamic_action_space_same_obj():
 
 
 if __name__ == "__main__":
-    # test_hierarchical_spaces()
+    test_hierarchical_spaces()
     # test_dynamic_literal_action_space(verbose=False)
-    # test_dynamic_action_space(verbose=False)
+    test_dynamic_action_space(verbose=False)
     test_dynamic_action_space_same_obj()
