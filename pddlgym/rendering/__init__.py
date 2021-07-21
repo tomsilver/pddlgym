@@ -18,3 +18,4 @@ from .hiking import render as hiking_render
 from .maze import render as maze_render
 from .navigation import render as navigation_render
 from .river_alt import render as river_alt_render
+from .navigation import render as navigation_render
