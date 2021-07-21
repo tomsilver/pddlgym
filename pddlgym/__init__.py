@@ -150,7 +150,11 @@ for env_name, kwargs in [
                   'render' : maze_render}),
         ("spannerlearning", {'operators_as_actions' : True,
                              'dynamic_action_space' : True}),
-
+        ("navigation1", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation1-v0").domain) }),
+        ("navigation2", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation2-v0").domain) }),
+        ("navigation3", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation3-v0").domain) }),
+        ("navigation4", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation4-v0").domain) }),
+        ("navigation5", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation5-v0").domain) }),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
