@@ -142,6 +142,9 @@ for env_name, kwargs in [
                         'dynamic_action_space' : True}),
         ("trapnewspapers", {'operators_as_actions' : True,
                         'dynamic_action_space' : True}),
+        ("hiking", {'operators_as_actions' : True,
+                    'dynamic_action_space' : True,
+                    'render' : hiking_render}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
