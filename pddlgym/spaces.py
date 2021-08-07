@@ -33,7 +33,7 @@ class LiteralSpace(Space):
         self._type_to_parent_types = type_to_parent_types
         super().__init__()
 
-    def reset_objects(self):
+    def reset_initial_state(self, initial_state):
         self._objects = None
 
     def _update_objects_from_state(self, state):
@@ -98,6 +98,7 @@ class LiteralActionSpace(LiteralSpace):
     def __init__(self, domain, predicates,
                  type_hierarchy=None, type_to_parent_types=None):
         self.domain = domain
+        self._initial_state = None
         if not domain.operators_as_actions:
             raise NotImplementedError()
 
@@ -114,6 +115,10 @@ class LiteralActionSpace(LiteralSpace):
         super().__init__(predicates,
             type_hierarchy=type_hierarchy,
             type_to_parent_types=type_to_parent_types)
+
+    def reset_initial_state(self, initial_state):
+        super().reset_initial_state(initial_state)
+        self._initial_state = initial_state
 
     def _update_objects_from_state(self, state):
         # Check whether the objects have changed
@@ -169,6 +174,7 @@ class LiteralActionSpace(LiteralSpace):
         """Call FastDownward's instantiator.
         """
         # Generate temporary files to hand over to instantiator.
+        assert state.objects == self._initial_state.objects
         d_desc, domain_fname = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
         self.domain.write(domain_fname)
         p_desc, problem_fname = tempfile.mkstemp(dir=TMP_PDDL_DIR, text=True)
@@ -176,7 +182,7 @@ class LiteralActionSpace(LiteralSpace):
             PDDLProblemParser.create_pddl_file(
                 file_or_filepath=f,
                 objects=state.objects-set(self.domain.constants),
-                initial_state=state.literals,
+                initial_state=self._initial_state.literals,
                 problem_name="myproblem",
                 domain_name=self.domain.domain_name,
                 goal=state.goal,

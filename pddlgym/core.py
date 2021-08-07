@@ -443,7 +443,7 @@ class PDDLEnv(gym.Env):
         self._goal = self._problem.goal
         debug_info = self._get_debug_info()
 
-        self._action_space.reset_objects()
+        self._action_space.reset_initial_state(initial_state)
 
         return self.get_state(), debug_info
 
