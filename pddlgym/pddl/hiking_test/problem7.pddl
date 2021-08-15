@@ -3,6 +3,12 @@
   (:objects
         r0_c0 - loc
 	r0_c1 - loc
+	r0_c10 - loc
+	r0_c11 - loc
+	r0_c12 - loc
+	r0_c13 - loc
+	r0_c14 - loc
+	r0_c15 - loc
 	r0_c2 - loc
 	r0_c3 - loc
 	r0_c4 - loc
@@ -13,6 +19,12 @@
 	r0_c9 - loc
 	r10_c0 - loc
 	r10_c1 - loc
+	r10_c10 - loc
+	r10_c11 - loc
+	r10_c12 - loc
+	r10_c13 - loc
+	r10_c14 - loc
+	r10_c15 - loc
 	r10_c2 - loc
 	r10_c3 - loc
 	r10_c4 - loc
@@ -21,8 +33,30 @@
 	r10_c7 - loc
 	r10_c8 - loc
 	r10_c9 - loc
+	r11_c0 - loc
+	r11_c1 - loc
+	r11_c10 - loc
+	r11_c11 - loc
+	r11_c12 - loc
+	r11_c13 - loc
+	r11_c14 - loc
+	r11_c15 - loc
+	r11_c2 - loc
+	r11_c3 - loc
+	r11_c4 - loc
+	r11_c5 - loc
+	r11_c6 - loc
+	r11_c7 - loc
+	r11_c8 - loc
+	r11_c9 - loc
 	r1_c0 - loc
 	r1_c1 - loc
+	r1_c10 - loc
+	r1_c11 - loc
+	r1_c12 - loc
+	r1_c13 - loc
+	r1_c14 - loc
+	r1_c15 - loc
 	r1_c2 - loc
 	r1_c3 - loc
 	r1_c4 - loc
@@ -33,6 +67,12 @@
 	r1_c9 - loc
 	r2_c0 - loc
 	r2_c1 - loc
+	r2_c10 - loc
+	r2_c11 - loc
+	r2_c12 - loc
+	r2_c13 - loc
+	r2_c14 - loc
+	r2_c15 - loc
 	r2_c2 - loc
 	r2_c3 - loc
 	r2_c4 - loc
@@ -43,6 +83,12 @@
 	r2_c9 - loc
 	r3_c0 - loc
 	r3_c1 - loc
+	r3_c10 - loc
+	r3_c11 - loc
+	r3_c12 - loc
+	r3_c13 - loc
+	r3_c14 - loc
+	r3_c15 - loc
 	r3_c2 - loc
 	r3_c3 - loc
 	r3_c4 - loc
@@ -53,6 +99,12 @@
 	r3_c9 - loc
 	r4_c0 - loc
 	r4_c1 - loc
+	r4_c10 - loc
+	r4_c11 - loc
+	r4_c12 - loc
+	r4_c13 - loc
+	r4_c14 - loc
+	r4_c15 - loc
 	r4_c2 - loc
 	r4_c3 - loc
 	r4_c4 - loc
@@ -63,6 +115,12 @@
 	r4_c9 - loc
 	r5_c0 - loc
 	r5_c1 - loc
+	r5_c10 - loc
+	r5_c11 - loc
+	r5_c12 - loc
+	r5_c13 - loc
+	r5_c14 - loc
+	r5_c15 - loc
 	r5_c2 - loc
 	r5_c3 - loc
 	r5_c4 - loc
@@ -73,6 +131,12 @@
 	r5_c9 - loc
 	r6_c0 - loc
 	r6_c1 - loc
+	r6_c10 - loc
+	r6_c11 - loc
+	r6_c12 - loc
+	r6_c13 - loc
+	r6_c14 - loc
+	r6_c15 - loc
 	r6_c2 - loc
 	r6_c3 - loc
 	r6_c4 - loc
@@ -83,6 +147,12 @@
 	r6_c9 - loc
 	r7_c0 - loc
 	r7_c1 - loc
+	r7_c10 - loc
+	r7_c11 - loc
+	r7_c12 - loc
+	r7_c13 - loc
+	r7_c14 - loc
+	r7_c15 - loc
 	r7_c2 - loc
 	r7_c3 - loc
 	r7_c4 - loc
@@ -93,6 +163,12 @@
 	r7_c9 - loc
 	r8_c0 - loc
 	r8_c1 - loc
+	r8_c10 - loc
+	r8_c11 - loc
+	r8_c12 - loc
+	r8_c13 - loc
+	r8_c14 - loc
+	r8_c15 - loc
 	r8_c2 - loc
 	r8_c3 - loc
 	r8_c4 - loc
@@ -103,6 +179,12 @@
 	r8_c9 - loc
 	r9_c0 - loc
 	r9_c1 - loc
+	r9_c10 - loc
+	r9_c11 - loc
+	r9_c12 - loc
+	r9_c13 - loc
+	r9_c14 - loc
+	r9_c15 - loc
 	r9_c2 - loc
 	r9_c3 - loc
 	r9_c4 - loc
@@ -115,6 +197,23 @@
   (:init 
 	(adjacent r0_c0 r0_c1)
 	(adjacent r0_c0 r1_c0)
+	(adjacent r0_c10 r0_c11)
+	(adjacent r0_c10 r0_c9)
+	(adjacent r0_c10 r1_c10)
+	(adjacent r0_c11 r0_c10)
+	(adjacent r0_c11 r0_c12)
+	(adjacent r0_c11 r1_c11)
+	(adjacent r0_c12 r0_c11)
+	(adjacent r0_c12 r0_c13)
+	(adjacent r0_c12 r1_c12)
+	(adjacent r0_c13 r0_c12)
+	(adjacent r0_c13 r0_c14)
+	(adjacent r0_c13 r1_c13)
+	(adjacent r0_c14 r0_c13)
+	(adjacent r0_c14 r0_c15)
+	(adjacent r0_c14 r1_c14)
+	(adjacent r0_c15 r0_c14)
+	(adjacent r0_c15 r1_c15)
 	(adjacent r0_c1 r0_c0)
 	(adjacent r0_c1 r0_c2)
 	(adjacent r0_c1 r1_c1)
@@ -139,39 +238,143 @@
 	(adjacent r0_c8 r0_c7)
 	(adjacent r0_c8 r0_c9)
 	(adjacent r0_c8 r1_c8)
+	(adjacent r0_c9 r0_c10)
 	(adjacent r0_c9 r0_c8)
 	(adjacent r0_c9 r1_c9)
 	(adjacent r10_c0 r10_c1)
+	(adjacent r10_c0 r11_c0)
 	(adjacent r10_c0 r9_c0)
+	(adjacent r10_c10 r10_c11)
+	(adjacent r10_c10 r10_c9)
+	(adjacent r10_c10 r11_c10)
+	(adjacent r10_c10 r9_c10)
+	(adjacent r10_c11 r10_c10)
+	(adjacent r10_c11 r10_c12)
+	(adjacent r10_c11 r11_c11)
+	(adjacent r10_c11 r9_c11)
+	(adjacent r10_c12 r10_c11)
+	(adjacent r10_c12 r10_c13)
+	(adjacent r10_c12 r11_c12)
+	(adjacent r10_c12 r9_c12)
+	(adjacent r10_c13 r10_c12)
+	(adjacent r10_c13 r10_c14)
+	(adjacent r10_c13 r11_c13)
+	(adjacent r10_c13 r9_c13)
+	(adjacent r10_c14 r10_c13)
+	(adjacent r10_c14 r10_c15)
+	(adjacent r10_c14 r11_c14)
+	(adjacent r10_c14 r9_c14)
+	(adjacent r10_c15 r10_c14)
+	(adjacent r10_c15 r11_c15)
+	(adjacent r10_c15 r9_c15)
 	(adjacent r10_c1 r10_c0)
 	(adjacent r10_c1 r10_c2)
+	(adjacent r10_c1 r11_c1)
 	(adjacent r10_c1 r9_c1)
 	(adjacent r10_c2 r10_c1)
 	(adjacent r10_c2 r10_c3)
+	(adjacent r10_c2 r11_c2)
 	(adjacent r10_c2 r9_c2)
 	(adjacent r10_c3 r10_c2)
 	(adjacent r10_c3 r10_c4)
+	(adjacent r10_c3 r11_c3)
 	(adjacent r10_c3 r9_c3)
 	(adjacent r10_c4 r10_c3)
 	(adjacent r10_c4 r10_c5)
+	(adjacent r10_c4 r11_c4)
 	(adjacent r10_c4 r9_c4)
 	(adjacent r10_c5 r10_c4)
 	(adjacent r10_c5 r10_c6)
+	(adjacent r10_c5 r11_c5)
 	(adjacent r10_c5 r9_c5)
 	(adjacent r10_c6 r10_c5)
 	(adjacent r10_c6 r10_c7)
+	(adjacent r10_c6 r11_c6)
 	(adjacent r10_c6 r9_c6)
 	(adjacent r10_c7 r10_c6)
 	(adjacent r10_c7 r10_c8)
+	(adjacent r10_c7 r11_c7)
 	(adjacent r10_c7 r9_c7)
 	(adjacent r10_c8 r10_c7)
 	(adjacent r10_c8 r10_c9)
+	(adjacent r10_c8 r11_c8)
 	(adjacent r10_c8 r9_c8)
+	(adjacent r10_c9 r10_c10)
 	(adjacent r10_c9 r10_c8)
+	(adjacent r10_c9 r11_c9)
 	(adjacent r10_c9 r9_c9)
+	(adjacent r11_c0 r10_c0)
+	(adjacent r11_c0 r11_c1)
+	(adjacent r11_c10 r10_c10)
+	(adjacent r11_c10 r11_c11)
+	(adjacent r11_c10 r11_c9)
+	(adjacent r11_c11 r10_c11)
+	(adjacent r11_c11 r11_c10)
+	(adjacent r11_c11 r11_c12)
+	(adjacent r11_c12 r10_c12)
+	(adjacent r11_c12 r11_c11)
+	(adjacent r11_c12 r11_c13)
+	(adjacent r11_c13 r10_c13)
+	(adjacent r11_c13 r11_c12)
+	(adjacent r11_c13 r11_c14)
+	(adjacent r11_c14 r10_c14)
+	(adjacent r11_c14 r11_c13)
+	(adjacent r11_c14 r11_c15)
+	(adjacent r11_c15 r10_c15)
+	(adjacent r11_c15 r11_c14)
+	(adjacent r11_c1 r10_c1)
+	(adjacent r11_c1 r11_c0)
+	(adjacent r11_c1 r11_c2)
+	(adjacent r11_c2 r10_c2)
+	(adjacent r11_c2 r11_c1)
+	(adjacent r11_c2 r11_c3)
+	(adjacent r11_c3 r10_c3)
+	(adjacent r11_c3 r11_c2)
+	(adjacent r11_c3 r11_c4)
+	(adjacent r11_c4 r10_c4)
+	(adjacent r11_c4 r11_c3)
+	(adjacent r11_c4 r11_c5)
+	(adjacent r11_c5 r10_c5)
+	(adjacent r11_c5 r11_c4)
+	(adjacent r11_c5 r11_c6)
+	(adjacent r11_c6 r10_c6)
+	(adjacent r11_c6 r11_c5)
+	(adjacent r11_c6 r11_c7)
+	(adjacent r11_c7 r10_c7)
+	(adjacent r11_c7 r11_c6)
+	(adjacent r11_c7 r11_c8)
+	(adjacent r11_c8 r10_c8)
+	(adjacent r11_c8 r11_c7)
+	(adjacent r11_c8 r11_c9)
+	(adjacent r11_c9 r10_c9)
+	(adjacent r11_c9 r11_c10)
+	(adjacent r11_c9 r11_c8)
 	(adjacent r1_c0 r0_c0)
 	(adjacent r1_c0 r1_c1)
 	(adjacent r1_c0 r2_c0)
+	(adjacent r1_c10 r0_c10)
+	(adjacent r1_c10 r1_c11)
+	(adjacent r1_c10 r1_c9)
+	(adjacent r1_c10 r2_c10)
+	(adjacent r1_c11 r0_c11)
+	(adjacent r1_c11 r1_c10)
+	(adjacent r1_c11 r1_c12)
+	(adjacent r1_c11 r2_c11)
+	(adjacent r1_c12 r0_c12)
+	(adjacent r1_c12 r1_c11)
+	(adjacent r1_c12 r1_c13)
+	(adjacent r1_c12 r2_c12)
+	(adjacent r1_c13 r0_c13)
+	(adjacent r1_c13 r1_c12)
+	(adjacent r1_c13 r1_c14)
+	(adjacent r1_c13 r2_c13)
+	(adjacent r1_c14 r0_c14)
+	(adjacent r1_c14 r1_c13)
+	(adjacent r1_c14 r1_c15)
+	(adjacent r1_c14 r2_c14)
+	(adjacent r1_c15 r0_c15)
+	(adjacent r1_c15 r1_c14)
+	(adjacent r1_c15 r2_c15)
 	(adjacent r1_c1 r0_c1)
 	(adjacent r1_c1 r1_c0)
 	(adjacent r1_c1 r1_c2)
@@ -205,11 +408,35 @@
 	(adjacent r1_c8 r1_c9)
 	(adjacent r1_c8 r2_c8)
 	(adjacent r1_c9 r0_c9)
+	(adjacent r1_c9 r1_c10)
 	(adjacent r1_c9 r1_c8)
 	(adjacent r1_c9 r2_c9)
 	(adjacent r2_c0 r1_c0)
 	(adjacent r2_c0 r2_c1)
 	(adjacent r2_c0 r3_c0)
+	(adjacent r2_c10 r1_c10)
+	(adjacent r2_c10 r2_c11)
+	(adjacent r2_c10 r2_c9)
+	(adjacent r2_c10 r3_c10)
+	(adjacent r2_c11 r1_c11)
+	(adjacent r2_c11 r2_c10)
+	(adjacent r2_c11 r2_c12)
+	(adjacent r2_c11 r3_c11)
+	(adjacent r2_c12 r1_c12)
+	(adjacent r2_c12 r2_c11)
+	(adjacent r2_c12 r2_c13)
+	(adjacent r2_c12 r3_c12)
+	(adjacent r2_c13 r1_c13)
+	(adjacent r2_c13 r2_c12)
+	(adjacent r2_c13 r2_c14)
+	(adjacent r2_c13 r3_c13)
+	(adjacent r2_c14 r1_c14)
+	(adjacent r2_c14 r2_c13)
+	(adjacent r2_c14 r2_c15)
+	(adjacent r2_c14 r3_c14)
+	(adjacent r2_c15 r1_c15)
+	(adjacent r2_c15 r2_c14)
+	(adjacent r2_c15 r3_c15)
 	(adjacent r2_c1 r1_c1)
 	(adjacent r2_c1 r2_c0)
 	(adjacent r2_c1 r2_c2)
@@ -243,11 +470,35 @@
 	(adjacent r2_c8 r2_c9)
 	(adjacent r2_c8 r3_c8)
 	(adjacent r2_c9 r1_c9)
+	(adjacent r2_c9 r2_c10)
 	(adjacent r2_c9 r2_c8)
 	(adjacent r2_c9 r3_c9)
 	(adjacent r3_c0 r2_c0)
 	(adjacent r3_c0 r3_c1)
 	(adjacent r3_c0 r4_c0)
+	(adjacent r3_c10 r2_c10)
+	(adjacent r3_c10 r3_c11)
+	(adjacent r3_c10 r3_c9)
+	(adjacent r3_c10 r4_c10)
+	(adjacent r3_c11 r2_c11)
+	(adjacent r3_c11 r3_c10)
+	(adjacent r3_c11 r3_c12)
+	(adjacent r3_c11 r4_c11)
+	(adjacent r3_c12 r2_c12)
+	(adjacent r3_c12 r3_c11)
+	(adjacent r3_c12 r3_c13)
+	(adjacent r3_c12 r4_c12)
+	(adjacent r3_c13 r2_c13)
+	(adjacent r3_c13 r3_c12)
+	(adjacent r3_c13 r3_c14)
+	(adjacent r3_c13 r4_c13)
+	(adjacent r3_c14 r2_c14)
+	(adjacent r3_c14 r3_c13)
+	(adjacent r3_c14 r3_c15)
+	(adjacent r3_c14 r4_c14)
+	(adjacent r3_c15 r2_c15)
+	(adjacent r3_c15 r3_c14)
+	(adjacent r3_c15 r4_c15)
 	(adjacent r3_c1 r2_c1)
 	(adjacent r3_c1 r3_c0)
 	(adjacent r3_c1 r3_c2)
@@ -281,11 +532,35 @@
 	(adjacent r3_c8 r3_c9)
 	(adjacent r3_c8 r4_c8)
 	(adjacent r3_c9 r2_c9)
+	(adjacent r3_c9 r3_c10)
 	(adjacent r3_c9 r3_c8)
 	(adjacent r3_c9 r4_c9)
 	(adjacent r4_c0 r3_c0)
 	(adjacent r4_c0 r4_c1)
 	(adjacent r4_c0 r5_c0)
+	(adjacent r4_c10 r3_c10)
+	(adjacent r4_c10 r4_c11)
+	(adjacent r4_c10 r4_c9)
+	(adjacent r4_c10 r5_c10)
+	(adjacent r4_c11 r3_c11)
+	(adjacent r4_c11 r4_c10)
+	(adjacent r4_c11 r4_c12)
+	(adjacent r4_c11 r5_c11)
+	(adjacent r4_c12 r3_c12)
+	(adjacent r4_c12 r4_c11)
+	(adjacent r4_c12 r4_c13)
+	(adjacent r4_c12 r5_c12)
+	(adjacent r4_c13 r3_c13)
+	(adjacent r4_c13 r4_c12)
+	(adjacent r4_c13 r4_c14)
+	(adjacent r4_c13 r5_c13)
+	(adjacent r4_c14 r3_c14)
+	(adjacent r4_c14 r4_c13)
+	(adjacent r4_c14 r4_c15)
+	(adjacent r4_c14 r5_c14)
+	(adjacent r4_c15 r3_c15)
+	(adjacent r4_c15 r4_c14)
+	(adjacent r4_c15 r5_c15)
 	(adjacent r4_c1 r3_c1)
 	(adjacent r4_c1 r4_c0)
 	(adjacent r4_c1 r4_c2)
@@ -319,11 +594,35 @@
 	(adjacent r4_c8 r4_c9)
 	(adjacent r4_c8 r5_c8)
 	(adjacent r4_c9 r3_c9)
+	(adjacent r4_c9 r4_c10)
 	(adjacent r4_c9 r4_c8)
 	(adjacent r4_c9 r5_c9)
 	(adjacent r5_c0 r4_c0)
 	(adjacent r5_c0 r5_c1)
 	(adjacent r5_c0 r6_c0)
+	(adjacent r5_c10 r4_c10)
+	(adjacent r5_c10 r5_c11)
+	(adjacent r5_c10 r5_c9)
+	(adjacent r5_c10 r6_c10)
+	(adjacent r5_c11 r4_c11)
+	(adjacent r5_c11 r5_c10)
+	(adjacent r5_c11 r5_c12)
+	(adjacent r5_c11 r6_c11)
+	(adjacent r5_c12 r4_c12)
+	(adjacent r5_c12 r5_c11)
+	(adjacent r5_c12 r5_c13)
+	(adjacent r5_c12 r6_c12)
+	(adjacent r5_c13 r4_c13)
+	(adjacent r5_c13 r5_c12)
+	(adjacent r5_c13 r5_c14)
+	(adjacent r5_c13 r6_c13)
+	(adjacent r5_c14 r4_c14)
+	(adjacent r5_c14 r5_c13)
+	(adjacent r5_c14 r5_c15)
+	(adjacent r5_c14 r6_c14)
+	(adjacent r5_c15 r4_c15)
+	(adjacent r5_c15 r5_c14)
+	(adjacent r5_c15 r6_c15)
 	(adjacent r5_c1 r4_c1)
 	(adjacent r5_c1 r5_c0)
 	(adjacent r5_c1 r5_c2)
@@ -357,11 +656,35 @@
 	(adjacent r5_c8 r5_c9)
 	(adjacent r5_c8 r6_c8)
 	(adjacent r5_c9 r4_c9)
+	(adjacent r5_c9 r5_c10)
 	(adjacent r5_c9 r5_c8)
 	(adjacent r5_c9 r6_c9)
 	(adjacent r6_c0 r5_c0)
 	(adjacent r6_c0 r6_c1)
 	(adjacent r6_c0 r7_c0)
+	(adjacent r6_c10 r5_c10)
+	(adjacent r6_c10 r6_c11)
+	(adjacent r6_c10 r6_c9)
+	(adjacent r6_c10 r7_c10)
+	(adjacent r6_c11 r5_c11)
+	(adjacent r6_c11 r6_c10)
+	(adjacent r6_c11 r6_c12)
+	(adjacent r6_c11 r7_c11)
+	(adjacent r6_c12 r5_c12)
+	(adjacent r6_c12 r6_c11)
+	(adjacent r6_c12 r6_c13)
+	(adjacent r6_c12 r7_c12)
+	(adjacent r6_c13 r5_c13)
+	(adjacent r6_c13 r6_c12)
+	(adjacent r6_c13 r6_c14)
+	(adjacent r6_c13 r7_c13)
+	(adjacent r6_c14 r5_c14)
+	(adjacent r6_c14 r6_c13)
+	(adjacent r6_c14 r6_c15)
+	(adjacent r6_c14 r7_c14)
+	(adjacent r6_c15 r5_c15)
+	(adjacent r6_c15 r6_c14)
+	(adjacent r6_c15 r7_c15)
 	(adjacent r6_c1 r5_c1)
 	(adjacent r6_c1 r6_c0)
 	(adjacent r6_c1 r6_c2)
@@ -395,11 +718,35 @@
 	(adjacent r6_c8 r6_c9)
 	(adjacent r6_c8 r7_c8)
 	(adjacent r6_c9 r5_c9)
+	(adjacent r6_c9 r6_c10)
 	(adjacent r6_c9 r6_c8)
 	(adjacent r6_c9 r7_c9)
 	(adjacent r7_c0 r6_c0)
 	(adjacent r7_c0 r7_c1)
 	(adjacent r7_c0 r8_c0)
+	(adjacent r7_c10 r6_c10)
+	(adjacent r7_c10 r7_c11)
+	(adjacent r7_c10 r7_c9)
+	(adjacent r7_c10 r8_c10)
+	(adjacent r7_c11 r6_c11)
+	(adjacent r7_c11 r7_c10)
+	(adjacent r7_c11 r7_c12)
+	(adjacent r7_c11 r8_c11)
+	(adjacent r7_c12 r6_c12)
+	(adjacent r7_c12 r7_c11)
+	(adjacent r7_c12 r7_c13)
+	(adjacent r7_c12 r8_c12)
+	(adjacent r7_c13 r6_c13)
+	(adjacent r7_c13 r7_c12)
+	(adjacent r7_c13 r7_c14)
+	(adjacent r7_c13 r8_c13)
+	(adjacent r7_c14 r6_c14)
+	(adjacent r7_c14 r7_c13)
+	(adjacent r7_c14 r7_c15)
+	(adjacent r7_c14 r8_c14)
+	(adjacent r7_c15 r6_c15)
+	(adjacent r7_c15 r7_c14)
+	(adjacent r7_c15 r8_c15)
 	(adjacent r7_c1 r6_c1)
 	(adjacent r7_c1 r7_c0)
 	(adjacent r7_c1 r7_c2)
@@ -433,11 +780,35 @@
 	(adjacent r7_c8 r7_c9)
 	(adjacent r7_c8 r8_c8)
 	(adjacent r7_c9 r6_c9)
+	(adjacent r7_c9 r7_c10)
 	(adjacent r7_c9 r7_c8)
 	(adjacent r7_c9 r8_c9)
 	(adjacent r8_c0 r7_c0)
 	(adjacent r8_c0 r8_c1)
 	(adjacent r8_c0 r9_c0)
+	(adjacent r8_c10 r7_c10)
+	(adjacent r8_c10 r8_c11)
+	(adjacent r8_c10 r8_c9)
+	(adjacent r8_c10 r9_c10)
+	(adjacent r8_c11 r7_c11)
+	(adjacent r8_c11 r8_c10)
+	(adjacent r8_c11 r8_c12)
+	(adjacent r8_c11 r9_c11)
+	(adjacent r8_c12 r7_c12)
+	(adjacent r8_c12 r8_c11)
+	(adjacent r8_c12 r8_c13)
+	(adjacent r8_c12 r9_c12)
+	(adjacent r8_c13 r7_c13)
+	(adjacent r8_c13 r8_c12)
+	(adjacent r8_c13 r8_c14)
+	(adjacent r8_c13 r9_c13)
+	(adjacent r8_c14 r7_c14)
+	(adjacent r8_c14 r8_c13)
+	(adjacent r8_c14 r8_c15)
+	(adjacent r8_c14 r9_c14)
+	(adjacent r8_c15 r7_c15)
+	(adjacent r8_c15 r8_c14)
+	(adjacent r8_c15 r9_c15)
 	(adjacent r8_c1 r7_c1)
 	(adjacent r8_c1 r8_c0)
 	(adjacent r8_c1 r8_c2)
@@ -471,11 +842,35 @@
 	(adjacent r8_c8 r8_c9)
 	(adjacent r8_c8 r9_c8)
 	(adjacent r8_c9 r7_c9)
+	(adjacent r8_c9 r8_c10)
 	(adjacent r8_c9 r8_c8)
 	(adjacent r8_c9 r9_c9)
 	(adjacent r9_c0 r10_c0)
 	(adjacent r9_c0 r8_c0)
 	(adjacent r9_c0 r9_c1)
+	(adjacent r9_c10 r10_c10)
+	(adjacent r9_c10 r8_c10)
+	(adjacent r9_c10 r9_c11)
+	(adjacent r9_c10 r9_c9)
+	(adjacent r9_c11 r10_c11)
+	(adjacent r9_c11 r8_c11)
+	(adjacent r9_c11 r9_c10)
+	(adjacent r9_c11 r9_c12)
+	(adjacent r9_c12 r10_c12)
+	(adjacent r9_c12 r8_c12)
+	(adjacent r9_c12 r9_c11)
+	(adjacent r9_c12 r9_c13)
+	(adjacent r9_c13 r10_c13)
+	(adjacent r9_c13 r8_c13)
+	(adjacent r9_c13 r9_c12)
+	(adjacent r9_c13 r9_c14)
+	(adjacent r9_c14 r10_c14)
+	(adjacent r9_c14 r8_c14)
+	(adjacent r9_c14 r9_c13)
+	(adjacent r9_c14 r9_c15)
+	(adjacent r9_c15 r10_c15)
+	(adjacent r9_c15 r8_c15)
+	(adjacent r9_c15 r9_c14)
 	(adjacent r9_c1 r10_c1)
 	(adjacent r9_c1 r8_c1)
 	(adjacent r9_c1 r9_c0)
@@ -510,77 +905,76 @@
 	(adjacent r9_c8 r9_c9)
 	(adjacent r9_c9 r10_c9)
 	(adjacent r9_c9 r8_c9)
+	(adjacent r9_c9 r9_c10)
 	(adjacent r9_c9 r9_c8)
-	(at r0_c0)
-	(isgoal r10_c6)
-	(ishill r0_c5)
-	(ishill r4_c9)
-	(iswater r10_c0)
-	(iswater r10_c3)
-	(iswater r10_c4)
+	(at r11_c0)
+	(isgoal r11_c15)
+	(ishill r7_c11)
+	(ishill r7_c3)
+	(iswater r0_c2)
+	(iswater r10_c10)
+	(iswater r10_c11)
+	(iswater r10_c14)
+	(iswater r10_c6)
+	(iswater r10_c8)
+	(iswater r10_c9)
+	(iswater r11_c10)
+	(iswater r11_c11)
+	(iswater r11_c14)
+	(iswater r11_c5)
+	(iswater r11_c6)
+	(iswater r11_c7)
+	(iswater r11_c8)
+	(iswater r11_c9)
+	(iswater r1_c10)
+	(iswater r1_c11)
+	(iswater r1_c14)
+	(iswater r1_c15)
 	(iswater r1_c2)
 	(iswater r1_c3)
-	(iswater r1_c7)
-	(iswater r1_c8)
-	(iswater r2_c3)
+	(iswater r2_c11)
+	(iswater r2_c14)
+	(iswater r2_c15)
 	(iswater r2_c4)
-	(iswater r2_c7)
-	(iswater r2_c8)
-	(iswater r3_c0)
-	(iswater r3_c3)
 	(iswater r3_c4)
-	(iswater r3_c8)
-	(iswater r4_c0)
-	(iswater r4_c3)
+	(iswater r3_c5)
+	(iswater r3_c6)
 	(iswater r4_c4)
-	(iswater r4_c6)
-	(iswater r4_c8)
-	(iswater r5_c0)
-	(iswater r5_c3)
-	(iswater r5_c4)
-	(iswater r5_c6)
-	(iswater r5_c8)
-	(iswater r6_c6)
-	(iswater r7_c3)
-	(iswater r7_c4)
-	(iswater r7_c6)
-	(iswater r7_c7)
-	(iswater r8_c0)
-	(iswater r8_c2)
-	(iswater r8_c3)
-	(iswater r8_c4)
+	(iswater r8_c11)
+	(iswater r8_c14)
+	(iswater r8_c1)
 	(iswater r8_c6)
-	(iswater r8_c7)
-	(iswater r8_c8)
-	(iswater r9_c0)
-	(iswater r9_c3)
-	(iswater r9_c4)
+	(iswater r8_c9)
+	(iswater r9_c11)
+	(iswater r9_c14)
+	(iswater r9_c1)
+	(iswater r9_c2)
 	(iswater r9_c6)
-	(iswater r9_c7)
-	(iswater r9_c8)
-	(ontrail r0_c0 r0_c1)
-	(ontrail r0_c1 r0_c2)
-	(ontrail r0_c2 r0_c3)
-	(ontrail r0_c3 r0_c4)
-	(ontrail r0_c4 r0_c5)
-	(ontrail r0_c5 r0_c6)
-	(ontrail r0_c6 r0_c7)
-	(ontrail r0_c7 r0_c8)
-	(ontrail r0_c8 r0_c9)
-	(ontrail r0_c9 r1_c9)
-	(ontrail r10_c7 r10_c6)
-	(ontrail r10_c8 r10_c7)
-	(ontrail r10_c9 r10_c8)
-	(ontrail r1_c9 r2_c9)
-	(ontrail r2_c9 r3_c9)
-	(ontrail r3_c9 r4_c9)
-	(ontrail r4_c9 r5_c9)
-	(ontrail r5_c9 r6_c9)
-	(ontrail r6_c9 r7_c9)
-	(ontrail r7_c9 r8_c9)
-	(ontrail r8_c9 r9_c9)
-	(ontrail r9_c9 r10_c9)
+	(iswater r9_c9)
+	(ontrail r10_c0 r9_c0)
+	(ontrail r10_c15 r11_c15)
+	(ontrail r11_c0 r10_c0)
+	(ontrail r7_c0 r7_c1)
+	(ontrail r7_c10 r7_c11)
+	(ontrail r7_c11 r7_c12)
+	(ontrail r7_c12 r7_c13)
+	(ontrail r7_c13 r7_c14)
+	(ontrail r7_c14 r7_c15)
+	(ontrail r7_c15 r8_c15)
+	(ontrail r7_c1 r7_c2)
+	(ontrail r7_c2 r7_c3)
+	(ontrail r7_c3 r7_c4)
+	(ontrail r7_c4 r7_c5)
+	(ontrail r7_c5 r7_c6)
+	(ontrail r7_c6 r7_c7)
+	(ontrail r7_c7 r7_c8)
+	(ontrail r7_c8 r7_c9)
+	(ontrail r7_c9 r7_c10)
+	(ontrail r8_c0 r7_c0)
+	(ontrail r8_c15 r9_c15)
+	(ontrail r9_c0 r8_c0)
+	(ontrail r9_c15 r10_c15)
   )
   (:goal (and
-	(at r10_c6)))
+	(at r11_c15)))
 )

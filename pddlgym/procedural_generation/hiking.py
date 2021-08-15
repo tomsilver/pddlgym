@@ -34,6 +34,20 @@ TRAIN_GRID2 = np.array([
     [P, I, W, X, X, X, X, W, X, X],
 ])
 
+TRAIN_GRID3 = np.array([
+    [X, P, P, P, P, P, P, P, X, X],
+    [X, H, X, X, W, W, X, P, X, X],
+    [X, P, X, X, W, W, X, G, X, X],
+    [X, P, X, X, X, X, X, X, X, X],
+    [I, P, X, X, W, W, X, X, X, X],
+    [X, X, X, X, X, X, X, X, X, X],
+    [X, X, X, X, W, W, X, X, X, X],
+    [X, X, X, X, W, W, X, X, X, X],
+    [X, X, X, X, X, X, X, X, X, X],
+])
+
+TRAIN_GRID4 = np.flipud(TRAIN_GRID3)
+
 GRID1 = np.array([
     [I, P, P, P, P],
     [W, X, W, W, P],
@@ -100,7 +114,7 @@ GRID5 = np.array([
 ])
 
 
-TRAIN_GRIDS = [TRAIN_GRID1, TRAIN_GRID2]
+TRAIN_GRIDS = [TRAIN_GRID1, TRAIN_GRID2, TRAIN_GRID3, TRAIN_GRID4]
 TEST_GRIDS = [GRID1, GRID2, GRID3, GRID4, GRID5]
 
 
