@@ -11,6 +11,29 @@ PDDLDIR = os.path.join(os.path.dirname(pddlgym.__file__), "pddl")
 
 I, G, W, P, X, H = range(6)
 
+
+TRAIN_GRID1 = np.array([
+    [I, P, P, P, X, X, X, W, W, G],
+    [W, W, X, P, X, W, W, X, X, P],
+    [W, W, X, P, X, X, W, X, X, P],
+    [W, W, X, P, X, X, X, X, X, P],
+    [W, W, X, P, X, W, W, X, X, P],
+    [W, W, X, P, X, W, W, X, X, P],
+    [W, W, X, P, X, X, W, X, X, P],
+    [W, W, X, P, H, P, P, H, P, P],
+])
+
+TRAIN_GRID2 = np.array([
+    [X, X, X, X, X, X, W, W, W, W],
+    [X, X, X, X, X, X, W, W, W, W],
+    [P, P, H, P, H, P, P, P, P, P],
+    [P, X, X, X, X, X, W, W, X, P],
+    [P, X, X, X, X, X, X, X, W, G],
+    [P, W, X, X, W, W, X, W, W, X],
+    [P, X, X, X, W, X, X, X, X, X],
+    [P, I, W, X, X, X, X, W, X, X],
+])
+
 GRID1 = np.array([
     [I, P, P, P, P],
     [W, X, W, W, P],
@@ -32,11 +55,11 @@ GRID2 = np.array([
 ])
 
 GRID3 = np.array([
-    [I, P, P, P, P, P, P, P, P, P,],
+    [I, P, P, P, P, H, P, P, P, P,],
     [X, X, W, W, X, X, X, W, W, P,],
     [X, X, X, W, W, X, X, W, W, P,],
     [W, X, X, W, W, X, X, X, W, P,],
-    [W, X, X, W, W, X, W, X, W, P,],
+    [W, X, X, W, W, X, W, X, W, H,],
     [W, X, X, W, W, X, W, X, W, P,],
     [X, X, X, X, X, X, W, X, X, P,],
     [X, X, X, W, W, X, W, W, X, P,],
@@ -53,7 +76,7 @@ GRID4 = np.array([
     [X, X, X, X, W, X, X, X, X, X, X, X, X, X, X, X],
     [X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X],
     [X, X, X, X, X, X, X, X, X, X, X, X, X, X, X, X],
-    [P, P, P, P, P, P, P, P, P, P, P, P, P, P, P, P],
+    [P, P, P, H, P, P, P, P, P, P, P, H, P, P, P, P],
     [P, W, X, X, X, X, W, X, X, W, X, W, X, X, W, P],
     [P, W, W, X, X, X, W, X, X, W, X, W, X, X, W, P],
     [P, X, X, X, X, X, W, X, W, W, W, W, X, X, W, P],
@@ -68,7 +91,7 @@ GRID5 = np.array([
     [P, X, X, X, W, W, W, W, W, W, X],
     [P, X, X, X, W, W, W, W, W, W, X],
     [P, X, X, X, W, W, W, W, W, W, X],
-    [P, X, X, X, W, W, W, W, W, W, X],
+    [H, X, X, X, W, W, W, W, W, W, X],
     [P, X, X, X, W, W, W, W, W, W, X],
     [P, X, X, X, W, W, W, W, W, W, X],
     [P, X, X, X, W, W, W, W, W, W, X],
@@ -76,19 +99,9 @@ GRID5 = np.array([
     [I, X, X, X, W, W, W, W, W, W, X],
 ])
 
-GRID6 = np.array([
-    [I, P, P, P, X, X, X, W, W, G],
-    [W, W, X, P, X, W, W, X, X, P],
-    [W, W, X, P, X, X, W, X, X, P],
-    [W, W, X, P, X, X, X, X, X, P],
-    [W, W, X, P, X, W, W, X, X, P],
-    [W, W, X, P, X, W, W, X, X, P],
-    [W, W, X, P, X, X, W, X, X, P],
-    [W, W, X, P, P, P, P, P, P, P],
-])
 
-TRAIN_GRIDS = [GRID1]
-TEST_GRIDS = [GRID2, GRID3, GRID4, GRID5, GRID6]
+TRAIN_GRIDS = [TRAIN_GRID1, TRAIN_GRID2]
+TEST_GRIDS = [GRID1, GRID2, GRID3, GRID4, GRID5]
 
 
 
@@ -140,8 +153,8 @@ def create_problem(grid, domain, problem_dir, problem_outfile):
                 nobj = grid_locs[nr, nc]
                 initial_state.add(adjacent(obj, nobj))
 
-    # Add onMarkedPath
-    onMarkedPath = domain.predicates['onmarkedpath']
+    # Add onTrail
+    onTrail = domain.predicates['ontrail']
 
     # Get the path
     path = []
@@ -162,7 +175,7 @@ def create_problem(grid, domain, problem_dir, problem_outfile):
     for (r, c), (nr, nc) in zip(path[:-1], path[1:]):
         obj = grid_locs[r, c]
         nobj = grid_locs[nr, nc]
-        initial_state.add(onMarkedPath(obj, nobj))
+        initial_state.add(onTrail(obj, nobj))
 
     # Goal
     goal_rcs = np.argwhere(grid == G)

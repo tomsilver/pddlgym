@@ -53,7 +53,7 @@ def build_layout(obs):
     player_r, player_c = current_locs[0]
     layout[player_r, player_c] = PLAYER_ROCK  # may get overwritten below
 
-    for ((r, c), _) in get_values(obs, 'onmarkedpath'):
+    for ((r, c), _) in get_values(obs, 'ontrail'):
         if (r, c) == (player_r, player_c):
             layout[r, c] = PLAYER_PATH
         else:

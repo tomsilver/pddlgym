@@ -8,7 +8,7 @@
   (isHill ?loc - loc)
   (isGoal ?loc - loc)
   (adjacent ?loc1 - loc ?loc2 - loc)
-  (onMarkedPath ?from - loc ?to - loc)
+  (onTrail ?from - loc ?to - loc)
 )
 
 (:action walk
