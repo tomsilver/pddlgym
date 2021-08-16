@@ -145,6 +145,9 @@ for env_name, kwargs in [
         ("hiking", {'operators_as_actions' : True,
                     'dynamic_action_space' : True,
                     'render' : hiking_render}),
+        ("maze", {'operators_as_actions' : True,
+                  'dynamic_action_space' : True,
+                  'render' : maze_render}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
