@@ -15,3 +15,4 @@ from .posar import render as posar_render
 from .myopic_posar import render as myopic_posar_render
 from .sar_render_from_string_grid import sar_render_from_string_grid
 from .hiking import render as hiking_render
+from .maze import render as maze_render
