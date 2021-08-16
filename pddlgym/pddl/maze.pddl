@@ -1,0 +1,83 @@
+(define (domain maze)
+    (:requirements :strips :typing )
+    (:types player location)
+    (:predicates 
+        (move-dir-up ?v0 - location ?v1 - location)
+        (move-dir-down ?v0 - location ?v1 - location)
+        (move-dir-left ?v0 - location ?v1 - location)
+        (move-dir-right ?v0 - location ?v1 - location)
+        (clear ?v0 - location)
+        (at ?v0 - player ?v1 - location)
+        (oriented-up ?v0 - player)
+        (oriented-down ?v0 - player)
+        (oriented-left ?v0 - player)
+        (oriented-right ?v0 - player)
+        (is-goal ?v0 - location)
+    )
+
+    (:action move-up
+            :parameters (?p - player ?from - location ?to - location)
+            :precondition (and (at ?p ?from)
+                    (clear ?to)
+                    (move-dir-up ?from ?to))
+            :effect (and
+                    (not (at ?p ?from))
+                    (not (clear ?to))
+                    (at ?p ?to)
+                    (clear ?from)
+                    (not (oriented-down ?p))
+                    (not (oriented-left ?p))
+                    (not (oriented-right ?p))
+                    (oriented-up ?p))
+    )
+
+    (:action move-down
+            :parameters (?p - player ?from - location ?to - location)
+            :precondition (and (at ?p ?from)
+                    (clear ?to)
+                    (move-dir-down ?from ?to))
+            :effect (and
+                    (not (at ?p ?from))
+                    (not (clear ?to))
+                    (at ?p ?to)
+                    (clear ?from)
+                    (not (oriented-up ?p))
+                    (not (oriented-left ?p))
+                    (not (oriented-right ?p))
+                    (oriented-down ?p))
+    )
+
+    (:action move-left
+            :parameters (?p - player ?from - location ?to - location)
+            :precondition (and (at ?p ?from)
+                    (clear ?to)
+                    (move-dir-left ?from ?to))
+            :effect (and
+                    (not (at ?p ?from))
+                    (not (clear ?to))
+                    (at ?p ?to)
+                    (clear ?from)
+                    (not (oriented-down ?p))
+                    (not (oriented-up ?p))
+                    (not (oriented-right ?p))
+                    (oriented-left ?p))
+    )
+
+
+    (:action move-right
+            :parameters (?p - player ?from - location ?to - location)
+            :precondition (and (at ?p ?from)
+                    (clear ?to)
+                    (move-dir-right ?from ?to))
+            :effect (and
+                    (not (at ?p ?from))
+                    (not (clear ?to))
+                    (at ?p ?to)
+                    (clear ?from)
+                    (not (oriented-down ?p))
+                    (not (oriented-left ?p))
+                    (not (oriented-up ?p))
+                    (oriented-right ?p))
+    )
+
+)
