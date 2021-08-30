@@ -148,6 +148,9 @@ for env_name, kwargs in [
         ("maze", {'operators_as_actions' : True,
                   'dynamic_action_space' : True,
                   'render' : maze_render}),
+        ("spannerlearning", {'operators_as_actions' : True,
+                             'dynamic_action_space' : True}),
+
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
