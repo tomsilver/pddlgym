@@ -1,5 +1,5 @@
 
-(define (domain navigation5)
+(define (domain navigation7)
   (:requirements :typing :probabilistic-effects)
   (:types location direction)
 
@@ -48,7 +48,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.9759851833805442  (robot-at ?to)
+              0.9811790632084012  (robot-at ?to)
             ))
     )
     
@@ -62,7 +62,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.8463493086811569  (robot-at ?to)
+              0.8526364606287744  (robot-at ?to)
             ))
     )
     
@@ -76,7 +76,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.7864266712115042  (robot-at ?to)
+              0.7737736237209497  (robot-at ?to)
             ))
     )
     
@@ -90,7 +90,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.6579105384233925  (robot-at ?to)
+              0.6822601862909828  (robot-at ?to)
             ))
     )
     
@@ -104,7 +104,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.5732352750168906  (robot-at ?to)
+              0.5563381684737073  (robot-at ?to)
             ))
     )
     
@@ -118,7 +118,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.47488661017268896  (robot-at ?to)
+              0.477169446569557  (robot-at ?to)
             ))
     )
     
@@ -132,7 +132,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.37331650323337984  (robot-at ?to)
+              0.35945948813524514  (robot-at ?to)
             ))
     )
     
@@ -146,7 +146,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.27388255981107557  (robot-at ?to)
+              0.255770438661178  (robot-at ?to)
             ))
     )
     
@@ -160,7 +160,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.1460833899262879  (robot-at ?to)
+              0.1646184333496624  (robot-at ?to)
             ))
     )
     
@@ -174,7 +174,7 @@
         :effect (and
             (not (robot-at ?from))
             (probabilistic
-              0.06632497968773043  (robot-at ?to)
+              0.0651401424159606  (robot-at ?to)
             ))
     )
     
