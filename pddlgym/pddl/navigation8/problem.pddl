@@ -1,0 +1,353 @@
+
+(define (problem navigation) (:domain navigation8)
+  (:objects
+    f0-0f - location
+	f0-1f - location
+	f0-2f - location
+	f1-0f - location
+	f1-1f - location
+	f1-2f - location
+	f2-0f - location
+	f2-1f - location
+	f2-2f - location
+	f3-0f - location
+	f3-1f - location
+	f3-2f - location
+	f4-0f - location
+	f4-1f - location
+	f4-2f - location
+	f5-0f - location
+	f5-1f - location
+	f5-2f - location
+	f6-0f - location
+	f6-1f - location
+	f6-2f - location
+	f7-0f - location
+	f7-1f - location
+	f7-2f - location
+	f8-0f - location
+	f8-1f - location
+	f8-2f - location
+	f9-0f - location
+	f9-1f - location
+	f9-2f - location
+	f10-0f - location
+	f10-1f - location
+	f10-2f - location
+	f11-0f - location
+	f11-1f - location
+	f11-2f - location
+	f12-0f - location
+	f12-1f - location
+	f12-2f - location
+	f13-0f - location
+	f13-1f - location
+	f13-2f - location
+	f14-0f - location
+	f14-1f - location
+	f14-2f - location
+	f15-0f - location
+	f15-1f - location
+	f15-2f - location
+	f16-0f - location
+	f16-1f - location
+	f16-2f - location
+	f17-0f - location
+	f17-1f - location
+	f17-2f - location
+	f18-0f - location
+	f18-1f - location
+	f18-2f - location
+	f19-0f - location
+	f19-1f - location
+	f19-2f - location
+  )
+  (:init
+    (conn f0-1f f0-0f up)
+	(conn f0-1f f0-2f down)
+	(conn f0-1f f1-1f right)
+	(conn f1-1f f1-0f up)
+	(conn f1-1f f1-2f down)
+	(conn f1-1f f2-1f right)
+	(conn f1-1f f0-1f left)
+	(conn f2-1f f2-0f up)
+	(conn f2-1f f2-2f down)
+	(conn f2-1f f3-1f right)
+	(conn f2-1f f1-1f left)
+	(conn f3-1f f3-0f up)
+	(conn f3-1f f3-2f down)
+	(conn f3-1f f4-1f right)
+	(conn f3-1f f2-1f left)
+	(conn f4-1f f4-0f up)
+	(conn f4-1f f4-2f down)
+	(conn f4-1f f5-1f right)
+	(conn f4-1f f3-1f left)
+	(conn f5-1f f5-0f up)
+	(conn f5-1f f5-2f down)
+	(conn f5-1f f6-1f right)
+	(conn f5-1f f4-1f left)
+	(conn f6-1f f6-0f up)
+	(conn f6-1f f6-2f down)
+	(conn f6-1f f7-1f right)
+	(conn f6-1f f5-1f left)
+	(conn f7-1f f7-0f up)
+	(conn f7-1f f7-2f down)
+	(conn f7-1f f8-1f right)
+	(conn f7-1f f6-1f left)
+	(conn f8-1f f8-0f up)
+	(conn f8-1f f8-2f down)
+	(conn f8-1f f9-1f right)
+	(conn f8-1f f7-1f left)
+	(conn f9-1f f9-0f up)
+	(conn f9-1f f9-2f down)
+	(conn f9-1f f10-1f right)
+	(conn f9-1f f8-1f left)
+	(conn f10-1f f10-0f up)
+	(conn f10-1f f10-2f down)
+	(conn f10-1f f11-1f right)
+	(conn f10-1f f9-1f left)
+	(conn f11-1f f11-0f up)
+	(conn f11-1f f11-2f down)
+	(conn f11-1f f12-1f right)
+	(conn f11-1f f10-1f left)
+	(conn f12-1f f12-0f up)
+	(conn f12-1f f12-2f down)
+	(conn f12-1f f13-1f right)
+	(conn f12-1f f11-1f left)
+	(conn f13-1f f13-0f up)
+	(conn f13-1f f13-2f down)
+	(conn f13-1f f14-1f right)
+	(conn f13-1f f12-1f left)
+	(conn f14-1f f14-0f up)
+	(conn f14-1f f14-2f down)
+	(conn f14-1f f15-1f right)
+	(conn f14-1f f13-1f left)
+	(conn f15-1f f15-0f up)
+	(conn f15-1f f15-2f down)
+	(conn f15-1f f16-1f right)
+	(conn f15-1f f14-1f left)
+	(conn f16-1f f16-0f up)
+	(conn f16-1f f16-2f down)
+	(conn f16-1f f17-1f right)
+	(conn f16-1f f15-1f left)
+	(conn f17-1f f17-0f up)
+	(conn f17-1f f17-2f down)
+	(conn f17-1f f18-1f right)
+	(conn f17-1f f16-1f left)
+	(conn f18-1f f18-0f up)
+	(conn f18-1f f18-2f down)
+	(conn f18-1f f19-1f right)
+	(conn f18-1f f17-1f left)
+	(conn f19-1f f19-0f up)
+	(conn f19-1f f19-2f down)
+	(conn f19-1f f18-1f left)
+	(conn f0-2f f0-1f up)
+	(conn f0-2f f1-2f right)
+	(conn f1-2f f1-1f up)
+	(conn f1-2f f2-2f right)
+	(conn f1-2f f0-2f left)
+	(conn f2-2f f2-1f up)
+	(conn f2-2f f3-2f right)
+	(conn f2-2f f1-2f left)
+	(conn f3-2f f3-1f up)
+	(conn f3-2f f4-2f right)
+	(conn f3-2f f2-2f left)
+	(conn f4-2f f4-1f up)
+	(conn f4-2f f5-2f right)
+	(conn f4-2f f3-2f left)
+	(conn f5-2f f5-1f up)
+	(conn f5-2f f6-2f right)
+	(conn f5-2f f4-2f left)
+	(conn f6-2f f6-1f up)
+	(conn f6-2f f7-2f right)
+	(conn f6-2f f5-2f left)
+	(conn f7-2f f7-1f up)
+	(conn f7-2f f8-2f right)
+	(conn f7-2f f6-2f left)
+	(conn f8-2f f8-1f up)
+	(conn f8-2f f9-2f right)
+	(conn f8-2f f7-2f left)
+	(conn f9-2f f9-1f up)
+	(conn f9-2f f10-2f right)
+	(conn f9-2f f8-2f left)
+	(conn f10-2f f10-1f up)
+	(conn f10-2f f11-2f right)
+	(conn f10-2f f9-2f left)
+	(conn f11-2f f11-1f up)
+	(conn f11-2f f12-2f right)
+	(conn f11-2f f10-2f left)
+	(conn f12-2f f12-1f up)
+	(conn f12-2f f13-2f right)
+	(conn f12-2f f11-2f left)
+	(conn f13-2f f13-1f up)
+	(conn f13-2f f14-2f right)
+	(conn f13-2f f12-2f left)
+	(conn f14-2f f14-1f up)
+	(conn f14-2f f15-2f right)
+	(conn f14-2f f13-2f left)
+	(conn f15-2f f15-1f up)
+	(conn f15-2f f16-2f right)
+	(conn f15-2f f14-2f left)
+	(conn f16-2f f16-1f up)
+	(conn f16-2f f17-2f right)
+	(conn f16-2f f15-2f left)
+	(conn f17-2f f17-1f up)
+	(conn f17-2f f18-2f right)
+	(conn f17-2f f16-2f left)
+	(conn f18-2f f18-1f up)
+	(conn f18-2f f19-2f right)
+	(conn f18-2f f17-2f left)
+	(conn f19-2f f19-1f up)
+	(conn f19-2f f18-2f left)
+	(conn f0-0f f0-1f down)
+	(conn f0-0f f1-0f right)
+	(conn f1-0f f1-1f down)
+	(conn f1-0f f2-0f right)
+	(conn f1-0f f0-0f left)
+	(conn f2-0f f2-1f down)
+	(conn f2-0f f3-0f right)
+	(conn f2-0f f1-0f left)
+	(conn f3-0f f3-1f down)
+	(conn f3-0f f4-0f right)
+	(conn f3-0f f2-0f left)
+	(conn f4-0f f4-1f down)
+	(conn f4-0f f5-0f right)
+	(conn f4-0f f3-0f left)
+	(conn f5-0f f5-1f down)
+	(conn f5-0f f6-0f right)
+	(conn f5-0f f4-0f left)
+	(conn f6-0f f6-1f down)
+	(conn f6-0f f7-0f right)
+	(conn f6-0f f5-0f left)
+	(conn f7-0f f7-1f down)
+	(conn f7-0f f8-0f right)
+	(conn f7-0f f6-0f left)
+	(conn f8-0f f8-1f down)
+	(conn f8-0f f9-0f right)
+	(conn f8-0f f7-0f left)
+	(conn f9-0f f9-1f down)
+	(conn f9-0f f10-0f right)
+	(conn f9-0f f8-0f left)
+	(conn f10-0f f10-1f down)
+	(conn f10-0f f11-0f right)
+	(conn f10-0f f9-0f left)
+	(conn f11-0f f11-1f down)
+	(conn f11-0f f12-0f right)
+	(conn f11-0f f10-0f left)
+	(conn f12-0f f12-1f down)
+	(conn f12-0f f13-0f right)
+	(conn f12-0f f11-0f left)
+	(conn f13-0f f13-1f down)
+	(conn f13-0f f14-0f right)
+	(conn f13-0f f12-0f left)
+	(conn f14-0f f14-1f down)
+	(conn f14-0f f15-0f right)
+	(conn f14-0f f13-0f left)
+	(conn f15-0f f15-1f down)
+	(conn f15-0f f16-0f right)
+	(conn f15-0f f14-0f left)
+	(conn f16-0f f16-1f down)
+	(conn f16-0f f17-0f right)
+	(conn f16-0f f15-0f left)
+	(conn f17-0f f17-1f down)
+	(conn f17-0f f18-0f right)
+	(conn f17-0f f16-0f left)
+	(conn f18-0f f18-1f down)
+	(conn f18-0f f19-0f right)
+	(conn f18-0f f17-0f left)
+	(conn f19-0f f19-1f down)
+	(conn f19-0f f18-0f left)
+
+    (is-prob f0-1f)
+	(is-prob f1-1f)
+	(is-prob f2-1f)
+	(is-prob f3-1f)
+	(is-prob f4-1f)
+	(is-prob f5-1f)
+	(is-prob f6-1f)
+	(is-prob f7-1f)
+	(is-prob f8-1f)
+	(is-prob f9-1f)
+	(is-prob f10-1f)
+	(is-prob f11-1f)
+	(is-prob f12-1f)
+	(is-prob f13-1f)
+	(is-prob f14-1f)
+	(is-prob f15-1f)
+	(is-prob f16-1f)
+	(is-prob f17-1f)
+	(is-prob f18-1f)
+	(is-prob f19-1f)
+
+    (is-col-0 f0-0f)
+    (is-col-0 f0-1f)
+    (is-col-0 f0-2f)
+    (is-col-1 f1-0f)
+    (is-col-1 f1-1f)
+    (is-col-1 f1-2f)
+    (is-col-2 f2-0f)
+    (is-col-2 f2-1f)
+    (is-col-2 f2-2f)
+    (is-col-3 f3-0f)
+    (is-col-3 f3-1f)
+    (is-col-3 f3-2f)
+    (is-col-4 f4-0f)
+    (is-col-4 f4-1f)
+    (is-col-4 f4-2f)
+    (is-col-5 f5-0f)
+    (is-col-5 f5-1f)
+    (is-col-5 f5-2f)
+    (is-col-6 f6-0f)
+    (is-col-6 f6-1f)
+    (is-col-6 f6-2f)
+    (is-col-7 f7-0f)
+    (is-col-7 f7-1f)
+    (is-col-7 f7-2f)
+    (is-col-8 f8-0f)
+    (is-col-8 f8-1f)
+    (is-col-8 f8-2f)
+    (is-col-9 f9-0f)
+    (is-col-9 f9-1f)
+    (is-col-9 f9-2f)
+    (is-col-10 f10-0f)
+    (is-col-10 f10-1f)
+    (is-col-10 f10-2f)
+    (is-col-11 f11-0f)
+    (is-col-11 f11-1f)
+    (is-col-11 f11-2f)
+    (is-col-12 f12-0f)
+    (is-col-12 f12-1f)
+    (is-col-12 f12-2f)
+    (is-col-13 f13-0f)
+    (is-col-13 f13-1f)
+    (is-col-13 f13-2f)
+    (is-col-14 f14-0f)
+    (is-col-14 f14-1f)
+    (is-col-14 f14-2f)
+    (is-col-15 f15-0f)
+    (is-col-15 f15-1f)
+    (is-col-15 f15-2f)
+    (is-col-16 f16-0f)
+    (is-col-16 f16-1f)
+    (is-col-16 f16-2f)
+    (is-col-17 f17-0f)
+    (is-col-17 f17-1f)
+    (is-col-17 f17-2f)
+    (is-col-18 f18-0f)
+    (is-col-18 f18-1f)
+    (is-col-18 f18-2f)
+    (is-col-19 f19-0f)
+    (is-col-19 f19-1f)
+    (is-col-19 f19-2f)
+
+    (move down)
+    (move left)
+    (move right)
+    (move up)
+
+    (robot-at f19-2f)
+  )
+  (:goal (and
+    (robot-at f19-0f)))
+)
+    
