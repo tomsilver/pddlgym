@@ -232,3 +232,8 @@ register(
     id='TinyMyopicPOSAR-v0',
     entry_point='pddlgym.custom.searchandrescue:TinyMyopicPOSAREnv',
 )
+
+
+# Ignore certain files for pdoc documentation generation.
+__pdoc__ = {'downward_translate': False, 'procedural_generation': False}
+
