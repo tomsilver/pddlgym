@@ -79,7 +79,7 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
 
     # No operator was found
     elif raise_error_on_invalid_action:
-        raise InvalidAction()
+        raise InvalidAction(f"called get_successor_state with invalid action '{action}' for given state")
 
     return state
 
