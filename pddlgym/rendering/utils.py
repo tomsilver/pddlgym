@@ -73,7 +73,7 @@ def render_from_layout(layout, get_token_images, dpi=150, grid_colors=None):
 
     im = Image.fromarray(im)
     new_width, new_height = (int(im.size[0] * IM_SCALE), int(im.size[1] * IM_SCALE))
-    im = im.resize((new_width, new_height), Image.Resampling.LANCZOS)
+    im = im.resize((new_width, new_height), Image.ANTIALIAS)
     im = np.array(im)
 
     return im
