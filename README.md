@@ -74,7 +74,7 @@ If you encounter an error message that seems related to rendering (e.g. https://
 ## Usage examples
 
 ### Hello, PDDLGym
-```
+```python
 import pddlgym
 import imageio
 
@@ -92,7 +92,7 @@ See also `demo.py`.
 
 ### Plan with FastDownward
 To run this example, make sure you install the optional companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners).
-```
+```python
 import pddlgym
 from pddlgym_planners.fd import FD
 
