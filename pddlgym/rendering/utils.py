@@ -13,12 +13,19 @@ def get_asset_path(asset_name):
     asset_dir_path = os.path.join(dir_path, 'assets')
     return os.path.join(asset_dir_path, asset_name)
 
-def fig2data(fig, dpi=150):
+def fig2data(fig, dpi: int = 150):
     fig.set_dpi(dpi)
     fig.canvas.draw()
-    data = np.fromstring(fig.canvas.tostring_argb(), dtype=np.uint8, sep='')
-    data = data.reshape(fig.canvas.get_width_height()[::-1] + (4,))
+
+    # copy image data from buffer
+    data = np.frombuffer(fig.canvas.tostring_argb(), dtype=np.uint8).copy()
+
+    # get the dpi adjusted figure dimensions
+    width, height = map(int, fig.get_size_inches() * fig.get_dpi())
+    data = data.reshape(height, width, 4)
+    
     data[..., [0, 1, 2, 3]] = data[..., [1, 2, 3, 0]]
+
     return data
 
 def initialize_figure(height, width, fig_scale=1., grid_colors=None):
