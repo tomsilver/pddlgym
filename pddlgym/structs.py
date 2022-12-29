@@ -1,7 +1,11 @@
+from __future__ import annotations
+
 """Python classes for common PDDL structures"""
 from collections import namedtuple
 import itertools
 import numpy as np
+
+from typing import NamedTuple, FrozenSet, Collection, Any
 
 
 ### PDDL Types, Objects, Variables ###
@@ -475,24 +479,32 @@ class ProbabilisticEffect:
 ### States ###
 
 # A State is a frozenset of ground literals and a frozenset of objects
-class State(namedtuple("State", ["literals", "objects", "goal"])):
+# class State(namedtuple("State", ["literals", "objects", "goal"])):
+class State(NamedTuple):
+    literals: FrozenSet[Literal]
+    objects: FrozenSet[TypedEntity]
+    goal: Any
+    # MF: We can't easily type goal yet bc it can be a Literal, LiteralConjunction, etc
+    # Ideally we'd make a parent class for all of those.
+
+
     __slots__ = ()
 
-    def with_literals(self, literals):
+    def with_literals(self, literals: Collection[Literal]) -> State:
         """
         Return a new state that has the same objects and goal as the given one,
         but has the given set of literals instead of state.literals.
         """
         return self._replace(literals=frozenset(literals))
 
-    def with_objects(self, objects):
+    def with_objects(self, objects: Collection[TypedEntity]) -> State:
         """
         Return a new state that has the same literals and goal as the given one,
         but has the given set of objects instead of state.objects.
         """
         return self._replace(objects=frozenset(objects))
 
-    def with_goal(self, goal):
+    def with_goal(self, goal) -> State:
         """
         Return a new state that has the same literals and objects as the given
         one, but has the given goal instead of state.goal.
