@@ -1,6 +1,9 @@
 """Gym environment registration"""
 
 from . import tests
+from . import core
+from . import structs
+from . import spaces
 
 import matplotlib
 # matplotlib.use("Agg")
@@ -9,13 +12,14 @@ from gym.envs.registration import register
 import gym
 
 import os
+from typing import List
 
 # Save users from having to separately import gym
 def make(*args, **kwargs):
     # env checker fails since obs is not an numpy array like object
     return gym.make(*args, disable_env_checker=True, **kwargs)
 
-def register_pddl_env(name, is_test_env, other_args):
+def register_pddl_env(name: str, is_test_env: bool, other_args: List):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
     domain_file = os.path.join(dir_path, "{}.pddl".format(name.lower()))
     gym_name = name.capitalize()
