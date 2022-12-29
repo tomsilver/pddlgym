@@ -488,8 +488,6 @@ class State(NamedTuple):
     # Ideally we'd make a parent class for all of those.
 
 
-    __slots__ = ()
-
     def with_literals(self, literals: Collection[Literal]) -> State:
         """
         Return a new state that has the same objects and goal as the given one,
