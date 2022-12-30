@@ -546,7 +546,7 @@ class PDDLEnv(gym.Env):
         if self._render:
             return self._render(self._state.literals, *args, **kwargs)
 
-    def _handle_derived_literals(self, state):
+    def _handle_derived_literals(self, state: State):
         # first remove any old derived literals since they're outdated
         to_remove = set()
         for lit in state.literals:

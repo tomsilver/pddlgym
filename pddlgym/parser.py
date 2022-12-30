@@ -6,7 +6,7 @@ from pddlgym.structs import (Type, Predicate, Literal, LiteralConjunction,
                              DerivedPredicate, NoChange)
 
 import re
-
+from typing import List, Any, Optional, Dict
 
 FAST_DOWNWARD_STR = """
 (define (problem {problem}) (:domain {domain})
@@ -33,7 +33,7 @@ PROBLEM_STR = """
 class Operator:
     """Class to hold an operator.
     """
-    def __init__(self, name, params, preconds, effects):
+    def __init__(self, name: str, params: List[Type], preconds: List[Literal], effects: List[Literal]):
         self.name = name  # string
         self.params = params  # list of structs.Type objects
         self.preconds = preconds  # structs.Literal representing preconditions
@@ -99,6 +99,7 @@ class Operator:
 class PDDLParser:
     """PDDL parsing class.
     """
+    predicates: Dict[str, Predicate]
     def _parse_into_literal(self, string, params, is_effect=False):
         """Parse the given string (representing either preconditions or effects)
         into a literal. Check against params to make sure typing is correct.
@@ -317,13 +318,13 @@ class PDDLDomain:
         # String of domain name.
         self.domain_name = domain_name
         # Dict from type name -> structs.Type object.
-        self.types = types
+        self.types: Dict[str, Type] = types
         # Dict from supertype -> immediate subtypes.
         self.type_hierarchy = type_hierarchy
         # Dict from predicate name -> structs.Predicate object.
-        self.predicates = predicates
+        self.predicates: Dict[str, Predicate] = predicates
         # Dict from operator name -> Operator object (class defined above).
-        self.operators = operators
+        self.operators: Dict[str, Operator] = operators
         # Action predicate names (not part of standard PDDL)
         self.actions = actions
         # Constant objects, shared across problems
