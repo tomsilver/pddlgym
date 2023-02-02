@@ -210,7 +210,6 @@ class Literal:
 
         # Cache str for repr
         self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
-        self._hash = hash(self._str)
 
     def set_variables(self, variables):
         self.variables = variables
@@ -223,7 +222,6 @@ class Literal:
     def _update_variable_caches(self):
         # Recompute cache
         self._str = str(self.predicate) + '(' + ','.join(map(str, self.variables)) + ')'
-        self._hash = hash(self._str)
 
     def __str__(self):
         return self._str
@@ -232,7 +230,7 @@ class Literal:
         return self._str
 
     def __hash__(self):
-        return self._hash
+        return hash(str(self))
 
     def __eq__(self, other):
         return repr(self) == repr(other)
