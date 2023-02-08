@@ -317,6 +317,71 @@ class TestPDDLEnv(unittest.TestCase):
             assert prob - expected_states[s] < 1e-5
 
 
+    def test_get_all_possible_transitions_common_effects(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        domain_file = os.path.join(
+            dir_path, 'pddl', 'test_probabilistic_domain_alt_3.pddl')
+        problem_dir = os.path.join(dir_path, 'pddl', 'test_probabilistic_domain_alt_3')
+
+        env = PDDLEnv(domain_file, problem_dir, raise_error_on_invalid_action=True,
+                    dynamic_action_space=True)
+
+        obs, _ = env.reset()
+        all_actions = sorted(env.action_space.all_ground_literals(obs))
+        assert len(all_actions) == 2
+
+        for action in [
+                # TODO: Uncommenting all_actions[0] will break this test due
+                # to logic errors in _apply_effects()!
+                # all_actions[0],
+                all_actions[1],
+        ]:
+            transitions = list(env.get_all_possible_transitions(action))
+            assert len(transitions) == 2
+
+            states = set({
+                transitions[0][0].literals,
+                transitions[1][0].literals,
+            })
+
+            pred_b = Predicate('b', 0, [])
+            pred_c = Predicate('c', 0, [])
+
+            expected_states = set({
+                frozenset({pred_b()}),
+                frozenset({pred_c()}),
+            })
+
+            assert states == expected_states
+
+        # Now test again with return_probs=True.
+        for action in [
+                # TODO: Uncommenting all_actions[0] will break this test due
+                # to logic errors in _apply_effects()!
+                # all_actions[0],
+                all_actions[1],
+        ]:
+            transitions = list(env.get_all_possible_transitions(action, return_probs=True))
+            assert len(transitions) == 2
+
+            states_and_probs = {
+                transitions[0][0][0].literals: transitions[0][1],
+                transitions[1][0][0].literals: transitions[1][1],
+            }
+
+            pred_b = Predicate('b', 0, [])
+            pred_c = Predicate('c', 0, [])
+
+            expected_states = {
+                frozenset({pred_b()}): 0.8,
+                frozenset({pred_c()}): 0.2,
+            }
+
+            for s, prob in states_and_probs.items():
+                assert s in expected_states
+                assert prob - expected_states[s] < 1e-5
+
+
     def test_determinize(self):
         dir_path = os.path.dirname(os.path.realpath(__file__))
         domain_file = os.path.join(
