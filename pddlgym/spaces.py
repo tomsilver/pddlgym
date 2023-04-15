@@ -108,8 +108,10 @@ class LiteralActionSpace(LiteralSpace):
             assert len([p for p in predicates if p.name == operator_name]) == 1
             action_predicate = [p for p in predicates if p.name == operator_name][0]
             action_predicate_to_operators[action_predicate] = operator
-            assert isinstance(operator.preconds, LiteralConjunction)
-            assert all([isinstance(l, Literal) for l in operator.preconds.literals])
+            if isinstance(operator.preconds, LiteralConjunction):
+                assert all([isinstance(l, Literal) for l in operator.preconds.literals])
+            else:
+                assert isinstance(operator.preconds, Literal)
         self._action_predicate_to_operators = action_predicate_to_operators
 
         super().__init__(predicates,
@@ -135,7 +137,11 @@ class LiteralActionSpace(LiteralSpace):
         self._ground_action_to_neg_preconds = {}
         for ground_action in self._all_ground_literals:
             operator = self._action_predicate_to_operators[ground_action.predicate]
-            lifted_preconds = operator.preconds.literals
+            if isinstance(operator.preconds, LiteralConjunction):
+                lifted_preconds = operator.preconds.literals
+            else:
+                assert isinstance(operator.preconds, Literal)
+                lifted_preconds = [operator.preconds]
             subs = dict(zip(operator.params, ground_action.variables))
             subs.update(zip(self.domain.constants, self.domain.constants))
             preconds = [ground_literal(lit, subs) for lit in lifted_preconds]
