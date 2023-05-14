@@ -161,7 +161,7 @@ class PrologInterface:
         """
         """
         kb_str = ""
-        for lit in sorted(kb):
+        for lit in sorted(kb, key=lambda l:l.predicate.name):
             pred_name = cls._clean_predicate_name(lit.predicate.name)
             atoms = ",".join([cls._clean_atom_name(a) for a in lit.variables])
             kb_str += "\n{}({}).".format(pred_name, atoms)

@@ -553,6 +553,14 @@ class PDDLEnv(gym.Env):
             if lit.predicate.is_derived:
                 to_remove.add(lit)
         state = state.with_literals(state.literals - to_remove)
+
+        # add negative literals for checking derived predicates
+        state_literals = state.literals
+        all_ground_literals = self._observation_space.all_ground_literals(state)
+        for lit in all_ground_literals:
+            if lit not in state_literals:
+                state_literals = {lit.negative} | state_literals
+                
         while True:  # loop, because derived predicates can be recursive
             new_derived_literals = set()
             for pred in self.domain.predicates.values():
