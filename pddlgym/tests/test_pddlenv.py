@@ -1,5 +1,5 @@
 from pddlgym.core import PDDLEnv, InvalidAction
-from pddlgym.structs import Predicate, Type, LiteralConjunction
+from pddlgym.structs import Predicate, DerivedPredicate, Type, LiteralConjunction, ForAll
 
 import os
 import unittest
@@ -113,6 +113,54 @@ class TestPDDLEnv(unittest.TestCase):
             isfurry(nomsy),
             ishappy(nomsy)
         })
+    
+    def test_derived_predicates(self):
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        domain_file = os.path.join(dir_path, "pddl", "derivedblocks.pddl")
+        problem_dir = os.path.join(dir_path, "pddl", "derivedblocks")
+
+        env = PDDLEnv(domain_file, problem_dir)
+        obs, _ = env.reset()
+
+        on_loc = Predicate("on_loc", 2, [Type("obj"), Type("loc")])
+        on_obj = Predicate("on_obj", 2, [Type("obj"), Type("obj")])
+        in_gripper = Predicate("in_gripper", 2, [Type("obj"), Type("robot")])
+
+        # derived predicates
+        obj_clear = DerivedPredicate(
+            name="obj_clear", arity=1, var_types=[Type("obj")]
+        )
+        obj_clear.setup(
+            param_names=["?v_1"],
+            body=ForAll(
+                variables=[Type("obj")("?o")],
+                body=on_obj("?o", "?v_1").negative,
+            ),
+        )
+        gripper_empty = DerivedPredicate(
+            name="gripper_empty", arity=1, var_types=[Type("robot")]
+        )
+        gripper_empty.setup(
+            param_names=["?v_1"],
+            body=ForAll(
+                variables=[Type("obj")("?o")],
+                body=in_gripper("?o", "?v_1").negative,
+            ),
+        )
+
+        block1 = Type("obj")("block1")
+        block2 = Type("obj")("block2")
+        gripper = Type("robot")("gripper")
+        table = Type("loc")("table")
+
+        assert obs.literals == frozenset(
+            {
+                on_loc(block2, table),
+                on_obj(block1, block2),
+                gripper_empty(gripper),
+                obj_clear(block1),
+            }
+        )
 
 
 
