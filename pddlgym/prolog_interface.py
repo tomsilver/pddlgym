@@ -161,7 +161,7 @@ class PrologInterface:
         """
         """
         kb_str = ""
-        for lit in sorted(kb):
+        for lit in sorted(kb, key=lambda l: l.predicate.name):
             pred_name = cls._clean_predicate_name(lit.predicate.name)
             atoms = ",".join([cls._clean_atom_name(a) for a in lit.variables])
             kb_str += "\n{}({}).".format(pred_name, atoms)
@@ -247,7 +247,7 @@ class PrologInterface:
             objects_of_type = self._type_to_atomnames[var_type]
             objects_str = "[" + ",".join(objects_of_type) + "]"
             pred_str_body = self._prolog_goal_line(lit.body)
-            pred_str = "forall(member({}, {}), {})".format(variable, objects_str, pred_str_body)
+            pred_str = "foreach(member({}, {}), {})".format(variable, objects_str, pred_str_body)
             return pred_str
         if isinstance(lit, Exists):
             variables = ",".join([self._clean_variable_name(a.name)

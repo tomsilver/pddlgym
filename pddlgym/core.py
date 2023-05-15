@@ -553,13 +553,21 @@ class PDDLEnv(gym.Env):
             if lit.predicate.is_derived:
                 to_remove.add(lit)
         state = state.with_literals(state.literals - to_remove)
+
+        # add negative basic literals for checking derived predicates
+        state_literals = state.literals
+        all_ground_literals = self._observation_space.all_ground_literals(state)
+        for lit in all_ground_literals:
+            if not lit.predicate.is_derived and lit not in state_literals:
+                state_literals = {lit.negative} | state_literals
+                
         while True:  # loop, because derived predicates can be recursive
             new_derived_literals = set()
             for pred in self.domain.predicates.values():
                 if not pred.is_derived:
                     continue
                 assignments = find_satisfying_assignments(
-                    state.literals, pred.body,
+                    state_literals, pred.body,
                     type_to_parent_types=self.domain.type_to_parent_types,
                     constants=self.domain.constants,
                     mode="prolog",
@@ -571,6 +579,9 @@ class PDDLEnv(gym.Env):
                     if derived_literal not in state.literals:
                         new_derived_literals.add(derived_literal)
             if new_derived_literals:
+                # update state_literals for recursive checking
+                state_literals = state_literals | new_derived_literals
+                # save derived literals in state
                 state = state.with_literals(state.literals | new_derived_literals)
             else:  # terminate
                 break
