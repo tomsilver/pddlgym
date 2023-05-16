@@ -241,8 +241,8 @@ class PrologInterface:
             return pred_str
         if isinstance(lit, ForAll):
             variables = ",".join([self._clean_variable_name(a.name) for a in lit.variables])
-            assert len(variables) == 1, "TODO: support ForAlls over multiple variables"
-            variable = variables[0]
+            assert len(lit.variables) == 1, "TODO: support ForAlls over multiple variables"
+            variable = variables
             var_type = lit.variables[0].var_type
             objects_of_type = self._type_to_atomnames[var_type]
             objects_str = "[" + ",".join(objects_of_type) + "]"
