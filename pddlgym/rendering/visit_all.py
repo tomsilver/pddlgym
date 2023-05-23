@@ -70,19 +70,6 @@ def get_token_images(obs_cell):
     return [TOKEN_IMAGES[obs_cell]]
 
 def render(obs, mode='human', close=False):
-    if mode == "egocentric":
-        layout = build_layout_egocentric(obs)
-        return render_from_layout(layout, get_token_images)
-    elif mode == "human":
+    if mode == "human":
         layout = build_layout(obs)
         return render_from_layout(layout, get_token_images)
-    elif mode == "egocentric_crisp":
-        layout = build_layout_egocentric(obs)
-        return render_from_layout_crisp(layout, get_token_images)
-    elif mode == "human_crisp":
-        layout = build_layout(obs)
-        return render_from_layout_crisp(layout, get_token_images)
-    elif mode == "layout":
-        return build_layout(obs)
-    elif mode == "egocentric_layout":
-        return build_layout_egocentric(obs)
