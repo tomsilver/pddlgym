@@ -166,6 +166,9 @@ for env_name, kwargs in [
         ("navigation8", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation8-v0").domain) }),
         ("navigation9", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation9-v0").domain) }),
         ("navigation10", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation10-v0").domain) }),
+        ("visit_all", {'render' : visit_all_render,
+                       'operators_as_actions': True,
+                       'dynamic_action_space': True}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
