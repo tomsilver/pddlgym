@@ -4,8 +4,8 @@ Unlike typical spaces, Literal spaces may change with
 each episode, since objects, and therefore possible
 groundings, may change with each new PDDL problem.
 """
-from pddlgym.structs import LiteralConjunction, Literal, ground_literal
-from pddlgym.parser import PDDLProblemParser
+from pddlgym.structs import LiteralConjunction, Literal, ground_literal, Predicate, State
+from pddlgym.parser import PDDLProblemParser, PDDLDomain
 from pddlgym.downward_translate.instantiate import explore as downward_explore
 from pddlgym.downward_translate.pddl_parser import open as downward_open
 from pddlgym.utils import nostdout
@@ -15,14 +15,15 @@ from collections import defaultdict
 import os
 import tempfile
 import itertools
+from typing import Set, Collection, Callable
 
 TMP_PDDL_DIR = "/dev/shm" if os.path.exists("/dev/shm") else None
 
 
 class LiteralSpace(Space):
 
-    def __init__(self, predicates,
-                 lit_valid_test=lambda state,lit: True,
+    def __init__(self, predicates: Collection[Predicate],
+                 lit_valid_test: Callable[[State, Literal], bool] =lambda state,lit: True,
                  type_hierarchy=None,
                  type_to_parent_types=None):
         self.predicates = sorted(predicates)
@@ -33,10 +34,10 @@ class LiteralSpace(Space):
         self._type_to_parent_types = type_to_parent_types
         super().__init__()
 
-    def reset_initial_state(self, initial_state):
+    def reset_initial_state(self, initial_state: State):
         self._objects = None
 
-    def _update_objects_from_state(self, state):
+    def _update_objects_from_state(self, state: State):
         """Given a state, extract the objects and if they have changed, 
         recompute all ground literals
         """
@@ -58,7 +59,7 @@ class LiteralSpace(Space):
         self._objects = state.objects
         self._all_ground_literals = sorted(self._compute_all_ground_literals(state))
 
-    def sample_literal(self, state):
+    def sample_literal(self, state: State) -> Literal:
         while True:
             num_lits = len(self._all_ground_literals)
             idx = self.np_random.choice(num_lits)
@@ -67,19 +68,19 @@ class LiteralSpace(Space):
                 break
         return lit  
 
-    def sample(self, state):
+    def sample(self, state: State) -> Literal:
         self._update_objects_from_state(state)
         return self.sample_literal(state)
 
-    def all_ground_literals(self, state, valid_only=True):
+    def all_ground_literals(self, state: State, valid_only: bool=True) -> set[Literal]:
         self._update_objects_from_state(state)
         if not valid_only:
             return set(self._all_ground_literals)
         return set(l for l in self._all_ground_literals \
                    if self._lit_valid_test(state, l))
 
-    def _compute_all_ground_literals(self, state):
-        all_ground_literals = set()
+    def _compute_all_ground_literals(self, state: State) -> set[Literal]:
+        all_ground_literals: Set[Literal] = set()
         for predicate in self.predicates:
             choices = [self._type_to_objs[vt] for vt in predicate.var_types]
             for choice in itertools.product(*choices):
@@ -95,7 +96,7 @@ class LiteralActionSpace(LiteralSpace):
 
     For now, assumes operators_as_actions.
     """
-    def __init__(self, domain, predicates,
+    def __init__(self, domain: PDDLDomain, predicates: Collection[Predicate],
                  type_hierarchy=None, type_to_parent_types=None):
         self.domain = domain
         self._initial_state = None
@@ -118,11 +119,11 @@ class LiteralActionSpace(LiteralSpace):
             type_hierarchy=type_hierarchy,
             type_to_parent_types=type_to_parent_types)
 
-    def reset_initial_state(self, initial_state):
+    def reset_initial_state(self, initial_state: State) -> None:
         super().reset_initial_state(initial_state)
         self._initial_state = initial_state
 
-    def _update_objects_from_state(self, state):
+    def _update_objects_from_state(self, state: State) -> None:
         # Check whether the objects have changed
         # If so, we need to recompute things
         if state.objects == self._objects:
@@ -154,18 +155,18 @@ class LiteralActionSpace(LiteralSpace):
             self._ground_action_to_pos_preconds[ground_action] = pos_preconds
             self._ground_action_to_neg_preconds[ground_action] = neg_preconds
 
-    def sample_literal(self, state):
+    def sample_literal(self, state: State) -> Literal:
         valid_literals = self.all_ground_literals(state)
         valid_literals = list(sorted(valid_literals))
         return valid_literals[self.np_random.choice(len(valid_literals))]
 
-    def sample(self, state):
+    def sample(self, state: State) -> Literal:
         return self.sample_literal(state)
 
-    def all_ground_literals(self, state, valid_only=True):
+    def all_ground_literals(self, state: State, valid_only: bool=True) -> set[Literal]:
         self._update_objects_from_state(state)
         assert valid_only, "The point of this class is to avoid the cross product!"
-        valid_literals = set()
+        valid_literals: Set[Literal] = set()
         for ground_action in self._all_ground_literals:
             pos_preconds = self._ground_action_to_pos_preconds[ground_action]
             if not pos_preconds.issubset(state.literals):
@@ -176,7 +177,7 @@ class LiteralActionSpace(LiteralSpace):
             valid_literals.add(ground_action)
         return valid_literals
 
-    def _compute_all_ground_literals(self, state):
+    def _compute_all_ground_literals(self, state: State) -> set[Literal]:
         """Call FastDownward's instantiator.
         """
         # Generate temporary files to hand over to instantiator.
@@ -199,7 +200,7 @@ class LiteralActionSpace(LiteralSpace):
             _, _, actions, _, _ = downward_explore(task)
         # Post-process to our representation.
         obj_name_to_obj = {obj.name: obj for obj in state.objects}
-        all_ground_literals = set()
+        all_ground_literals: Set[Literal] = set()
         for action in actions:
             name = action.name.strip().strip("()").split()
             pred_name, obj_names = name[0], name[1:]
