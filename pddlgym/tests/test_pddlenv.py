@@ -43,7 +43,7 @@ class TestPDDLEnv(unittest.TestCase):
         # Valid args
         action = action_pred('b2')
 
-        obs, _, _, _ = env.step(action)
+        obs, _, _, _, _ = env.step(action)
 
         assert obs.literals == frozenset({ pred1('b2'), pred3('b2', 'd1', 'c1'), 
             pred3('a1', 'c1', 'd1'), pred3('a2', 'c2', 'd2') })
@@ -85,7 +85,7 @@ class TestPDDLEnv(unittest.TestCase):
             isfurry(nomsy),
         })
 
-        obs, _, _, _ = env.step(pet('block1'))
+        obs, _, _, _, _ = env.step(pet('block1'))
 
         assert obs.literals == frozenset({
             ispresent(nomsy),
@@ -99,7 +99,7 @@ class TestPDDLEnv(unittest.TestCase):
             isfurry(nomsy),
         })
 
-        obs, _, _, _ = env.step(pet(nomsy))
+        obs, _, _, _, _ = env.step(pet(nomsy))
 
         assert obs.literals == frozenset({
             ispresent(nomsy),

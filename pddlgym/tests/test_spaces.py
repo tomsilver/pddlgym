@@ -112,8 +112,8 @@ class TestSpaces(unittest.TestCase):
                         time.time() - start_time))
                 assert valid_actions2.issubset(valid_actions1)
                 action = env2.action_space.sample(state2)
-                state1, _, _, _ = env1.step(action)
-                state2, _, _, _ = env2.step(action)
+                state1, _, _, _, _ = env1.step(action)
+                state2, _, _, _, _ = env2.step(action)
 
             if verbose:
                 print("Test passed for environment {}.".format(name))
