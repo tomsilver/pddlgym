@@ -4,7 +4,7 @@ Unlike typical spaces, Literal spaces may change with
 each episode, since objects, and therefore possible
 groundings, may change with each new PDDL problem.
 """
-from pddlgym.structs import LiteralConjunction, Literal, ground_literal
+from pddlgym.structs import LiteralConjunction, Literal, ground_literal, State
 from pddlgym.parser import PDDLProblemParser
 from pddlgym.downward_translate.instantiate import explore as downward_explore
 from pddlgym.downward_translate.pddl_parser import open as downward_open
@@ -88,6 +88,26 @@ class LiteralSpace(Space):
                 lit = predicate(*choice)
                 all_ground_literals.add(lit)
         return all_ground_literals
+
+    def contains(self, x):
+        """Return boolean if x is a valid member of this space."""
+        if not isinstance(x, State):
+            return False
+
+        # Check all predicates can be grounded from the objects in the state.
+        try:
+            # If the state contains object types not defined in the environment, a KeyError is raised.
+            self._update_objects_from_state(x)
+        except KeyError:
+            return False
+
+        # Check all state and goal literals are valid.
+        for lit in (x.literals | set(x.goal.literals)):
+            if lit not in self._all_ground_literals:
+                return False
+
+        return True
+
 
 
 class LiteralActionSpace(LiteralSpace):

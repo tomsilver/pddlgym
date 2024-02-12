@@ -15,13 +15,11 @@ Usage example:
 >>> action = env.action_space.sample()
 >>> obs, reward, done, debug_info = env.step(action)
 """
-from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
+from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
 from pddlgym.inference import find_satisfying_assignments, check_goal
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction, NoChange
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 
-import copy
-import functools
 import glob
 import os
 from itertools import product
@@ -417,7 +415,7 @@ class PDDLEnv(gym.Env):
         self._problem_idx = problem_idx
         self._problem_index_fixed = True
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         """
         Set up a new PDDL problem and start a new episode.
 
@@ -430,6 +428,9 @@ class PDDLEnv(gym.Env):
         debug_info : dict
             See self._get_debug_info()
         """
+        if seed is not None:
+            self.seed(seed)
+
         if not self._problem_index_fixed:
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
@@ -480,12 +481,14 @@ class PDDLEnv(gym.Env):
             1 if the goal is reached and 0 otherwise.
         done : bool
             True if the goal is reached.
+        truncated : bool 
+            Whether a truncation condition outside the scope of the MDP is satisfied. This never happens, so set to False.
         debug_info : dict
             See self._get_debug_info.
         """
         state, reward, done, debug_info = self.sample_transition(action)
         self.set_state(state)
-        return state, reward, done, debug_info
+        return state, reward, done, False, debug_info
 
     def _get_new_state_info(self, state):
         state = self._handle_derived_literals(state)

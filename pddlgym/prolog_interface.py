@@ -1,4 +1,4 @@
-from pddlgym.structs import Predicate, Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists, Not
+from pddlgym.structs import Predicate, Literal, LiteralConjunction, LiteralDisjunction, ForAll, Exists
 from pddlgym.utils import get_object_combinations
 import random
 from collections import defaultdict

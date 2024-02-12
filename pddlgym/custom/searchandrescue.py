@@ -344,9 +344,9 @@ class SearchAndRescueEnv(PDDLSearchAndRescueEnv):
         return self._internal_to_state(internal_state), debug_info
 
     def step(self, action):
-        internal_state, reward, done, debug_info = super().step(action)
+        internal_state, reward, done, truncated, debug_info = super().step(action)
         state = self._internal_to_state(internal_state)
-        return state, reward, done, debug_info
+        return state, reward, done, truncated, debug_info
 
     def get_successor_state(self, state, action):
         internal_state = self._state_to_internal(state)
