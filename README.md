@@ -144,14 +144,6 @@ If you plan to use PDDLGym for non-trivial domains, you will almost certainly ne
 
 See `pddlgym/pddl/blocks.pddl` and `pddlgym/pddl/blocks/problem1.pddl` for an example to follow, where there are four action predicates: pickup, putdown, stack, and unstack.
 
-## Running unit tests
-
-From the root of the repo, run
-
-```sh
-python -m unittest discover pddlgym/tests/
-```
-
 ## Citation
 
 Please use this bibtex if you want to cite this repository in your publications:
