@@ -68,8 +68,14 @@ First, set up a virtual environment with Python 3. For instance, if you use [vir
 ### Planner dependencies (optional)
 To be able to run the planning demos in `pddlgym/demo_planning.py`, see our companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners), which provides an interface to FastForward and FastDownward.
 
+### Prolog dependencies (optional)
+For a small number of domains, we rely on [SWI-Prolog](https://www.swi-prolog.org/download/stable). Install the stable version directly from the website and follow their instructions to ensure the `swipl` command works in your terminal.
+
 ### Note on Rendering and Matplotlib
 If you encounter an error message that seems related to rendering (e.g. https://github.com/tomsilver/pddlgym/issues/47), it's possible that your `matplotlib` backend needs to be reconfigured. Try to use the `agg` backend by adding this line to the top of your script, before anything else is imported: `import matplotlib; matplotlib.use('agg')`
+
+### Running unit tests
+If everything is installed properly, `pytest pddlgym/tests/` should succeed.
 
 ## Usage examples
 
