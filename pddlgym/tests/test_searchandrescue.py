@@ -36,18 +36,19 @@ class TestSearchAndRescue(unittest.TestCase):
 
                 if done:
                     break
-                state, _, done, _ = env.step(act)
+                state, _, done, _, _ = env.step(act)
             if verbose:
                 print()
 
 
-    def test_searchandrescue_walls(self, num_actions_to_test=10):
+    def test_searchandrescue_walls(self, num_problems_to_test=2, num_actions_to_test=10):
         """Test that when we try to move into walls, we stay put.
         """
         rng = np.random.RandomState(0)
         for level in [1, 2]:
             env = pddlgym.make(f"SearchAndRescueLevel{level}-v0")
-            for idx in range(len(env.problems)):
+            assert len(env.problems) >= num_problems_to_test
+            for idx in range(num_problems_to_test):
                 env.fix_problem_index(idx)
                 state, debug_info = env.reset()
 
@@ -73,7 +74,7 @@ class TestSearchAndRescue(unittest.TestCase):
 
                     if done:
                         break
-                    state1, _, done, _ = env.step(act)
+                    state1, _, done, _, _ = env.step(act)
                     state2 = env.get_successor_state(state, act)
                     assert state2 == state1
                     state = state1

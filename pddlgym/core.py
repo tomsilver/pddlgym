@@ -13,7 +13,7 @@ Usage example:
 >>> env = PDDLEnv("pddl/sokoban.pddl", "pddl/sokoban")
 >>> obs, debug_info = env.reset()
 >>> action = env.action_space.sample()
->>> obs, reward, done, debug_info = env.step(action)
+>>> obs, reward, done, truncated, debug_info = env.step(action)
 """
 from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
 from pddlgym.inference import find_satisfying_assignments, check_goal

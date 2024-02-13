@@ -83,12 +83,12 @@ obs, debug_info = env.reset()
 img = env.render()
 imageio.imsave("frame1.png", img)
 action = env.action_space.sample(obs)
-obs, reward, done, debug_info = env.step(action)
+obs, reward, done, truncated, debug_info = env.step(action)
 img = env.render()
 imageio.imsave("frame2.png", img)
 ```
 
-See also `demo.py`.
+See also `pddlgym/demo.py`.
 
 ### Plan with FastDownward
 To run this example, make sure you install the optional companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners).
@@ -105,7 +105,7 @@ plan = planner(env.domain, obs)
 for act in plan:
     print("Obs:", obs)
     print("Act:", act)
-    obs, reward, done, info = env.step(act)
+    obs, reward, done, truncated, debug_info = env.step(act)
 print("Final obs, reward, done:", obs, reward, done)
 ```
 
