@@ -1,6 +1,1 @@
-matplotlib
-pillow>=8,<10
-gym>=0.24.0
-imageio
-networkx
-scikit-image
+.
