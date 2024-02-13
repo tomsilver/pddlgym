@@ -4,7 +4,7 @@
 
 ![Sokoban example](images/sokoban_example.gif?raw=true "Sokoban example")
 
-**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@mit.edu>.**
+**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@gmail.com>.**
 
 ## Paper
 
@@ -114,6 +114,8 @@ for act in plan:
     obs, reward, done, truncated, debug_info = env.step(act)
 print("Final obs, reward, done:", obs, reward, done)
 ```
+
+See also `pddlgym/demo_planning.py`.
 
 ## Observation representation
 
