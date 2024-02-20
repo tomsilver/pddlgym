@@ -3,7 +3,7 @@ from .utils import fig2data
 import matplotlib.pyplot as plt
 import numpy as np
 import matplotlib.patches as patches
-
+import random
 
 def get_objects_from_obs(obs):
     on_links = {}
@@ -125,6 +125,7 @@ def render(obs, mode='human', close=False):
     robot_height = height * 0.1
 
     piles, holding = get_objects_from_obs(obs)
+    random.shuffle(piles)
     block_width, block_height, block_positions = get_block_params(piles, width, height, 
         table_height, robot_height)
 
