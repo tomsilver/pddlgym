@@ -109,7 +109,7 @@ def draw_blocks(ax, block_width, block_height, block_positions):
             linewidth=1, edgecolor=(0.2,0.2,0.2), facecolor=color)
         ax.add_patch(rect)
 
-def render(obs, mode='human', close=False):
+def render(obs, mode='human', close=False, action_was=None):
 
     width, height = 3.2, 3.2
     fig = plt.figure(figsize=(width, height))
@@ -125,7 +125,40 @@ def render(obs, mode='human', close=False):
     robot_height = height * 0.1
 
     piles, holding = get_objects_from_obs(obs)
-    random.shuffle(piles)
+
+    # if the action that led to current obs is putdown, then we randomize  where the block should be putted
+    if action_was is not None:
+        # if this action was "putdown"
+        if "putdown" in str(action_was):
+
+            # retrieve the name of the block that was put down
+            blockname = str(action_was).split(":")[0][-1] 
+
+            indices_to_take_from = []
+            index_where_putted_block_is=None
+            putted_ele=None
+            # 1) retrieve the index of where the block is and retrieve the indices of free spots
+            for ind, what in enumerate(piles):
+                if type(what) is list:
+                    #if a free spots, we add the index
+                    if len(what) == 0:
+                        indices_to_take_from.append(ind)
+                    elif len(what) == 1:
+                        # if we are at where the putted block is, we retrieve the index
+                        if what[0].name == blockname:
+                            indices_to_take_from.append(ind)
+                            index_where_putted_block_is=ind
+                            putted_ele=what[0]
+
+
+            # 2) take one of the indices randomly and affect the block to it
+            theindex = random.choice(indices_to_take_from)
+            if index_where_putted_block_is != theindex:
+                piles[theindex] = [putted_ele]
+                piles[index_where_putted_block_is] = []
+
+            # print("THE PILE AFTER")
+            # print(piles) # 
     block_width, block_height, block_positions = get_block_params(piles, width, height, 
         table_height, robot_height)
 
