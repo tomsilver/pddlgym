@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.com/tomsilver/pddlgym.svg?branch=master)](https://travis-ci.com/tomsilver/pddlgym)
-
 # PDDLGym: PDDL &rarr; OpenAI Gym
 
 ![Sokoban example](images/sokoban_example.gif?raw=true "Sokoban example")
