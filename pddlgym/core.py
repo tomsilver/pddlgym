@@ -13,15 +13,13 @@ Usage example:
 >>> env = PDDLEnv("pddl/sokoban.pddl", "pddl/sokoban")
 >>> obs, debug_info = env.reset()
 >>> action = env.action_space.sample()
->>> obs, reward, done, debug_info = env.step(action)
+>>> obs, reward, done, truncated, debug_info = env.step(action)
 """
-from pddlgym.parser import PDDLDomainParser, PDDLProblemParser, PDDLParser
+from pddlgym.parser import PDDLDomainParser, PDDLProblemParser
 from pddlgym.inference import find_satisfying_assignments, check_goal
 from pddlgym.structs import ground_literal, Literal, State, ProbabilisticEffect, LiteralConjunction, NoChange
 from pddlgym.spaces import LiteralSpace, LiteralSetSpace, LiteralActionSpace
 
-import copy
-import functools
 import glob
 import os
 from itertools import product
@@ -79,7 +77,7 @@ def get_successor_state(state, action, domain, raise_error_on_invalid_action=Fal
 
     # No operator was found
     elif raise_error_on_invalid_action:
-        raise InvalidAction()
+        raise InvalidAction(f"called get_successor_state with invalid action '{action}' for given state")
 
     return state
 
@@ -417,7 +415,7 @@ class PDDLEnv(gym.Env):
         self._problem_idx = problem_idx
         self._problem_index_fixed = True
 
-    def reset(self):
+    def reset(self, seed=None, options=None):
         """
         Set up a new PDDL problem and start a new episode.
 
@@ -430,6 +428,9 @@ class PDDLEnv(gym.Env):
         debug_info : dict
             See self._get_debug_info()
         """
+        if seed is not None:
+            self.seed(seed)
+
         if not self._problem_index_fixed:
             self._problem_idx = self.rng.choice(len(self.problems))
         self._problem = self.problems[self._problem_idx]
@@ -480,12 +481,14 @@ class PDDLEnv(gym.Env):
             1 if the goal is reached and 0 otherwise.
         done : bool
             True if the goal is reached.
+        truncated : bool 
+            Whether a truncation condition outside the scope of the MDP is satisfied. This never happens, so set to False.
         debug_info : dict
             See self._get_debug_info.
         """
         state, reward, done, debug_info = self.sample_transition(action)
         self.set_state(state)
-        return state, reward, done, debug_info
+        return state, reward, done, False, debug_info
 
     def _get_new_state_info(self, state):
         state = self._handle_derived_literals(state)
@@ -553,13 +556,21 @@ class PDDLEnv(gym.Env):
             if lit.predicate.is_derived:
                 to_remove.add(lit)
         state = state.with_literals(state.literals - to_remove)
+
+        # add negative basic literals for checking derived predicates
+        state_literals = state.literals
+        all_ground_literals = self._observation_space.all_ground_literals(state)
+        for lit in all_ground_literals:
+            if not lit.predicate.is_derived and lit not in state_literals:
+                state_literals = {lit.negative} | state_literals
+                
         while True:  # loop, because derived predicates can be recursive
             new_derived_literals = set()
             for pred in self.domain.predicates.values():
                 if not pred.is_derived:
                     continue
                 assignments = find_satisfying_assignments(
-                    state.literals, pred.body,
+                    state_literals, pred.body,
                     type_to_parent_types=self.domain.type_to_parent_types,
                     constants=self.domain.constants,
                     mode="prolog",
@@ -571,6 +582,9 @@ class PDDLEnv(gym.Env):
                     if derived_literal not in state.literals:
                         new_derived_literals.add(derived_literal)
             if new_derived_literals:
+                # update state_literals for recursive checking
+                state_literals = state_literals | new_derived_literals
+                # save derived literals in state
                 state = state.with_literals(state.literals | new_derived_literals)
             else:  # terminate
                 break

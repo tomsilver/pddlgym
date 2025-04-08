@@ -4,7 +4,7 @@ Unlike typical spaces, Literal spaces may change with
 each episode, since objects, and therefore possible
 groundings, may change with each new PDDL problem.
 """
-from pddlgym.structs import LiteralConjunction, Literal, ground_literal
+from pddlgym.structs import LiteralConjunction, Literal, ground_literal, State
 from pddlgym.parser import PDDLProblemParser
 from pddlgym.downward_translate.instantiate import explore as downward_explore
 from pddlgym.downward_translate.pddl_parser import open as downward_open
@@ -89,6 +89,26 @@ class LiteralSpace(Space):
                 all_ground_literals.add(lit)
         return all_ground_literals
 
+    def contains(self, x):
+        """Return boolean if x is a valid member of this space."""
+        if not isinstance(x, State):
+            return False
+
+        # Check all predicates can be grounded from the objects in the state.
+        try:
+            # If the state contains object types not defined in the environment, a KeyError is raised.
+            self._update_objects_from_state(x)
+        except KeyError:
+            return False
+
+        # Check all state and goal literals are valid.
+        for lit in (x.literals | set(x.goal.literals)):
+            if lit not in self._all_ground_literals:
+                return False
+
+        return True
+
+
 
 class LiteralActionSpace(LiteralSpace):
     """Literal space with more efficient valid action generation.
@@ -108,8 +128,10 @@ class LiteralActionSpace(LiteralSpace):
             assert len([p for p in predicates if p.name == operator_name]) == 1
             action_predicate = [p for p in predicates if p.name == operator_name][0]
             action_predicate_to_operators[action_predicate] = operator
-            assert isinstance(operator.preconds, LiteralConjunction)
-            assert all([isinstance(l, Literal) for l in operator.preconds.literals])
+            if isinstance(operator.preconds, LiteralConjunction):
+                assert all([isinstance(l, Literal) for l in operator.preconds.literals])
+            else:
+                assert isinstance(operator.preconds, Literal)
         self._action_predicate_to_operators = action_predicate_to_operators
 
         super().__init__(predicates,
@@ -135,7 +157,11 @@ class LiteralActionSpace(LiteralSpace):
         self._ground_action_to_neg_preconds = {}
         for ground_action in self._all_ground_literals:
             operator = self._action_predicate_to_operators[ground_action.predicate]
-            lifted_preconds = operator.preconds.literals
+            if isinstance(operator.preconds, LiteralConjunction):
+                lifted_preconds = operator.preconds.literals
+            else:
+                assert isinstance(operator.preconds, Literal)
+                lifted_preconds = [operator.preconds]
             subs = dict(zip(operator.params, ground_action.variables))
             subs.update(zip(self.domain.constants, self.domain.constants))
             preconds = [ground_literal(lit, subs) for lit in lifted_preconds]

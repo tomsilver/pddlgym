@@ -1,6 +1,9 @@
 """Gym environment registration"""
 
 from . import tests
+from . import core
+from . import structs
+from . import spaces
 
 import matplotlib
 # matplotlib.use("Agg")
@@ -12,7 +15,8 @@ import os
 
 # Save users from having to separately import gym
 def make(*args, **kwargs):
-    return gym.make(*args, **kwargs)
+    # env checker fails since obs is not an numpy array like object
+    return gym.make(*args, disable_env_checker=True, **kwargs)
 
 def register_pddl_env(name, is_test_env, other_args):
     dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), "pddl")
@@ -122,6 +126,8 @@ for env_name, kwargs in [
                          'dynamic_action_space' : True}),
         ("manyferry", {'operators_as_actions' : True,
                        'dynamic_action_space' : True}),
+        ("movie", {'operators_as_actions' : True,
+                   'dynamic_action_space' : True}),
         ("glibblocks", {'render' : blocks_render}),
         ("glibrearrangement", {'render' : rearrangement_render}),
         ("glibdoors", {'render' : doors_render}),
@@ -161,6 +167,9 @@ for env_name, kwargs in [
         ("navigation9", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation9-v0").domain) }),
         ("navigation10", { 'render': lambda obs: navigation_render(obs, make("PDDLEnvNavigation10-v0").domain) }),
         ("river-alt", {'render': river_alt_render}),
+        ("visit_all", {'render' : visit_all_render,
+                       'operators_as_actions': True,
+                       'dynamic_action_space': True}),
 ]:
     other_args = {
         "raise_error_on_invalid_action": False,
@@ -233,3 +242,8 @@ register(
     id='TinyMyopicPOSAR-v0',
     entry_point='pddlgym.custom.searchandrescue:TinyMyopicPOSAREnv',
 )
+
+
+# Ignore certain files for pdoc documentation generation.
+__pdoc__ = {'downward_translate': False, 'procedural_generation': False}
+

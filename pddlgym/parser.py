@@ -44,9 +44,15 @@ class Operator:
 
     def __str__(self):
         s = self.name + "(" + ",".join(map(str, self.params)) + "): "
-        s += " & ".join(map(str, self.preconds.literals))
+        if isinstance(self.preconds, Literal):
+            s += str(self.preconds)
+        else:
+            s += " & ".join(map(str, self.preconds.literals))
         s += " => "
-        s += " & ".join(map(str, self.effects.literals))
+        if isinstance(self.effects, Literal):
+            s += str(self.effects)
+        else:
+            s += " & ".join(map(str, self.effects.literals))
         return s
 
     def pddl_str(self):
@@ -105,11 +111,11 @@ class PDDLParser:
         """
         assert string[0] == "("
         assert string[-1] == ")"
-        if string.startswith("(and") and string[4] in (" ", "\n", "("):
+        if string.startswith("(and") and string[4] in (" ", "\n", "(", ")"):
             clauses = self._find_all_balanced_expressions(string[4:-1].strip())
             return LiteralConjunction([self._parse_into_literal(clause, params, 
                                        is_effect=is_effect) for clause in clauses])
-        if string.startswith("(or") and string[3] in (" ", "\n", "("):
+        if string.startswith("(or") and string[3] in (" ", "\n", "(", ")"):
             clauses = self._find_all_balanced_expressions(string[3:-1].strip())
             return LiteralDisjunction([self._parse_into_literal(clause, params,
                                        is_effect=is_effect) for clause in clauses])
@@ -279,6 +285,8 @@ class PDDLParser:
         """Return a list of all balanced expressions in a string,
         starting from the beginning.
         """
+        if not string:
+            return []
         assert string[0] == "("
         assert string[-1] == ")"
         exprs = []

@@ -1,10 +1,8 @@
-[![Build Status](https://travis-ci.com/tomsilver/pddlgym.svg?branch=master)](https://travis-ci.com/tomsilver/pddlgym)
-
 # PDDLGym: PDDL &rarr; OpenAI Gym
 
 ![Sokoban example](images/sokoban_example.gif?raw=true "Sokoban example")
 
-**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@mit.edu>.**
+**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@gmail.com>.**
 
 ## Paper
 
@@ -68,13 +66,19 @@ First, set up a virtual environment with Python 3. For instance, if you use [vir
 ### Planner dependencies (optional)
 To be able to run the planning demos in `pddlgym/demo_planning.py`, see our companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners), which provides an interface to FastForward and FastDownward.
 
+### Prolog dependencies (optional)
+For a small number of domains, we rely on [SWI-Prolog](https://www.swi-prolog.org/download/stable). Install the stable version directly from the website and follow their instructions to ensure the `swipl` command works in your terminal.
+
 ### Note on Rendering and Matplotlib
 If you encounter an error message that seems related to rendering (e.g. https://github.com/tomsilver/pddlgym/issues/47), it's possible that your `matplotlib` backend needs to be reconfigured. Try to use the `agg` backend by adding this line to the top of your script, before anything else is imported: `import matplotlib; matplotlib.use('agg')`
+
+### Running unit tests
+If everything is installed properly, `pytest pddlgym/tests/` should succeed.
 
 ## Usage examples
 
 ### Hello, PDDLGym
-```
+```python
 import pddlgym
 import imageio
 
@@ -83,16 +87,16 @@ obs, debug_info = env.reset()
 img = env.render()
 imageio.imsave("frame1.png", img)
 action = env.action_space.sample(obs)
-obs, reward, done, debug_info = env.step(action)
+obs, reward, done, truncated, debug_info = env.step(action)
 img = env.render()
 imageio.imsave("frame2.png", img)
 ```
 
-See also `demo.py`.
+See also `pddlgym/demo.py`.
 
 ### Plan with FastDownward
 To run this example, make sure you install the optional companion repository [pddlgym_planners](https://github.com/ronuchit/pddlgym_planners).
-```
+```python
 import pddlgym
 from pddlgym_planners.fd import FD
 
@@ -105,9 +109,11 @@ plan = planner(env.domain, obs)
 for act in plan:
     print("Obs:", obs)
     print("Act:", act)
-    obs, reward, done, info = env.step(act)
+    obs, reward, done, truncated, debug_info = env.step(act)
 print("Final obs, reward, done:", obs, reward, done)
 ```
+
+See also `pddlgym/demo_planning.py`.
 
 ## Observation representation
 
