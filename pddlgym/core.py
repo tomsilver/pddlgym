@@ -324,6 +324,9 @@ class PDDLEnv(gym.Env):
         # Determine if the domain is STRIPS
         self._domain_is_strips = _check_domain_for_strips(self.domain)
         self._inference_mode = "csp" if self._domain_is_strips else "prolog"
+        
+        # Determine if domain contains derived predicates
+        self._contains_derived_predicates = any(p.is_derived for p in self.domain.predicates.values())
 
         # Initialize action space with problem-independent components
         actions = list(self.domain.actions)
@@ -550,6 +553,10 @@ class PDDLEnv(gym.Env):
             return self._render(self._state.literals, *args, **kwargs)
 
     def _handle_derived_literals(self, state):
+        # no need to compute derived predicates if there are none
+        if not self._contains_derived_predicates:
+            return state
+        
         # first remove any old derived literals since they're outdated
         to_remove = set()
         for lit in state.literals:
