@@ -51,7 +51,7 @@ def demo_planning(env_name, render=True, probabilistic=False, problem_index=0, v
         policy = create_replanning_policy(env, planner)
     else:
         policy = create_single_plan_policy(env, planner)
-    video_path = "/tmp/{}_random_demo.mp4".format(env_name)
+    video_path = "/tmp/{}_planner_demo.mp4".format(env_name)
     run_demo(env, policy, render=render, verbose=verbose, seed=0,
              video_path=video_path)
 
