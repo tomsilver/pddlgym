@@ -2,7 +2,7 @@
 
 ![Sokoban example](images/sokoban_example.gif?raw=true "Sokoban example")
 
-**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tslvr@mit.edu> and <ronuchit@gmail.com>.**
+**This library is under development by [Tom Silver](http://web.mit.edu/tslvr/www/) and [Rohan Chitnis](https://rohanchitnis.com/). Correspondence: <tomssilver@gmail.com> and <ronuchit@gmail.com>.**
 
 ## Paper
 
